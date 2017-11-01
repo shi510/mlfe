@@ -1,5 +1,4 @@
 #include <iostream>
-#include <mlfe/device_context/context.hpp>
 #include <mlfe/core/tensor_blob.hpp>
 #include <mlfe/device_context/cpu_context.hpp>
 
