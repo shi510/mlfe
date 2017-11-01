@@ -1,4 +1,4 @@
-# mlfe : Modeling Leanable Feature Extractor
+# mlfe : Modeling Learnable Feature Extractor
 
 The goal of this project is to build a model that can learn feature.  
 The language mainly used is c++.  
