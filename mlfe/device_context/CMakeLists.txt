@@ -1,0 +1,6 @@
+file(GLOB context_srcs "*.cpp")
+file(GLOB context_hdrs "*.hpp")
+list(APPEND mlfe_source_files ${context_srcs})
+list(APPEND mlfe_header_files ${context_hdrs})
+set(mlfe_source_files ${mlfe_source_files} PARENT_SCOPE)
+set(mlfe_header_files ${mlfe_header_files} PARENT_SCOPE)
