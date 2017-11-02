@@ -1,0 +1,6 @@
+file(GLOB math_srcs "*.cpp")
+file(GLOB math_hdrs "*.hpp")
+list(APPEND mlfe_source_files ${math_srcs})
+list(APPEND mlfe_header_files ${math_hdrs})
+set(mlfe_source_files ${mlfe_source_files} PARENT_SCOPE)
+set(mlfe_header_files ${mlfe_header_files} PARENT_SCOPE)
