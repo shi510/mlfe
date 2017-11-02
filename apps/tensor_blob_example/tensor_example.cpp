@@ -20,7 +20,7 @@ int main(){
     
     /*
      * You can get the tensor's total elements size by calling
-     * Num() * Depth() * Height() * Width() or by calling Size().
+     * Dim(0) * Dim(1) * Dim(2) * Dim(3) or by calling Size().
      */
     int _size_tensor1 = tensor_1.Dim(0) * tensor_1.Dim(1) * tensor_1.Dim(2) * tensor_1.Dim(3);
     int _size_tensor2 = tensor_2.Size();
