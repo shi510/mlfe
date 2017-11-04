@@ -85,6 +85,29 @@ void gemv<float, CPUContext>(const bool trans_a,
     }
     
 }
+    
+template<>
+void axpy<float, CPUContext>(int _size,
+                             const float _alpha,
+                             const float *_x,
+                             float *_y){
+    Eigen::Map<Eigen::VectorXf>(_y, _size) += _alpha * Eigen::Map<const Eigen::VectorXf>(_x, _size);
+}
+    
+template <>
+void scal<float, CPUContext>(const int size,
+                              const float alpha,
+                              const float *x_ptr,
+                              float *y_ptr){
+    Eigen::Map<Eigen::VectorXf> y(y_ptr, size);
+    if(alpha != 0){
+        y = alpha * Eigen::Map<const Eigen::VectorXf>(x_ptr, size);
+    }
+    else{
+        y.setZero();
+    }
+    
+}
 
 } /* math */
 } /* mlfe */

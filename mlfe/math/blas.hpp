@@ -26,6 +26,18 @@ void gemv(
           DataType *c, const int ldc,
           DeviceContext *context
           );
+    
+template<class DataType, class DeviceContext>
+void axpy(int _size,
+          DataType _alpha,
+          const DataType *_x,
+          DataType *_y);
+    
+template<class DataType, class DeviceContext>
+void scal(const int _size,
+          const DataType _alpha,
+          const DataType *_x,
+          DataType *_y);
 
 } /* namespace math */
 } /* namespace mlfe */
