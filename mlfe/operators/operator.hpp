@@ -16,11 +16,11 @@ public:
              std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> &outputs_,
              ParamDef &param_
              ):param(param_){
-        for (int i = 0; i < inputs_.size(); ++i) {
-            AddInput(inputs_[i]);
+        for(auto &in : inputs_){
+            AddInput(in);
         }
-        for (int i = 0; i < outputs_.size(); ++i) {
-            AddOutput(inputs_[i]);
+        for(auto &out : outputs_){
+            AddOutput(out);
         }
     }
     
@@ -72,13 +72,9 @@ public:
         return param;
     }
     
-    virtual bool Setup() = 0;
+    virtual void Compute() = 0;
     
-    virtual std::shared_ptr<TensorBlob<DeviceContext>> Compute(std::shared_ptr<TensorBlob<DeviceContext>> x) = 0;
-    
-    virtual std::shared_ptr<TensorBlob<DeviceContext>> ComputeGradients(std::shared_ptr<TensorBlob<DeviceContext>> dy) = 0;
-    
-    virtual void PrintInfo() {}
+    virtual void ComputeGradients() = 0;
     
 protected:
     Operator() : param("", 0) {}
