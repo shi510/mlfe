@@ -12,9 +12,9 @@ template<class DeviceContext>
 class Operator{
 public:
     Operator(
-             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> &inputs_,
-             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> &outputs_,
-             ParamDef &param_
+             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs_,
+             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs_,
+             ParamDef param_
              ):param(param_){
         for(auto &in : inputs_){
             AddInput(in);
