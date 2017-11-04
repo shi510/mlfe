@@ -9,6 +9,7 @@ add_subdirectory(core)
 add_subdirectory(device_context)
 add_subdirectory(math)
 add_subdirectory(operators)
+add_subdirectory(utils)
 
 include_directories(${mlfe_include_dirs})
 add_library(${the_library} ${LIB_TYPE} ${mlfe_source_files} ${mlfe_header_files})
