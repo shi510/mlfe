@@ -56,6 +56,22 @@ public:
     }
     
     /*
+     * @brief compare tensor's size.
+     * if same then returns true, or not returns false.
+     */
+    bool CompareSizeWith(const std::shared_ptr<TensorBlob> tb){
+        if(this->Dims() != tb->Dims()){
+            return false;
+        }
+        for(int i = 0; i < this->Dims(); ++i){
+            if(this->Dim(i) != tb->Dim(i)){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /*
      * @brief clear tensor data.
      */
     void Clear() {
