@@ -4,4 +4,4 @@ language: cpp
 compiler: gcc
 
 install:
-  - ./.travis/build.sh
+  - sh ./.travis/build.sh
