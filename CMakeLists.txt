@@ -5,6 +5,7 @@ project(mlfe CXX)
 set(CMAKE_CXX_STANDARD 11)
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
+option(BUILD_TEST "Build C++ test binaries (require gtest lib)" OFF)
 
 set(LIB_TYPE STATIC)
 if(BUILD_SHARED_LIBS)
