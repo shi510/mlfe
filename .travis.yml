@@ -7,3 +7,5 @@ before_install:
   - chmod ugo+x ./.travis/build.sh
 install:
   - ./.travis/build.sh
+script:
+  -
