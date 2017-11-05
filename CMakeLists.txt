@@ -20,3 +20,4 @@ include(cmake/Utils.cmake)
 
 add_subdirectory(mlfe)
 add_subdirectory(apps)
+add_subdirectory(unit_test)
