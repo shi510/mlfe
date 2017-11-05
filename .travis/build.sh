@@ -8,10 +8,10 @@ cd "$ROOT_DIR"
 mkdir build
 cd build
 
-CMAKE_ARGS=('-DCMAKE_BUILD_TEST=ON')
+CMAKE_ARGS=('-DBUILD_TEST=ON')
 CMAKE_ARGS+=('-DCMAKE_INSTALL_PREFIX=../install')
 cmake .. ${CMAKE_ARGS[*]}
-
-if [ "$TRAVIS_OS_NAME" = 'linux' ]; then
-    make "-j$(nproc)" install
-fi
+make "-j$(nproc)" install
+# if [ "$TRAVIS_OS_NAME" = 'linux' ]; then
+#     make "-j$(nproc)" install
+# fi

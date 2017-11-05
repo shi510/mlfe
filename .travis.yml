@@ -3,5 +3,7 @@ sudo: enabled
 language: cpp
 compiler: gcc
 
+before_install:
+  - chmod ugo+x ./.travis/build.sh
 install:
-  - sh ./.travis/build.sh
+  - ./.travis/build.sh
