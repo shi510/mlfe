@@ -99,7 +99,7 @@ public:
          */
         math::gemv<DataType, DeviceContext>(true, m, n, 1.f,
                                       dy->template GetPtrConst<DataType>(), n,
-                                      bias_multiplier.template GetPtrConst<DataType>(), 1.f,
+                                      bias_multiplier.template GetPtrConst<DataType>(), 0.f,
                                       db->template GetPtrMutable<DataType>(), n, nullptr);
         
         /*
