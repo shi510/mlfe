@@ -27,6 +27,43 @@ void gemv(
           DeviceContext *context
           );
     
+template <class DataType, class DeviceContext>
+void rowwise_max(
+                 const int m, const int n,
+                 const DataType *a_ptr,
+                 DataType *b_ptr
+                 );
+    
+template <class DataType, class DeviceContext>
+void rowwise_normalize(
+                       const int m, const int n,
+                       const DataType *scaler_ptr,
+                       DataType *norm_dest
+                       );
+    
+template <class DataType, class DeviceContext>
+void cross_entropy(
+                   const int m, const int n,
+                   const DataType *prob_ptr,
+                   const DataType *label_ptr,
+                   DataType *loss_ptr
+                   );
+    
+template <class DataType, class DeviceContext>
+void cross_entropy_gradients(
+                             const int m, const int n,
+                             const DataType *prob_ptr,
+                             const DataType *label_ptr,
+                             DataType *dx_ptr
+                             );
+    
+template<class DataType, class DeviceContext>
+void exp(
+         const int size,
+         const DataType *x_ptr,
+         DataType *y_ptr
+         );
+    
 template<class DataType, class DeviceContext>
 void axpy(int _size,
           DataType _alpha,
