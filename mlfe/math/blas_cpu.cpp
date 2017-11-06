@@ -149,11 +149,11 @@ void exp<float, CPUContext>(
 }
 
 template<>
-void axpy<float, CPUContext>(int _size,
-                             const float _alpha,
-                             const float *_x,
-                             float *_y){
-    Eigen::Map<Eigen::VectorXf>(_y, _size) += _alpha * Eigen::Map<const Eigen::VectorXf>(_x, _size);
+void axpy<float, CPUContext>(int size,
+                             const float alpha,
+                             const float *x_ptr,
+                             float *y_ptr){
+    Eigen::Map<Eigen::VectorXf>(y_ptr, size) += alpha * Eigen::Map<const Eigen::VectorXf>(x_ptr, size);
 }
 
 template <>

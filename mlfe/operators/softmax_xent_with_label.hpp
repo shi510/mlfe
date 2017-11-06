@@ -2,7 +2,6 @@
 #define __SOFTMAX_XENT_WITH_LABEL_HPP__
 
 #include <numeric>
-#include <iostream>
 #include "operator.hpp"
 #include "../core/tensor_blob.hpp"
 #include "../core/param_def.hpp"

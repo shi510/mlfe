@@ -65,16 +65,18 @@ void exp(
          );
     
 template<class DataType, class DeviceContext>
-void axpy(int _size,
-          DataType _alpha,
-          const DataType *_x,
-          DataType *_y);
+void axpy(
+          int size,
+          DataType alpha,
+          const DataType *x_ptr,
+          DataType *y_ptr);
     
 template<class DataType, class DeviceContext>
-void scal(const int _size,
-          const DataType _alpha,
-          const DataType *_x,
-          DataType *_y);
+void scal(
+          const int size,
+          const DataType alpha,
+          const DataType *x_ptr,
+          DataType *y_ptr);
 
 } /* namespace math */
 } /* namespace mlfe */
