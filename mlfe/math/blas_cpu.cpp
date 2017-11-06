@@ -91,7 +91,7 @@ void rowwise_max<float, CPUContext>(
                                     const float *a_ptr,
                                     float *b_ptr
                                     ){
-    Eigen::Map<Eigen::VectorXf>(b_ptr, n) =  Eigen::Map<const Eigen::MatrixXf>(a_ptr, n, m).colwise().maxCoeff();
+    Eigen::Map<Eigen::VectorXf>(b_ptr, m) =  Eigen::Map<const Eigen::MatrixXf>(a_ptr, n, m).colwise().maxCoeff();
 }
 
 template <>
