@@ -8,7 +8,7 @@
 using namespace std;
 using namespace mlfe;
 
-TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
+TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     shared_ptr<Operator<CPUContext>> softmax_xent;
     vector<shared_ptr<TensorBlob<CPUContext>>> sm_inputs(2);
     vector<shared_ptr<TensorBlob<CPUContext>>> sm_outputs(3);
