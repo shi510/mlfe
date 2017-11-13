@@ -6,10 +6,7 @@
 namespace mlfe{ namespace simpledb{
     
 SimpleDB::SimpleDB(){
-    header_info.signature = 0x57957295;
-    header_info.version = 0x00000001;
-    header_info.number_of_items = 0;
-    header_info.disk_info_offset = sizeof(header_info);
+    Init();
 }
 
 SimpleDB::~SimpleDB(){
@@ -21,6 +18,7 @@ void SimpleDB::Close() {
         WriteHeader();
         WriteDiskInfo();
         FileIO::Close();
+        Init();
     }
 }
 
@@ -72,6 +70,14 @@ void SimpleDB::Delete(const std::string key) {
 
 int SimpleDB::NumData() {
     return disk_info_tree.size();
+}
+    
+void SimpleDB::Init(){
+    header_info.signature = 0x57957295;
+    header_info.version = 0x00000001;
+    header_info.number_of_items = 0;
+    header_info.disk_info_offset = sizeof(header_info);
+    disk_info_tree.clear();
 }
 
 void SimpleDB::ReadHeader(){

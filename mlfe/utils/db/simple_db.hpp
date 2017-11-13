@@ -32,6 +32,8 @@ public:
     int NumData() override;
     
 protected:
+    void Init();
+    
     void ReadHeader();
     
     void WriteHeader();
