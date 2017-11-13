@@ -1,7 +1,5 @@
-
 #include "simple_db.hpp"
 #include "../assert.hpp"
-#include <map>
 #include <sstream>
 #include <vector>
 

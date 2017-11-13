@@ -1,10 +1,7 @@
 #ifndef __SIMPLE_DB_HPP__
 #define __SIMPLE_DB_HPP__
 #include "data_base.hpp"
-#include "../assert.hpp"
 #include <map>
-#include <sstream>
-#include <vector>
 
 namespace mlfe{ namespace simpledb{
 
