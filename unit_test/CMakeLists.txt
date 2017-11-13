@@ -1,2 +1,3 @@
 add_subdirectory(test_fc_operator)
 add_subdirectory(test_softmax_xent)
+add_subdirectory(test_simpledb)
