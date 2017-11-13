@@ -1,1 +1,2 @@
 add_subdirectory(tensor_blob_example)
+add_subdirectory(simpledb_mnist)

@@ -1,0 +1,5 @@
+set(the_app simpledb_mnist)
+include_directories(${mlfe_include_dirs})
+add_executable(${the_app} simpledb_mnist.cpp)
+target_link_libraries(${the_app} mlfe)
+set_target_properties(${the_app} PROPERTIES FOLDER "apps")
