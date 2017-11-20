@@ -30,3 +30,20 @@ function(msvc_multi_threaded_static_turn on_or_off)
     set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} PARENT_SCOPE)
     set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} PARENT_SCOPE)
 endfunction()
+
+function(build_flatbuffers_test generated_headers schema_include_dirs generated_includes_dir custom_target_name)
+    set(${generated_headers})
+    message(${generated_includes_dir})
+    foreach(include_dir ${schema_include_dirs})
+        file(GLOB_RECURSE schemas "${include_dir}/*.fbs")
+        string(REPLACE ".fbs" "_generated.h" generated_header "${schemas}")
+        add_custom_command(OUTPUT ${generated_header}
+          COMMAND flatc -c -o ${generated_includes_dir} ${schemas}
+          COMMENT "Building C++ header for ${schemas}"
+        )
+        list(APPEND ${generated_headers} ${generated_header})
+    endforeach()
+    # message("gen headers : " ${${generated_headers}})
+    add_custom_target(${custom_target_name} DEPENDS ${${generated_headers}})
+    set(${generated_headers} ${${generated_headers}}  PARENT_SCOPE)
+endfunction()

@@ -19,6 +19,7 @@ if(BUILD_SHARED_LIBS)
 endif(BUILD_SHARED_LIBS)
 
 set(mlfe_include_dirs ${PROJECT_SOURCE_DIR})
+set(mlfe_library_dependencies)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(cmake/Dependencies.cmake)

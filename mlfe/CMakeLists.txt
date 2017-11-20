@@ -13,7 +13,12 @@ add_subdirectory(utils)
 
 include_directories(${mlfe_include_dirs})
 add_library(${the_library} ${LIB_TYPE} ${mlfe_source_files} ${mlfe_header_files})
-
+target_link_libraries(${the_library} ${mlfe_library_dependencies})
+build_flatbuffers_test(flat_gen_headers
+        "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
+        "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
+        gen_fb_target)
+add_dependencies(${the_library} gen_fb_target)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         DESTINATION include
         FILES_MATCHING PATTERN "*.hpp")
