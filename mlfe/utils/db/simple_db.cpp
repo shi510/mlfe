@@ -240,15 +240,8 @@ uint32_t SimpleDB::GetAllItemSize(){
 std::ios::openmode SimpleDB::GetFileModeByOption(){
     std::ios::openmode mode;
     mode = std::ios::in | std::ios::out;
-    if(option.binary){
-        mode |= std::ios::binary;
-    }
-    if(option.delete_previous){
-        mode |= std::ios::trunc;
-    }
-    if(!option.binary){
-        mode ^= std::ios::binary;
-    }
+    mode = option.binary ? mode | std::ios::binary : mode;
+    mode = option.delete_previous ? mode | std::ios::trunc : mode;
     return mode;
 }
 
