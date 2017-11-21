@@ -38,14 +38,16 @@ public:
         }
     }
     
-    bool CreateFile(std::string name){
+    void CreateFile(std::string name){
+        if(Exists(name)){
+            throw std::string("File exists. Can not create the file : ") + name;
+        }
         std::ofstream f(name);
-        if(f.is_open()){
+        if(f.good()){
             f.close();
-            return true;
         }
         else{
-            return false;
+            throw std::string("File can not create. Error code : ") + std::to_string(f.rdstate());
         }
     }
 
