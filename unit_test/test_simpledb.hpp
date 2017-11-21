@@ -1,5 +1,5 @@
 #include <iostream>
-#include <mlfe/device_context/cpu_context.cpp>
+#include <mlfe/device_context/cpu_context.hpp>
 #include <mlfe/utils/db/simple_db.hpp>
 #include <gtest/gtest.h>
 
@@ -9,6 +9,8 @@ using namespace mlfe;
 TEST(SimpleDB_IO_Test, VerifyCPUResults) {
     shared_ptr<DataBase> sdb = make_shared<simpledb::SimpleDB>();
     try{
+        sdb->option.create = true;
+        sdb->option.delete_previous = true;
         sdb->Open("testdb.simpledb");
         EXPECT_EQ(sdb->IsOpen(), true);
         sdb->Put("key1", "My key is a key1.");
@@ -22,6 +24,8 @@ TEST(SimpleDB_IO_Test, VerifyCPUResults) {
         return;
     }
     try{
+        sdb->option.create = false;
+        sdb->option.delete_previous = false;
         sdb->Open("testdb.simpledb");
         EXPECT_EQ(sdb->IsOpen(), true);
         sdb->Put("key0", "My key is a key0.");
@@ -58,9 +62,4 @@ TEST(SimpleDB_IO_Test, VerifyCPUResults) {
     sdb->Get("key2", val);
     EXPECT_EQ(val.compare("My key is a key2."), 0);
     sdb->Close();
-}
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }

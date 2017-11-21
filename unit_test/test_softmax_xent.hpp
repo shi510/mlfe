@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <chrono>
-#include <mlfe/device_context/cpu_context.cpp>
+#include <mlfe/device_context/cpu_context.hpp>
 #include <mlfe/operators/softmax_xent_with_label.hpp>
 #include <gtest/gtest.h>
 
@@ -119,9 +119,4 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
             EXPECT_GT(out_val, expect_unit_result - 0.01);
         }
     }
-}
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }
