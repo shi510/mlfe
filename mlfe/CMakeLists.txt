@@ -14,7 +14,7 @@ add_subdirectory(utils)
 include_directories(${mlfe_include_dirs})
 add_library(${the_library} ${LIB_TYPE} ${mlfe_source_files} ${mlfe_header_files})
 target_link_libraries(${the_library} ${mlfe_library_dependencies})
-build_flatbuffers_test(flat_gen_headers
+mlfe_build_flatbuffers(flat_gen_headers
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
         gen_fb_target)
