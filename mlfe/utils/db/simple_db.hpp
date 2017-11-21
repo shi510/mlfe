@@ -2,6 +2,7 @@
 #define __SIMPLE_DB_HPP__
 #include "data_base.hpp"
 #include <map>
+#include <vector>
 
 namespace mlfe{ namespace simpledb{
 
@@ -11,7 +12,7 @@ namespace mlfe{ namespace simpledb{
  * async algorithm for put, get, delete,
  * data compression to reduce DB size,
  * efficient key-value management,
- * db options, db status.
+ * db options, db status, thread-safe.
  */
 class SimpleDB final : public DataBase{
 public:
@@ -23,9 +24,15 @@ public:
     
     void Open(const std::string name) override;
     
+    void Get(std::string &val) override;
+    
     void Get(const std::string key, std::string &val) override;
     
     void Put(const std::string key, const std::string val) override;
+    
+    void MoveToFirst() override;
+    
+    bool MoveToNext() override;
     
     void Delete(const std::string key) override;
     
@@ -45,6 +52,8 @@ protected:
     int HeaderSize();
     
     uint32_t GetAllItemSize();
+    
+    std::ios::openmode GetFileModeByOption();
     
 private:
     /*
@@ -70,6 +79,9 @@ private:
      * Define function to transform from tree to string.
      */
     std::map<std::string, ItemDiskInfo> disk_info_tree;
+    std::map<std::string, ItemDiskInfo>::iterator iter;
+    std::vector<std::pair<std::string, ItemDiskInfo *> > insertion_order;
+    std::vector<std::pair<std::string, ItemDiskInfo *> >::iterator insertion_order_iter;
     uint32_t file_size;
     uint32_t last_cursor;
 };

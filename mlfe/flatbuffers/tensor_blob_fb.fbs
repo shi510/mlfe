@@ -1,0 +1,13 @@
+namespace mlfe.serializable;
+
+table TensorBlob {
+    name:string;
+    data:[ubyte];
+    dim:[int];
+}
+
+table TensorBlobs {
+    tensors:[TensorBlob];
+}
+
+root_type TensorBlobs;
