@@ -1,1 +1,3 @@
 build
+data/*
+!data/mnist/get_mnist.python
