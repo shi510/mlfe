@@ -37,7 +37,7 @@ public:
         runtime_assert(dx->CompareSizeWith(x) , "dx's size must be same with x.");
         
         bias_multiplier.template Reshape<DataType, DeviceContext>({x->Dim(0)});
-        bias_multiplier.template SetByConst<DataType>(1.f);
+        bias_multiplier.template SetByConst<DataType>(DataType(1));
         
         /*
          * batch size.
@@ -68,9 +68,9 @@ public:
         math::gemm<DataType, DeviceContext>(
                                          false, true,
                                          m, n, k,
-                                         1.f, x->template GetPtrConst<DataType>(), k,
+                                         DataType(1), x->template GetPtrConst<DataType>(), k,
                                          w->template GetPtrConst<DataType>(), k,
-                                         0.f, y->template GetPtrMutable<DataType>(), n, nullptr
+                                         DataType(0), y->template GetPtrMutable<DataType>(), n, nullptr
                                          );
         
         /*
@@ -81,9 +81,9 @@ public:
         math::gemm<DataType, DeviceContext>(
                                          false, false,
                                          m, n, 1,
-                                         1.f, bias_multiplier.template GetPtrConst<DataType>(), 1
+                                         DataType(1), bias_multiplier.template GetPtrConst<DataType>(), 1
                                          , b->template GetPtrConst<DataType>(), n,
-                                         1.f, y->template GetPtrMutable<DataType>(), n, nullptr
+                                         DataType(1), y->template GetPtrMutable<DataType>(), n, nullptr
                                          );
     }
     
@@ -97,9 +97,9 @@ public:
         /*
          * db = dy.
          */
-        math::gemv<DataType, DeviceContext>(true, m, n, 1.f,
+        math::gemv<DataType, DeviceContext>(true, m, n, DataType(1),
                                       dy->template GetPtrConst<DataType>(), n,
-                                      bias_multiplier.template GetPtrConst<DataType>(), 0.f,
+                                      bias_multiplier.template GetPtrConst<DataType>(), DataType(0),
                                       db->template GetPtrMutable<DataType>(), n, nullptr);
         
         /*
@@ -109,9 +109,9 @@ public:
          */
         math::gemm<DataType, DeviceContext>(true, false,
                                       n, k, m,
-                                      1.f, dy->template GetPtrConst<DataType>(), n,
+                                      DataType(1), dy->template GetPtrConst<DataType>(), n,
                                       x->template GetPtrConst<DataType>(), k,
-                                      0.f, dw->template GetPtrMutable<DataType>(), k, nullptr);
+                                      DataType(0), dw->template GetPtrMutable<DataType>(), k, nullptr);
         
         /*
          * Calculate loss to propagate through bottom.
@@ -121,20 +121,20 @@ public:
         math::gemm<DataType, DeviceContext>(
                                       false, false,
                                       m, k, n,
-                                      1.f, dy->template GetPtrConst<DataType>(), n,
+                                      DataType(1), dy->template GetPtrConst<DataType>(), n,
                                       w->template GetPtrConst<DataType>(), k,
-                                      0.f, dx->template GetPtrMutable<DataType>(), k, nullptr);
+                                      DataType(0), dx->template GetPtrMutable<DataType>(), k, nullptr);
         
         math::scal<DataType, DeviceContext>(
                                       db->Size(),
-                                      1.f / static_cast<DataType>(x->Dim(0)),
+                                      DataType(1) / static_cast<DataType>(x->Dim(0)),
                                       db->template GetPtrConst<DataType>(),
                                       db->template GetPtrMutable<DataType>()
                                       );
         
         math::scal<DataType, DeviceContext>(
                                       dw->Size(),
-                                      1.f / static_cast<DataType>(x->Dim(0)),
+                                      DataType(1) / static_cast<DataType>(x->Dim(0)),
                                       dw->template GetPtrConst<DataType>(),
                                       dw->template GetPtrMutable<DataType>()
                                       );
