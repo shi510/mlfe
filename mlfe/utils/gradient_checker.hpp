@@ -31,34 +31,40 @@ public:
         gradient_checker->template ReshapeLike<DataType>(theta);
         
         for(int n = 0; n < theta->Size(); ++n){
+            DataType *ng_ptr = numerical_gradient->template GetPtrMutable<DataType>();
+            DataType *ag_ptr = analytical_gradient->template GetPtrMutable<DataType>();
+            DataType *gc_ptr = gradient_checker->template GetPtrMutable<DataType>();
             DataType val = theta->template GetPtrMutable<DataType>()[n];
+            
             theta->template GetPtrMutable<DataType>()[n] = val + e;
             op->Compute();
-            std::copy(y->template GetPtrConst<DataType>(),
+            std::copy(
+                      y->template GetPtrConst<DataType>(),
                       y->template GetPtrConst<DataType>() + y->Size(),
-                      numerical_gradient->template GetPtrMutable<DataType>());
+                      numerical_gradient->template GetPtrMutable<DataType>()
+                      );
             theta->template GetPtrMutable<DataType>()[n] = val - e;
             op->Compute();
             math::axpy<DataType, DeviceContext>(
                                                 y->Size(),
                                                 DataType(-1),
                                                 y->template GetPtrConst<DataType>(),
-                                                numerical_gradient->template GetPtrMutable<DataType>()
+                                                ng_ptr
                                                 );
             math::scal<DataType, DeviceContext>(
                                                 numerical_gradient->Size(),
                                                 DataType(1) / (DataType(2) * e),
-                                                numerical_gradient->template GetPtrConst<DataType>(),
-                                                numerical_gradient->template GetPtrMutable<DataType>()
+                                                ng_ptr,
+                                                ng_ptr
                                                 );
             
             DataType sum = std::accumulate(
-                                           numerical_gradient->template GetPtrMutable<DataType>(),
-                                           numerical_gradient->template GetPtrMutable<DataType>() + numerical_gradient->Size(),
+                                           ng_ptr,
+                                           ng_ptr + numerical_gradient->Size(),
                                            DataType(0)
                                            ) / scaler;
             
-            gradient_checker->template GetPtrMutable<DataType>()[n] = analytical_gradient->template GetPtrConst<DataType>()[n] - sum;
+            gc_ptr[n] = std::abs(ag_ptr[n] - sum) / std::max(std::abs(ag_ptr[n]), std::abs(sum));
             theta->template GetPtrMutable<DataType>()[n] = val;
         }
         return gradient_checker;

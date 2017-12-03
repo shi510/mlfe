@@ -17,6 +17,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     const int batch_size = 3;
     const int out_size = 10;
     const double bias_val = 0.75f;
+    const double acceptable_gradient_check_val = 1e-7;
     
     for(auto &in : fc_inputs){
         in = make_shared<TensorBlob<CPUContext>>();
@@ -93,8 +94,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
          */
         gc_val = gc.Run(fc, fc->Input(1), fc->Output(0), fc->Output(1), batch_size);
         for(int n = 0; n < gc_val->Size(); ++n){
-            EXPECT_LT(gc_val->GetPtrConst<double>()[n], +0.01);
-            EXPECT_GT(gc_val->GetPtrConst<double>()[n],  -0.01);
+            EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }
         
         /*
@@ -102,8 +102,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
          */
         gc_val = gc.Run(fc, fc->Input(2), fc->Output(0), fc->Output(2), batch_size);
         for(int n = 0; n < gc_val->Size(); ++n){
-            EXPECT_LT(gc_val->GetPtrConst<double>()[n], +0.01);
-            EXPECT_GT(gc_val->GetPtrConst<double>()[n],  -0.01);
+            EXPECT_LT(gc_val->GetPtrConst<double>()[n],  acceptable_gradient_check_val);
         }
         
         /*
@@ -111,8 +110,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
          */
         gc_val = gc.Run(fc, fc->Input(0), fc->Output(0), fc->Output(3), 1.);
         for(int n = 0; n < gc_val->Size(); ++n){
-            EXPECT_LT(gc_val->GetPtrConst<double>()[n], +0.01);
-            EXPECT_GT(gc_val->GetPtrConst<double>()[n],  -0.01);
+            EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }
         auto end = std::chrono::high_resolution_clock::now();
         cout<<"-- Total Calcaulation time : ";
