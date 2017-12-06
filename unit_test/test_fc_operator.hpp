@@ -55,7 +55,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     
     set(x->GetPtrMutable<double>(), 1, batch_size * x_size);
     for(int i = 0; i < out_size; ++i){
-        set(w->GetPtrMutable<double>() + x_size * i, static_cast<double>(i + 1) / 10., x_size);
+        set(w->GetPtrMutable<double>() + x_size * i, static_cast<double>(i + 1) / out_size, x_size);
     }
     set(b->GetPtrMutable<double>(), bias_val, out_size);
     set(dy->GetPtrMutable<double>(), 1., dy->Size());
