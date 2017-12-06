@@ -38,12 +38,12 @@ public:
                                     label->template GetPtrMutable<DataType>() + label->Dim(1) * (i + 1)
                                     );
             
-            runtime_assert(static_cast<int>(std::accumulate(v.begin(), v.end(), 0.f)) == 1, "label sum at each batch must be 1.");
+            runtime_assert(static_cast<int>(std::accumulate(v.begin(), v.end(), DataType(0))) == 1, "label sum at each batch must be 1.");
             
         }
         
         sum_multiplier.template Reshape<DataType, DeviceContext>({prob->Dim(1)});
-        sum_multiplier.template SetByConst<DataType>(1.f);
+        sum_multiplier.template SetByConst<DataType>((DataType(1)));
         rows_max.template Reshape<DataType, DeviceContext>({x->Dim(0)});
         scaler.template Reshape<DataType, DeviceContext>({x->Dim(0)});
         
@@ -72,16 +72,16 @@ public:
                                                    );
         
         math::scal<DataType, DeviceContext>(
-                                         m * n, 1.f,
+                                         m * n, DataType(1),
                                          x->template GetPtrConst<DataType>(),
                                          prob->template GetPtrMutable<DataType>()
                                          );
         
         math::gemm<DataType, DeviceContext>(false, false,
                                             m, n, 1,
-                                            -1.f, rows_max.template GetPtrConst<DataType>(), 1,
+                                            DataType(-1), rows_max.template GetPtrConst<DataType>(), 1,
                                             sum_multiplier.template GetPtrConst<DataType>(), n,
-                                            1, prob->template GetPtrMutable<DataType>(), n, nullptr);
+                                            DataType(1), prob->template GetPtrMutable<DataType>(), n, nullptr);
         
         math::exp<DataType, DeviceContext>(
                                            prob->Size(),
@@ -91,9 +91,9 @@ public:
         
         math::gemv<DataType, DeviceContext>(false,
                                             m, n,
-                                            1.f, prob->template GetPtrConst<DataType>(), n,
+                                            DataType(1), prob->template GetPtrConst<DataType>(), n,
                                             sum_multiplier.template GetPtrConst<DataType>(),
-                                            0.f, scaler.template GetPtrMutable<DataType>(), 1, nullptr);
+                                            DataType(0), scaler.template GetPtrMutable<DataType>(), 1, nullptr);
         
         math::rowwise_normalize<DataType, DeviceContext>(m, n,
                                                          scaler.template GetPtrConst<DataType>(),
