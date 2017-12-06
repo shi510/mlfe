@@ -13,9 +13,9 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     shared_ptr<Operator<CPUContext>> fc;
     vector<shared_ptr<TensorBlob<CPUContext>>> fc_inputs(4);
     vector<shared_ptr<TensorBlob<CPUContext>>> fc_outputs(4);
-    const int x_size = 100;
-    const int batch_size = 3;
-    const int out_size = 10;
+    const int x_size = 10;
+    const int batch_size = 2;
+    const int out_size = 5;
     const double bias_val = 0.75f;
     const double acceptable_gradient_check_val = 1e-7;
     
@@ -85,14 +85,14 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     {
         cout<<"-- FC Operator Gradient Compute Check"<<endl;
         auto begin = std::chrono::high_resolution_clock::now();
-        GradientChecker<double, CPUContext> gc(0.001);
+        GradientChecker<double, CPUContext> gc(0.0001);
         fc->ComputeGradients();
         std::shared_ptr<TensorBlob<CPUContext>> gc_val;
         
         /*
          * check gradient w.r.t. weight.
          */
-        gc_val = gc.Run(fc, fc->Input(1), fc->Output(0), fc->Output(1), batch_size);
+        gc_val = gc.Run(fc, fc->Input(1), fc->Output(0), fc->Output(1), 1. / batch_size);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }
@@ -100,7 +100,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
         /*
          * check gradient w.r.t. bias.
          */
-        gc_val = gc.Run(fc, fc->Input(2), fc->Output(0), fc->Output(2), batch_size);
+        gc_val = gc.Run(fc, fc->Input(2), fc->Output(0), fc->Output(2), 1. / batch_size);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n],  acceptable_gradient_check_val);
         }

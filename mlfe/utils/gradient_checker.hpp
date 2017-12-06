@@ -62,7 +62,7 @@ public:
                                            ng_ptr,
                                            ng_ptr + numerical_gradient->Size(),
                                            DataType(0)
-                                           ) / scaler;
+                                           ) * scaler;
             
             gc_ptr[n] = std::abs(ag_ptr[n] - sum) / std::max(std::abs(ag_ptr[n]), std::abs(sum));
             theta->template GetPtrMutable<DataType>()[n] = val;
