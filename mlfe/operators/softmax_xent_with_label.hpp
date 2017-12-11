@@ -11,24 +11,22 @@
 namespace mlfe{
     
 template <class DataType, class DeviceContext>
-class SoftmaxCrossEntropyWithLabel final : public Operator<DeviceContext>{
+class SoftmaxCrossEntropyWithLabelOp final : public Operator<DeviceContext>{
 public:
-    explicit SoftmaxCrossEntropyWithLabel(
-                                          std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
-                                          std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
-                                          ) : Operator<DeviceContext>(inputs, outputs, ParamDef("", 0)) {
+    explicit SoftmaxCrossEntropyWithLabelOp(
+                                            std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
+                                            std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
+                                            ) : Operator<DeviceContext>(inputs, outputs, ParamDef("", 0)) {
         runtime_assert(inputs.size() == 2, "Input size must be 2(x, label).");
-        runtime_assert(outputs.size() == 3, "Output size must be 3(probability, loss, dx).");
+        runtime_assert(outputs.size() == 2, "Output size must be 2(probability, loss).");
         
         const auto x = this->Input(InputSchema::x);
         const auto label = this->Input(InputSchema::label);
         auto prob = this->Output(OutputSchema::prob);
         auto loss = this->Output(OutputSchema::loss);
-        auto dx = this->Output(OutputSchema::dx);
         
         runtime_assert(x->CompareSizeWith(label) , "x's size must be same with label.");
         runtime_assert(x->CompareSizeWith(prob) , "x's size must be same with prob.");
-        runtime_assert(x->CompareSizeWith(dx) , "x's size must be same with dx.");
         runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
         runtime_assert(prob->Dims() == 2, "probability's dim size must be 2.");
         runtime_assert(loss->Size() == 1, "loss's size must be 1.");
@@ -39,7 +37,6 @@ public:
                                     );
             
             runtime_assert(static_cast<int>(std::accumulate(v.begin(), v.end(), DataType(0))) == 1, "label sum at each batch must be 1.");
-            
         }
         
         sum_multiplier.template Reshape<DataType, DeviceContext>({prob->Dim(1)});
@@ -56,8 +53,6 @@ public:
          */
         n = x->Dim(1);
     }
-    
-    ~SoftmaxCrossEntropyWithLabel() override {}
     
     void Compute() override {
         const auto x = this->Input(InputSchema::x);
@@ -108,10 +103,56 @@ public:
         
     }
     
-    void ComputeGradients() override {
+private:
+    enum InputSchema{x, label};
+    enum OutputSchema{prob, loss};
+    TensorBlob<DeviceContext> sum_multiplier;
+    TensorBlob<DeviceContext> rows_max;
+    TensorBlob<DeviceContext> scaler;
+    int m;
+    int n;
+};
+
+template <class DataType, class DeviceContext>
+class SoftmaxCrossEntropyWithLabelGradientOp final : public Operator<DeviceContext>{
+public:
+    explicit SoftmaxCrossEntropyWithLabelGradientOp(
+                                                    std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
+                                                    std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
+                                                    ) : Operator<DeviceContext>(inputs, outputs, ParamDef("", 0)) {
+        runtime_assert(inputs.size() == 3, "Input size must be 3(label, probability, loss).");
+        runtime_assert(outputs.size() == 1, "Output size must be 1(dx).");
+        
         const auto label = this->Input(InputSchema::label);
-        const auto prob = this->Output(OutputSchema::prob);
-        const auto loss = this->Output(OutputSchema::loss);
+        auto prob = this->Input(InputSchema::prob);
+        auto loss = this->Input(InputSchema::loss);
+        auto dx = this->Output(OutputSchema::dx);
+        
+        runtime_assert(prob->Dims() == 2, "probability's dim size must be 2.");
+        runtime_assert(loss->Size() == 1, "loss's size must be 1.");
+        for(int i = 0; i < label->Dim(0); ++i){
+            std::vector<DataType> v(
+                                    label->template GetPtrMutable<DataType>() + label->Dim(1) * (i),
+                                    label->template GetPtrMutable<DataType>() + label->Dim(1) * (i + 1)
+                                    );
+            
+            runtime_assert(static_cast<int>(std::accumulate(v.begin(), v.end(), DataType(0))) == 1, "label sum at each batch must be 1.");
+        }
+        
+        /*
+         * batch size.
+         */
+        m = dx->Dim(0);
+        /*
+         * output size.
+         */
+        n = dx->Dim(1);
+    }
+    
+    void Compute() override {
+        const auto label = this->Input(InputSchema::label);
+        const auto prob = this->Input(InputSchema::prob);
+        const auto loss = this->Input(InputSchema::loss);
         auto dx = this->Output(OutputSchema::dx);
         
         math::cross_entropy_gradients<DataType, DeviceContext>(m, n,
@@ -128,11 +169,8 @@ public:
     }
     
 private:
-    enum InputSchema{ x, label };
-    enum OutputSchema{ prob, loss, dx };
-    TensorBlob<DeviceContext> sum_multiplier;
-    TensorBlob<DeviceContext> rows_max;
-    TensorBlob<DeviceContext> scaler;
+    enum InputSchema{label, prob, loss};
+    enum OutputSchema{dx};
     int m;
     int n;
 };

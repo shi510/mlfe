@@ -10,11 +10,7 @@ namespace mlfe{
 template <class DeviceContext>
 class ConvolutionBaseOp : public Operator<DeviceContext>{
 public:
-    virtual ~ConvolutionBaseOp(){}
-    
     void Compute() override = 0;
-    
-    void ComputeGradients() override = 0;
     
 protected:
     explicit ConvolutionBaseOp(
@@ -33,8 +29,6 @@ protected:
         return (width + 2 * padding - kernel_size[1]) / stride + 1;
     }
     
-    enum InputSchema{ x, w, b, dy };
-    enum OutputSchema{ y, dw, db, dx };
     std::vector<int> kernel_size;
     int filters;
     int stride;

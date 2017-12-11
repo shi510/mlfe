@@ -74,8 +74,6 @@ public:
     
     virtual void Compute() = 0;
     
-    virtual void ComputeGradients() = 0;
-    
 protected:
     Operator() : param("", 0) {}
     

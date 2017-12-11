@@ -11,39 +11,42 @@ using namespace mlfe;
 
 TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     shared_ptr<Operator<CPUContext>> fc;
-    vector<shared_ptr<TensorBlob<CPUContext>>> fc_inputs(4);
-    vector<shared_ptr<TensorBlob<CPUContext>>> fc_outputs(4);
+    shared_ptr<Operator<CPUContext>> fc_grad;
+    vector<shared_ptr<TensorBlob<CPUContext>>> fc_inputs(3), fc_grad_inputs(3);
+    vector<shared_ptr<TensorBlob<CPUContext>>> fc_outputs(1), fc_grad_outputs(3);
     const int x_size = 10;
     const int batch_size = 2;
     const int out_size = 5;
     const double bias_val = 0.75f;
     const double acceptable_gradient_check_val = 1e-7;
     
-    for(auto &in : fc_inputs){
-        in = make_shared<TensorBlob<CPUContext>>();
-    }
-    for(auto &out : fc_outputs){
-        out = make_shared<TensorBlob<CPUContext>>();
-    }
-    auto x = fc_inputs[0];
-    auto w = fc_inputs[1];
-    auto b = fc_inputs[2];
-    auto dy = fc_inputs[3];
-    auto y = fc_outputs[0];
-    auto dw = fc_outputs[1];
-    auto db = fc_outputs[2];
-    auto dx = fc_outputs[3];
+    /*
+     * fc op IO.
+     */
+    auto x = fc_inputs[0] = make_shared<TensorBlob<CPUContext>>();
+    auto w = fc_inputs[1] = make_shared<TensorBlob<CPUContext>>();
+    auto b = fc_inputs[2] = make_shared<TensorBlob<CPUContext>>();
+    auto y = fc_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     // make x
     x->Reshape<double>({batch_size, x_size});
     // make w
     w->Reshape<double>({out_size, x_size});
     // make b
     b->Reshape<double>({out_size});
-    // make dy
-    dy->Reshape<double>({batch_size, out_size});
-    
     // make y
-    y->ReshapeLike<double>(dy);
+    y->Reshape<double>({batch_size, out_size});
+    
+    /*
+     * fc gradient op IO.
+     */
+    fc_grad_inputs[0] = x;
+    fc_grad_inputs[1] = w;
+    auto dy = fc_grad_inputs[2] = make_shared<TensorBlob<CPUContext>>();
+    auto dw = fc_grad_outputs[0] = make_shared<TensorBlob<CPUContext>>();
+    auto db = fc_grad_outputs[1] = make_shared<TensorBlob<CPUContext>>();
+    auto dx = fc_grad_outputs[2] = make_shared<TensorBlob<CPUContext>>();
+    // make dy
+    dy->ReshapeLike<double>(y);
     // make dw
     dw->ReshapeLike<double>(w);
     // make db
@@ -61,6 +64,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     set(dy->GetPtrMutable<double>(), 1., dy->Size());
     
     fc = make_shared<FullyConnectedOp<Context::ComputePrecision::Double, CPUContext>>(fc_inputs, fc_outputs);
+    fc_grad = make_shared<FullyConnectedGradientOp<Context::ComputePrecision::Double, CPUContext>>(fc_grad_inputs, fc_grad_outputs);
     
     {
         cout<<"-- FC Operator Compute Check"<<endl;
@@ -86,13 +90,13 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
         cout<<"-- FC Operator Gradient Compute Check"<<endl;
         auto begin = std::chrono::high_resolution_clock::now();
         GradientChecker<double, CPUContext> gc(0.0001);
-        fc->ComputeGradients();
+        fc_grad->Compute();
         std::shared_ptr<TensorBlob<CPUContext>> gc_val;
         
         /*
          * check gradient w.r.t. weight.
          */
-        gc_val = gc.Run(fc, fc->Input(1), fc->Output(0), fc->Output(1), 1. / batch_size);
+        gc_val = gc.Run(fc, fc->Input(1), fc->Output(0), fc_grad->Output(0), 1. / batch_size);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }
@@ -100,7 +104,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
         /*
          * check gradient w.r.t. bias.
          */
-        gc_val = gc.Run(fc, fc->Input(2), fc->Output(0), fc->Output(2), 1. / batch_size);
+        gc_val = gc.Run(fc, fc->Input(2), fc->Output(0), fc_grad->Output(1), 1. / batch_size);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n],  acceptable_gradient_check_val);
         }
@@ -108,7 +112,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
         /*
          * check gradient w.r.t. input.
          */
-        gc_val = gc.Run(fc, fc->Input(0), fc->Output(0), fc->Output(3), 1.);
+        gc_val = gc.Run(fc, fc->Input(0), fc->Output(0), fc_grad->Output(2), 1.);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }

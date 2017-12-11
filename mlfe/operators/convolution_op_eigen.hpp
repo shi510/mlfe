@@ -21,11 +21,7 @@ public:
         const auto x = this->Input(InputSchema::x);
         const auto w = this->Input(InputSchema::w);
         const auto b = this->Input(InputSchema::b);
-        const auto dy = this->Input(InputSchema::dy);
         auto y = this->Output(OutputSchema::y);
-        auto dw = this->Output(OutputSchema::dw);
-        auto db = this->Output(OutputSchema::db);
-        auto dx = this->Output(OutputSchema::dx);
         int out_h, out_w;
         
         runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
@@ -53,8 +49,6 @@ public:
         
         col_buf.Reshape<DataType, CPUContext>({k, n});
     }
-    
-    ~ConvolutionWithEigenOp(){}
     
     void Compute() override{
         using namespace Eigen;
@@ -109,7 +103,53 @@ public:
                                                  ) = y_t.shuffle(Eigen::array<int, 4>{{0, 3, 1, 2}});
     }
     
-    void ComputeGradients() override{
+private:
+    enum InputSchema{x, w, b};
+    enum OutputSchema{y};
+};
+
+template <class DataType>
+class ConvolutionGradientWithEigenOp : public ConvolutionBaseOp<CPUContext>{
+public:
+    explicit ConvolutionGradientWithEigenOp(
+                                            std::vector<std::shared_ptr<TensorBlob<CPUContext>>> inputs,
+                                            std::vector<std::shared_ptr<TensorBlob<CPUContext>>> outputs,
+                                            ParamDef param
+                                            ) : ConvolutionBaseOp<CPUContext>(inputs, outputs, param){
+        const auto x = this->Input(InputSchema::x);
+        const auto w = this->Input(InputSchema::w);
+        const auto dy = this->Input(InputSchema::dy);
+        auto dw = this->Output(OutputSchema::dw);
+        auto db = this->Output(OutputSchema::db);
+        auto dx = this->Output(OutputSchema::dx);
+        int out_h, out_w;
+        
+        runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
+        runtime_assert(GetParam().template GetParamByName<int>("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
+        runtime_assert(GetParam().template GetParamByName<std::vector<int>>("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
+        runtime_assert(kernel_size.size() == 2, "ConvolutionOp::Setup() : Kernel Param Dim must be 2.");
+        
+        if(!GetParam().template GetParamByName<int>("Stride", stride)){
+            stride = 1;
+        }
+        if(!GetParam().template GetParamByName<int>("Padding", padding)){
+            padding = 0;
+        }
+        
+        out_h = OutHeightSize();
+        out_w = OutWidthSize();
+        
+        m = filters;
+        n = out_h * out_w;
+        k = kernel_size[0] * kernel_size[1] * x->Dim(1);
+        
+        bias_multiplier.Reshape<DataType, CPUContext>({n});
+        bias_multiplier.SetByConst<DataType>(DataType(1));
+        
+        col_buf.Reshape<DataType, CPUContext>({k, n});
+    }
+    
+    void Compute() override{
         const auto x = Input(InputSchema::x);
         const auto w = Input(InputSchema::w);
         const auto dy = Input(InputSchema::dy);
@@ -212,6 +252,9 @@ public:
                                          dw->template GetPtrMutable<DataType>()
                                          );
     }
+private:
+    enum InputSchema{x, w, dy};
+    enum OutputSchema{dw, db, dx};
 };
 
 } /* namespace mlfe */

@@ -11,32 +11,36 @@ using namespace mlfe;
 
 TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     shared_ptr<Operator<CPUContext>> softmax_xent;
-    vector<shared_ptr<TensorBlob<CPUContext>>> sm_inputs(2);
-    vector<shared_ptr<TensorBlob<CPUContext>>> sm_outputs(3);
+    shared_ptr<Operator<CPUContext>> softmax_xent_grad;
+    vector<shared_ptr<TensorBlob<CPUContext>>> sm_inputs(2), sm_grad_inputs(3);
+    vector<shared_ptr<TensorBlob<CPUContext>>> sm_outputs(2), sm_grad_outputs(1);
     const int batch_size = 2;
     const int x_size = 5;
     const double acceptable_gradient_check_val = 1e-7;
     
-    for(auto &in : sm_inputs){
-        in = make_shared<TensorBlob<CPUContext>>();
-    }
-    for(auto &out : sm_outputs){
-        out = make_shared<TensorBlob<CPUContext>>();
-    }
-    auto x = sm_inputs[0];
-    auto label = sm_inputs[1];
-    auto prob = sm_outputs[0];
-    auto loss = sm_outputs[1];
-    auto dx = sm_outputs[2];
+    /*
+     * softmax xent with loss op IO.
+     */
+    auto x = sm_inputs[0] = make_shared<TensorBlob<CPUContext>>();
+    auto label = sm_inputs[1] = make_shared<TensorBlob<CPUContext>>();
+    auto prob = sm_outputs[0] = make_shared<TensorBlob<CPUContext>>();
+    auto loss = sm_outputs[1] = make_shared<TensorBlob<CPUContext>>();
     // make x
     x->Reshape<double>({batch_size, x_size});
     // make label
     label->ReshapeLike<double>(x);
-    
     // make prob
     prob->ReshapeLike<double>(x);
     // make loss
     loss->Reshape<double>({1});
+    
+    /*
+     * softmax xent with loss gradient op IO.
+     */
+    sm_grad_inputs[0] = label;
+    sm_grad_inputs[1] = prob;
+    sm_grad_inputs[2] = loss;
+    auto dx = sm_grad_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     // make dx
     dx->ReshapeLike<double>(x);
     
@@ -61,7 +65,13 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
         label->GetPtrMutable<double>()[x_size * i + i % x_size] = 1.;
     }
     
-    softmax_xent = make_shared<SoftmaxCrossEntropyWithLabel<Context::ComputePrecision::Double, CPUContext>>(sm_inputs, sm_outputs);
+    softmax_xent = make_shared<
+    SoftmaxCrossEntropyWithLabelOp<Context::ComputePrecision::Double,CPUContext>
+    >(sm_inputs, sm_outputs);
+    
+    softmax_xent_grad = make_shared<
+    SoftmaxCrossEntropyWithLabelGradientOp<Context::ComputePrecision::Double, CPUContext>
+    >(sm_grad_inputs, sm_grad_outputs);
     
     {
         cout<<"-- Softmax Xent Operator Run"<<endl;
@@ -77,15 +87,16 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
         auto begin = std::chrono::high_resolution_clock::now();
         GradientChecker<double, CPUContext> gc(0.0000001);
         std::shared_ptr<TensorBlob<CPUContext>> gc_val;
-        softmax_xent->ComputeGradients();
+        softmax_xent_grad->Compute();
         
         /*
          * check gradient w.r.t. input.
          */
         gc_val = gc.Run(
-                        softmax_xent, softmax_xent->Input(0),
+                        softmax_xent,
+                        softmax_xent->Input(0),
                         softmax_xent->Output(1),
-                        softmax_xent->Output(2),
+                        softmax_xent_grad->Output(0),
                         softmax_xent->Output(1)->template GetPtrConst<double>()[0]
                         );
         for(int n = 0; n < gc_val->Size(); ++n){

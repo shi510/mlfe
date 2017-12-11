@@ -12,8 +12,9 @@ using namespace mlfe;
 
 TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     shared_ptr<Operator<CPUContext>> conv;
-    vector<shared_ptr<TensorBlob<CPUContext>>> conv_inputs(4);
-    vector<shared_ptr<TensorBlob<CPUContext>>> conv_outputs(4);
+    shared_ptr<Operator<CPUContext>> conv_grad;
+    vector<shared_ptr<TensorBlob<CPUContext>>> conv_inputs(3), conv_grad_inputs(3);
+    vector<shared_ptr<TensorBlob<CPUContext>>> conv_outputs(1), conv_grad_outputs(3);
     const std::vector<int> kernel_shape = {3, 3};
     const int batch = 2;
     const int out_filters = 2;
@@ -21,36 +22,40 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     const int padding = 0;
     const double acceptable_gradient_check_val = 1e-7;
     
-    for(auto &in : conv_inputs){
-        in = make_shared<TensorBlob<CPUContext>>();
-    }
-    for(auto &out : conv_outputs){
-        out = make_shared<TensorBlob<CPUContext>>();
-    }
-    auto x = conv_inputs[0];
-    auto w = conv_inputs[1];
-    auto b = conv_inputs[2];
-    auto dy = conv_inputs[3];
-    auto y = conv_outputs[0];
-    auto dw = conv_outputs[1];
-    auto db = conv_outputs[2];
-    auto dx = conv_outputs[3];
+    /*
+     * convolution op IO.
+     */
+    auto x = conv_inputs[0] = make_shared<TensorBlob<CPUContext>>();
+    auto w = conv_inputs[1] = make_shared<TensorBlob<CPUContext>>();
+    auto b = conv_inputs[2] = make_shared<TensorBlob<CPUContext>>();
+    auto y = conv_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     // make x
     x->Reshape<double>({batch, 2, 6, 6});
     // make w
     w->Reshape<double>({out_filters, x->Dim(1), kernel_shape[0], kernel_shape[1]});
     // make b
     b->Reshape<double>({w->Dim(0)});
-    // make dy
-    dy->Reshape<double>({
-        x->Dim(0),
-        out_filters,
-        (x->Dim(2) + 2 * padding - kernel_shape[0]) / stride + 1,
-        (x->Dim(3) + 2 * padding - kernel_shape[1]) / stride + 1
-    });
-    
     // make y
-    y->ReshapeLike<double>(dy);
+    y->Reshape<double>(
+                       {
+                           x->Dim(0),
+                           out_filters,
+                           (x->Dim(2) + 2 * padding - kernel_shape[0]) / stride + 1,
+                           (x->Dim(3) + 2 * padding - kernel_shape[1]) / stride + 1
+                       }
+                       );
+    
+    /*
+     * convolution gradient op IO.
+     */
+    conv_grad_inputs[0] = x;
+    conv_grad_inputs[1] = w;
+    auto dy = conv_grad_inputs[2] = make_shared<TensorBlob<CPUContext>>();
+    auto dw = conv_grad_outputs[0] = make_shared<TensorBlob<CPUContext>>();
+    auto db = conv_grad_outputs[1] = make_shared<TensorBlob<CPUContext>>();
+    auto dx = conv_grad_outputs[2] = make_shared<TensorBlob<CPUContext>>();
+    // make dy
+    dy->ReshapeLike<double>(y);
     // make dw
     dw->ReshapeLike<double>(w);
     // make db
@@ -79,6 +84,16 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
                                                                                    ("Stride", stride)
                                                                                    ("Padding", padding)
                                                                                    );
+    
+    conv_grad = make_shared<ConvolutionGradientWithEigenOp<Context::ComputePrecision::Double>>(
+                                                                                          conv_grad_inputs,
+                                                                                          conv_grad_outputs,
+                                                                                          ParamDef
+                                                                                          ("Filters", out_filters)
+                                                                                          ("Kernel", kernel_shape)
+                                                                                          ("Stride", stride)
+                                                                                          ("Padding", padding)
+                                                                                          );
     {
         cout<<"-- Convolution Operator Run"<<endl;
         auto begin = std::chrono::high_resolution_clock::now();
@@ -92,13 +107,13 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
         cout<<"-- Convolution Operator Gradient Check"<<endl;
         auto begin = std::chrono::high_resolution_clock::now();
         GradientChecker<double, CPUContext> gc(0.00001);
-        conv->ComputeGradients();
+        conv_grad->Compute();
         std::shared_ptr<TensorBlob<CPUContext>> gc_val;
         
         /*
          * check gradient w.r.t. kernel.
          */
-        gc_val = gc.Run(conv, conv->Input(1), conv->Output(0), conv->Output(1), 1. / batch);
+        gc_val = gc.Run(conv, conv->Input(1), conv->Output(0), conv_grad->Output(0), 1. / batch);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }
@@ -106,7 +121,7 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
         /*
          * check gradient w.r.t. bias.
          */
-        gc_val = gc.Run(conv, conv->Input(2), conv->Output(0), conv->Output(2), 1. / batch);
+        gc_val = gc.Run(conv, conv->Input(2), conv->Output(0), conv_grad->Output(1), 1. / batch);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }
@@ -114,7 +129,7 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
         /*
          * check gradient w.r.t. input.
          */
-        gc_val = gc.Run(conv, conv->Input(0), conv->Output(0), conv->Output(3), 1.);
+        gc_val = gc.Run(conv, conv->Input(0), conv->Output(0), conv_grad->Output(2), 1.);
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);
         }
