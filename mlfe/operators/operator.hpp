@@ -75,7 +75,7 @@ public:
     virtual void Compute() = 0;
     
 protected:
-    Operator() : param("", 0) {}
+    Operator() : param() {}
     
 private:
     std::string name;

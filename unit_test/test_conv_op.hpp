@@ -13,6 +13,7 @@ using namespace mlfe;
 TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     shared_ptr<Operator<CPUContext>> conv;
     shared_ptr<Operator<CPUContext>> conv_grad;
+    ParamDef param_conv;
     vector<shared_ptr<TensorBlob<CPUContext>>> conv_inputs(3), conv_grad_inputs(3);
     vector<shared_ptr<TensorBlob<CPUContext>>> conv_outputs(1), conv_grad_outputs(3);
     const std::vector<int> kernel_shape = {3, 3};
@@ -75,25 +76,21 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     set(b->GetPtrMutable<double>(), 0, b->Size(), 1., 0.);
     set(dy->GetPtrMutable<double>(), 0, dy->Size(), 1., 0.);
     
+    param_conv.Add("Filters", out_filters);
+    param_conv.Add("Kernel", kernel_shape);
+    param_conv.Add("Stride", stride);
+    param_conv.Add("Padding", padding);
     conv = make_shared<ConvolutionWithEigenOp<Context::ComputePrecision::Double>>(
-                                                                                   conv_inputs,
-                                                                                   conv_outputs,
-                                                                                   ParamDef
-                                                                                   ("Filters", out_filters)
-                                                                                   ("Kernel", kernel_shape)
-                                                                                   ("Stride", stride)
-                                                                                   ("Padding", padding)
-                                                                                   );
+                                                                                  conv_inputs,
+                                                                                  conv_outputs,
+                                                                                  param_conv
+                                                                                  );
     
     conv_grad = make_shared<ConvolutionGradientWithEigenOp<Context::ComputePrecision::Double>>(
-                                                                                          conv_grad_inputs,
-                                                                                          conv_grad_outputs,
-                                                                                          ParamDef
-                                                                                          ("Filters", out_filters)
-                                                                                          ("Kernel", kernel_shape)
-                                                                                          ("Stride", stride)
-                                                                                          ("Padding", padding)
-                                                                                          );
+                                                                                               conv_grad_inputs,
+                                                                                               conv_grad_outputs,
+                                                                                               param_conv
+                                                                                               );
     {
         cout<<"-- Convolution Operator Run"<<endl;
         auto begin = std::chrono::high_resolution_clock::now();

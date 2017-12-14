@@ -18,16 +18,7 @@ struct ParamValueContainer : public ParamContainerBase {
 
 class ParamDef {
 public:
-    template<class T>
-    explicit ParamDef(std::string key, T value) {
-        if (key != "" && !key.empty()) {
-            operator()(key, value);
-        }
-    }
-    
     ParamDef() {}
-    
-    ~ParamDef() {}
     
     /*
      * returns true when parameter's key exists.
@@ -50,7 +41,7 @@ public:
     template<class T,
     typename = typename std::enable_if<!std::is_same<T, const char *>::value>::type
     >
-    ParamDef operator()(std::string key, T value) {
+    ParamDef Add(std::string key, T value) {
         AddParam(key, value);
         return *this;
     }
@@ -58,9 +49,13 @@ public:
     /*
      * receive only the type of string.
      */
-    ParamDef operator()(std::string key, std::string value) {
+    ParamDef Add(std::string key, std::string value) {
         AddParam(key, value);
         return *this;
+    }
+    
+    void Clear(){
+        params.clear();
     }
     
 protected:

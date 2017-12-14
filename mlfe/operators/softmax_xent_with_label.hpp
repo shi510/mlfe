@@ -16,7 +16,7 @@ public:
     explicit SoftmaxCrossEntropyWithLabelOp(
                                             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
                                             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
-                                            ) : Operator<DeviceContext>(inputs, outputs, ParamDef("", 0)) {
+                                            ) : Operator<DeviceContext>(inputs, outputs, ParamDef()) {
         runtime_assert(inputs.size() == 2, "Input size must be 2(x, label).");
         runtime_assert(outputs.size() == 2, "Output size must be 2(probability, loss).");
         
@@ -119,7 +119,7 @@ public:
     explicit SoftmaxCrossEntropyWithLabelGradientOp(
                                                     std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
                                                     std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
-                                                    ) : Operator<DeviceContext>(inputs, outputs, ParamDef("", 0)) {
+                                                    ) : Operator<DeviceContext>(inputs, outputs, ParamDef()) {
         runtime_assert(inputs.size() == 3, "Input size must be 3(label, probability, loss).");
         runtime_assert(outputs.size() == 1, "Output size must be 1(dx).");
         

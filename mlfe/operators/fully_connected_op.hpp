@@ -15,7 +15,7 @@ public:
     explicit FullyConnectedOp(
                               std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
                               std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
-                              ) : Operator<DeviceContext>(inputs, outputs, ParamDef("", 0)) {
+                              ) : Operator<DeviceContext>(inputs, outputs, ParamDef()) {
         runtime_assert(inputs.size() == 3, "Input size must be 3(x, w, b).");
         runtime_assert(outputs.size() == 1, "Output size must be 1(y).");
         
@@ -93,7 +93,7 @@ public:
     explicit FullyConnectedGradientOp(
                                       std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
                                       std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
-                                      ) : Operator<DeviceContext>(inputs, outputs, ParamDef("", 0)) {
+                                      ) : Operator<DeviceContext>(inputs, outputs, ParamDef()) {
         runtime_assert(inputs.size() == 3, "Input size must be 3(x, w, dy).");
         runtime_assert(outputs.size() == 3, "Output size must be 3(dw, db, dx).");
         
