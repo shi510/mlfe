@@ -25,11 +25,18 @@ public:
         auto prob = this->Output(OutputSchema::prob);
         auto loss = this->Output(OutputSchema::loss);
         
-        runtime_assert(x->CompareSizeWith(label) , "x's size must be same with label.");
-        runtime_assert(x->CompareSizeWith(prob) , "x's size must be same with prob.");
-        runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
-        runtime_assert(prob->Dims() == 2, "probability's dim size must be 2.");
-        runtime_assert(loss->Size() == 1, "loss's size must be 1.");
+        if(prob->IsEmpty() && loss->IsEmpty()){
+            prob->template ReshapeLike<DataType>(x);
+            loss->template Reshape<DataType>({1});
+        }
+        else{
+            runtime_assert(x->CompareSizeWith(label) , "x's size must be same with label.");
+            runtime_assert(x->CompareSizeWith(prob) , "x's size must be same with prob.");
+            runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
+            runtime_assert(prob->Dims() == 2, "probability's dim size must be 2.");
+            runtime_assert(loss->Size() == 1, "loss's size must be 1.");
+        }
+        
         for(int i = 0; i < label->Dim(0); ++i){
             std::vector<DataType> v(
                                     label->template GetPtrMutable<DataType>() + label->Dim(1) * (i),

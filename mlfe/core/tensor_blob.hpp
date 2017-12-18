@@ -72,6 +72,13 @@ public:
     }
     
     /*
+     * @brief check empty.
+     */
+    bool IsEmpty(){
+        return (size == 0 ? true : false);
+    }
+    
+    /*
      * @brief clear tensor data.
      */
     void Clear() {

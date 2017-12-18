@@ -24,12 +24,6 @@ public:
         auto y = this->Output(OutputSchema::y);
         int out_h, out_w;
         
-        runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
-        runtime_assert(GetParam().template GetParamByName<int>("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
-        runtime_assert(GetParam().template GetParamByName<std::vector<int>>("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
-        runtime_assert(kernel_size.size() == 2, "ConvolutionOp::Setup() : Kernel Param Dim must be 2.");
-        runtime_assert(w->Dim(0) == b->Size(), "ConvolutionOp::Setup() : filter's 0 dim must be same bias's size.");
-        
         if(!GetParam().template GetParamByName<int>("Stride", stride)){
             stride = 1;
         }
@@ -37,8 +31,26 @@ public:
             padding = 0;
         }
         
-        out_h = OutHeightSize();
-        out_w = OutWidthSize();
+        if(GetParam().template GetParamByName<int>("Filters", filters) &&
+           GetParam().template GetParamByName<std::vector<int>>("Kernel", kernel_size) &&
+           w->IsEmpty() &&
+           b->IsEmpty() &&
+           y->IsEmpty() &&
+           !x->IsEmpty() &&
+           x->Dims() == 4){
+            out_h = OutHeightSize();
+            out_w = OutWidthSize();
+            w->template Reshape<DataType>({filters, x->Dim(1), kernel_size[0], kernel_size[1]});
+            b->template Reshape<DataType>({filters});
+            y->template Reshape<DataType>({x->Dim(0), filters, out_h, out_w});
+        }
+        else{
+            runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
+            runtime_assert(GetParam().template GetParamByName<int>("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
+            runtime_assert(GetParam().template GetParamByName<std::vector<int>>("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
+            runtime_assert(kernel_size.size() == 2, "ConvolutionOp::Setup() : Kernel Param Dim must be 2.");
+            runtime_assert(w->Dim(0) == b->Size(), "ConvolutionOp::Setup() : filter's 0 dim must be same bias's size.");
+        }
         
         m = filters;
         n = out_h * out_w;
