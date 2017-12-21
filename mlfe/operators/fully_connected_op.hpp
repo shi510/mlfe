@@ -30,7 +30,7 @@ public:
            b->IsEmpty() &&
            y->IsEmpty() &&
            !x->IsEmpty() &&
-           x->Dim(0) == 2){
+           x->Dims() == 2){
             w->template Reshape<DataType>({units, x->Dim(1)});
             b->template Reshape<DataType>({units});
             y->template Reshape<DataType>({x->Dim(0)});

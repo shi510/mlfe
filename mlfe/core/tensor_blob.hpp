@@ -133,8 +133,12 @@ public:
     template <typename T,
     typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void CopyToHost(const int size, T *host_mem) {
-        context->CopyToHost<T>(size, host_mem);
+    void CopyToHost(
+                    const unsigned int start,
+                    const unsigned int end,
+                    T *host_mem
+                    ){
+        context->CopyToHost<T>(start, end, host_mem);
     }
     
     /*
@@ -143,8 +147,12 @@ public:
     template <typename T,
     typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void CopyToDevice(const int size, const T *host_mem) {
-        context->CopyToDevice<T>(size, host_mem);
+    void CopyToDevice(
+                      const unsigned int start,
+                      const unsigned int end,
+                      const T *host_mem
+                      ){
+        context->CopyToDevice<T>(start, end, host_mem);
     }
     
     /*

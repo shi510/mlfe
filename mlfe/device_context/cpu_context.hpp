@@ -18,11 +18,24 @@ public:
     int Size() const override;
     
 protected:
-    void Allocator(const int size, const int block_size) override;
+    void Allocator(
+                   const unsigned int size,
+                   const unsigned int block_size
+                   ) override;
     
-    void CopyTo(const int size, const int block_size, void *to) override;
+    void CopyTo(
+                const unsigned int start,
+                const unsigned int end,
+                const unsigned int block_size,
+                void *to
+                ) override;
     
-    void CopyFrom(const int size, const int block_size, const void *from) override;
+    void CopyFrom(
+                  const unsigned int start,
+                  const unsigned int end,
+                  const unsigned int block_size,
+                  const void *from
+                  ) override;
     
     template <typename T>
     static void Destructor(void *_ptr) {

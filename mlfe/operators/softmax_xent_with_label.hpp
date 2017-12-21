@@ -37,15 +37,6 @@ public:
             runtime_assert(loss->Size() == 1, "loss's size must be 1.");
         }
         
-        for(int i = 0; i < label->Dim(0); ++i){
-            std::vector<DataType> v(
-                                    label->template GetPtrMutable<DataType>() + label->Dim(1) * (i),
-                                    label->template GetPtrMutable<DataType>() + label->Dim(1) * (i + 1)
-                                    );
-            
-            runtime_assert(static_cast<int>(std::accumulate(v.begin(), v.end(), DataType(0))) == 1, "label sum at each batch must be 1.");
-        }
-        
         sum_multiplier.template Reshape<DataType, DeviceContext>({prob->Dim(1)});
         sum_multiplier.template SetByConst<DataType>((DataType(1)));
         rows_max.template Reshape<DataType, DeviceContext>({x->Dim(0)});

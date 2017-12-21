@@ -30,7 +30,10 @@ int CPUContext::Size() const {
 }
 
 
-void CPUContext::Allocator(const int size, const int block_size) {
+void CPUContext::Allocator(
+                           const unsigned int size,
+                           const unsigned int block_size
+                           ){
     Clear();
     size_ = size * block_size;
     try {
@@ -41,24 +44,34 @@ void CPUContext::Allocator(const int size, const int block_size) {
     }
 }
 
-void CPUContext::CopyTo(const int size, const int block_size, void *to) {
-    if (size * block_size > size_) {
+void CPUContext::CopyTo(
+                        const unsigned int start,
+                        const unsigned int end,
+                        const unsigned int block_size,
+                        void *to
+                        ){
+    if((end - start) * block_size > size_){
         throw std::string("Copy size is bigger than allocated device memory.");
     }
     const unsigned char *from_ = static_cast<const unsigned char *>(ptr_);
     unsigned char *to_ = static_cast<unsigned char *>(to);
-    for (int i = 0; i < size_; ++i) {
+    for (int i = start; i < end; ++i) {
         to_[i] = from_[i];
     }
 }
 
-void CPUContext::CopyFrom(const int size, const int block_size, const void *from) {
-    if (size * block_size > size_) {
+void CPUContext::CopyFrom(
+                          const unsigned int start,
+                          const unsigned int end,
+                          const unsigned int block_size,
+                          const void *from
+                          ){
+    if((end - start) * block_size > size_){
         throw std::string("Copy size is bigger than allocated device memory.");
     }
     const unsigned char *from_ = static_cast<const unsigned char *>(from);
     unsigned char *to_ = static_cast<unsigned char *>(ptr_);
-    for (int i = 0; i < size_; ++i) {
+    for (int i = start; i < end; ++i) {
         to_[i] = from_[i];
     }
 }

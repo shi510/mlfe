@@ -32,8 +32,12 @@ public:
     template <typename T,
     typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void CopyToDevice(const int size, const T *host_mem) {
-        CopyFrom(size, sizeof(T), static_cast<const void *>(host_mem));
+    void CopyToDevice(
+                      const unsigned int start,
+                      const unsigned int end,
+                      const T *host_mem
+                      ){
+        CopyFrom(start, end, sizeof(T), static_cast<const void *>(host_mem));
     }
     
     /*
@@ -42,8 +46,12 @@ public:
     template <typename T,
     typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void CopyToHost(const int size, T *host_mem) {
-        CopyTo(size, sizeof(T), static_cast<void *>(host_mem));
+    void CopyToHost(
+                    const unsigned int start,
+                    const unsigned int end,
+                    T *host_mem
+                    ){
+        CopyTo(start, end, sizeof(T), static_cast<void *>(host_mem));
     }
     
     /*
@@ -72,19 +80,32 @@ protected:
      * @brief Device specific memory allocator.
      * This must be implemented in the inherit class.
      */
-    virtual void Allocator(const int size, const int block_size) = 0;
+    virtual void Allocator(
+                           const unsigned int size,
+                           const unsigned int block_size
+                           ) = 0;
     
     /*
      * @brief Copy from host memory to device memory.
      * This must be implemented in the inherit class.
      */
-    virtual void CopyFrom(const int size, const int block_size, const void *from) = 0;
+    virtual void CopyFrom(
+                          const unsigned int start,
+                          const unsigned int end,
+                          const unsigned int block_size,
+                          const void *from
+                          ) = 0;
     
     /*
      * @brief Copy from device memory to host memory.
      * This must be implemented in the inherit class.
      */
-    virtual void CopyTo(const int size, const int block_size, void *to) = 0;
+    virtual void CopyTo(
+                        const unsigned int start,
+                        const unsigned int end,
+                        const unsigned int block_size,
+                        void *to
+                        ) = 0;
     
 };/* class Context */
 
