@@ -33,7 +33,7 @@ public:
            x->Dims() == 2){
             w->template Reshape<DataType>({units, x->Dim(1)});
             b->template Reshape<DataType>({units});
-            y->template Reshape<DataType>({x->Dim(0)});
+            y->template Reshape<DataType>({x->Dim(0), x->Dim(1)});
         }
         else{
             runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
