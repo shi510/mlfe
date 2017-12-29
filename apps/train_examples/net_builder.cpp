@@ -2,7 +2,6 @@
 #include <memory>
 #include <iomanip>
 #include <random>
-#include <mlfe/core/net_sequence.hpp>
 #include <mlfe/core/tensor_blob.hpp>
 #include <mlfe/device_context/cpu_context.hpp>
 #include <mlfe/operators/fully_connected_op.hpp>

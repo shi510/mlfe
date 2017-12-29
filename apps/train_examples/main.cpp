@@ -3,7 +3,6 @@
 #include <iomanip>
 
 #include "net_builder.hpp"
-#include "simple_mnist.hpp"
 
 using namespace mlfe;
 

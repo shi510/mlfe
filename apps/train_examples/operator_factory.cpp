@@ -1,4 +1,3 @@
-#include <vector>
 #include "operator_factory.hpp"
 
 OperatorFactory::OperatorFactory(){

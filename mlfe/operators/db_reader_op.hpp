@@ -1,6 +1,5 @@
 #ifndef __DB_READER_OP_HPP__
 #define __DB_READER_OP_HPP__
-#include <iostream>
 #include <vector>
 #include <queue>
 #include <thread>
