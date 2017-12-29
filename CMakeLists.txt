@@ -8,6 +8,7 @@ include(cmake/Utils.cmake)
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 option(BUILD_TEST "Build C++ test binaries (require gtest lib)" OFF)
+option(BUILD_APPS "Build mlfe Applications (require opencv)" OFF)
 
 if(MSVC)
     msvc_multi_threaded_static_turn(ON)

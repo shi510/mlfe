@@ -1,0 +1,7 @@
+set(the_app train_exmaples)
+include_directories(${mlfe_include_dirs} ${OpenCV_INCLUDE_DIRS})
+file(GLOB train_examples_srcs "*.cpp")
+file(GLOB train_examples_hdrs "*.hpp")
+add_executable(${the_app} ${train_examples_srcs} ${train_examples_hdrs})
+target_link_libraries(${the_app} mlfe ${OpenCV_LIBS})
+set_target_properties(${the_app} PROPERTIES FOLDER "apps")
