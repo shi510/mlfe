@@ -12,7 +12,7 @@ using namespace mlfe;
 TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     shared_ptr<Operator<CPUContext>> softmax_xent;
     shared_ptr<Operator<CPUContext>> softmax_xent_grad;
-    vector<shared_ptr<TensorBlob<CPUContext>>> sm_inputs(2), sm_grad_inputs(3);
+    vector<shared_ptr<TensorBlob<CPUContext>>> sm_inputs(2), sm_grad_inputs(4);
     vector<shared_ptr<TensorBlob<CPUContext>>> sm_outputs(2), sm_grad_outputs(1);
     const int batch_size = 2;
     const int x_size = 5;
@@ -37,9 +37,10 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     /*
      * softmax xent with loss gradient op IO.
      */
-    sm_grad_inputs[0] = label;
-    sm_grad_inputs[1] = prob;
-    sm_grad_inputs[2] = loss;
+    sm_grad_inputs[0] = x;
+    sm_grad_inputs[1] = label;
+    sm_grad_inputs[2] = prob;
+    sm_grad_inputs[3] = loss;
     auto dx = sm_grad_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     // make dx
     dx->ReshapeLike<double>(x);

@@ -118,9 +118,10 @@ public:
                                                     std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
                                                     std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs
                                                     ) : Operator<DeviceContext>(inputs, outputs, ParamDef()) {
-        runtime_assert(inputs.size() == 3, "Input size must be 3(label, probability, loss).");
+        runtime_assert(inputs.size() == 4, "Input size must be 4(x, label, probability, loss).");
         runtime_assert(outputs.size() == 1, "Output size must be 1(dx).");
         
+        const auto x = this->Input(InputSchema::x);
         const auto label = this->Input(InputSchema::label);
         auto prob = this->Input(InputSchema::prob);
         auto loss = this->Input(InputSchema::loss);
@@ -128,13 +129,11 @@ public:
         
         runtime_assert(prob->Dims() == 2, "probability's dim size must be 2.");
         runtime_assert(loss->Size() == 1, "loss's size must be 1.");
-        for(int i = 0; i < label->Dim(0); ++i){
-            std::vector<DataType> v(
-                                    label->template GetPtrMutable<DataType>() + label->Dim(1) * (i),
-                                    label->template GetPtrMutable<DataType>() + label->Dim(1) * (i + 1)
-                                    );
-            
-            runtime_assert(static_cast<int>(std::accumulate(v.begin(), v.end(), DataType(0))) == 1, "label sum at each batch must be 1.");
+        if(dx->IsEmpty()){
+            dx->template ReshapeLike<DataType>(x);
+        }
+        else{
+            runtime_assert(dx->CompareSizeWith(x), "dx's size must be same with x.");
         }
         
         /*
@@ -167,7 +166,7 @@ public:
     }
     
 private:
-    enum InputSchema{label, prob, loss};
+    enum InputSchema{x, label, prob, loss};
     enum OutputSchema{dx};
     int m;
     int n;

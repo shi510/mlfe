@@ -33,11 +33,11 @@ public:
     typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
     void CopyToDevice(
-                      const unsigned int start,
-                      const unsigned int end,
+                      const unsigned int offset,
+                      const unsigned int size,
                       const T *host_mem
                       ){
-        CopyFrom(start, end, sizeof(T), static_cast<const void *>(host_mem));
+        CopyFrom(offset, size, sizeof(T), static_cast<const void *>(host_mem));
     }
     
     /*
@@ -47,11 +47,11 @@ public:
     typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
     void CopyToHost(
-                    const unsigned int start,
-                    const unsigned int end,
+                    const unsigned int offset,
+                    const unsigned int size,
                     T *host_mem
                     ){
-        CopyTo(start, end, sizeof(T), static_cast<void *>(host_mem));
+        CopyTo(offset, size, sizeof(T), static_cast<void *>(host_mem));
     }
     
     /*
@@ -90,8 +90,8 @@ protected:
      * This must be implemented in the inherit class.
      */
     virtual void CopyFrom(
-                          const unsigned int start,
-                          const unsigned int end,
+                          const unsigned int offset,
+                          const unsigned int size,
                           const unsigned int block_size,
                           const void *from
                           ) = 0;
@@ -101,8 +101,8 @@ protected:
      * This must be implemented in the inherit class.
      */
     virtual void CopyTo(
-                        const unsigned int start,
-                        const unsigned int end,
+                        const unsigned int offset,
+                        const unsigned int size,
                         const unsigned int block_size,
                         void *to
                         ) = 0;

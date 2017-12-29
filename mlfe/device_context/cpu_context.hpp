@@ -24,15 +24,15 @@ protected:
                    ) override;
     
     void CopyTo(
-                const unsigned int start,
-                const unsigned int end,
+                const unsigned int offset,
+                const unsigned int size,
                 const unsigned int block_size,
                 void *to
                 ) override;
     
     void CopyFrom(
-                  const unsigned int start,
-                  const unsigned int end,
+                  const unsigned int offset,
+                  const unsigned int size,
                   const unsigned int block_size,
                   const void *from
                   ) override;

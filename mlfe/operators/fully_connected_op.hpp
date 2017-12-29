@@ -33,7 +33,7 @@ public:
            x->Dims() == 2){
             w->template Reshape<DataType>({units, x->Dim(1)});
             b->template Reshape<DataType>({units});
-            y->template Reshape<DataType>({x->Dim(0), x->Dim(1)});
+            y->template Reshape<DataType>({x->Dim(0), units});
         }
         else{
             runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
@@ -123,7 +123,7 @@ public:
            db->IsEmpty() &&
            dx->IsEmpty() &&
            !x->IsEmpty() &&
-           x->Dim(0) == 2
+           x->Dims() == 2
            ){
             dw->template ReshapeLike<DataType>(w);
             db->template Reshape<DataType>({units});
