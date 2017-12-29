@@ -114,6 +114,7 @@ protected:
         else{
             throw std::string("Database type dose not match. (current version of db reader operator supports only simpledb.)");
         }
+		db->option.binary = true;
         db->Open(path);
         db->MoveToFirst();
     }
