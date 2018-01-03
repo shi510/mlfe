@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include "../device_context/context.hpp"
+#include "../utils/type_holder.hpp"
 
 namespace mlfe{
 
@@ -41,6 +42,7 @@ public:
         else{
             size = new_size;
         }
+        type.Set<T>();
     }
     
     template <typename T,
@@ -155,6 +157,11 @@ public:
         context->CopyToDevice<T>(start, end, host_mem);
     }
     
+    template <class T>
+    bool MatchType(){
+        return type.Id() == TypeHolder::Id<T>();
+    }
+    
     /*
      * @brief set all tensor's elements by const value.
      */
@@ -173,6 +180,7 @@ private:
     std::vector<int> dims;
     int size;
     std::unique_ptr<Context> context;
+    TypeHolder type;
 };
 
 } /* namespace mlfe */
