@@ -26,19 +26,21 @@ public:
            y->IsEmpty() &&
            !x->IsEmpty()
            ){
-            if(cast.compare("char")){
+            if(!cast.compare("char")){
                 y->template ReshapeLike<char>(x);
             }
-            else if(cast.compare("int")){
+            else if(!cast.compare("int")){
                 y->template ReshapeLike<int>(x);
             }
-            else if(cast.compare("float")){
+            else if(!cast.compare("float")){
                 y->template ReshapeLike<float>(x);
             }
-            else if(cast.compare("double")){
+            else if(!cast.compare("double")){
                 y->template ReshapeLike<double>(x);
             }
-            
+            else{
+                throw std::string("Wrong Type.");
+            }
         }
         else{
             runtime_assert(x->Dims() == y->Dims(), "x's dim size must be same with y's dim.");
@@ -49,16 +51,19 @@ public:
         const auto x = this->Input(InputSchema::x);
         auto y = this->Output(OutputSchema::y);
         if(!cast.compare("char")){
-            TypeCaster<TypeLists<char, int, float, double>, char>::Run(x, y);
+            TypeCaster<TypeLists<char, unsigned char, int, float, double>, char>::Run(x, y);
         }
         else if(!cast.compare("int")){
-            TypeCaster<TypeLists<char, int, float, double>, int>::Run(x, y);
+            TypeCaster<TypeLists<char, unsigned char, int, float, double>, int>::Run(x, y);
         }
         else if(!cast.compare("float")){
-            TypeCaster<TypeLists<char, int, float, double>, float>::Run(x, y);
+            TypeCaster<TypeLists<char, unsigned char, int, float, double>, float>::Run(x, y);
         }
         else if(!cast.compare("double")){
-            TypeCaster<TypeLists<char, int, float, double>, double>::Run(x, y);
+            TypeCaster<TypeLists<char, unsigned char, int, float, double>, double>::Run(x, y);
+        }
+        else{
+            throw std::string("Wrong Type.");
         }
     }
     

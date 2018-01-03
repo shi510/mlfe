@@ -30,7 +30,6 @@ public:
         onehot = false;
         classes = 0;
         has_label = false;
-        scale = 1.f;
         this->GetParam().GetParamByName("DataBasePath", db_path);
         this->GetParam().GetParamByName("DataBaseType", db_type);
         this->GetParam().GetParamByName("BatchSize", batch_size);
@@ -38,7 +37,6 @@ public:
         this->GetParam().GetParamByName("HasLabel", has_label);
         this->GetParam().GetParamByName("OneHotLabel", onehot);
         this->GetParam().GetParamByName("Classes", classes);
-        this->GetParam().GetParamByName("Scale", scale);
         this->GetParam().GetParamByName("DataShape", data_dim);
         this->GetParam().GetParamByName("LabelShape", label_dim);
         if(db_path.empty() && db_type.empty()){
@@ -95,13 +93,6 @@ public:
                                           );
         }
         
-        math::scal<DataType, DeviceContext>(
-                                            this->Output(0)->Size(),
-                                            scale,
-                                            this->Output(0)->template GetPtrConst<DataType>(),
-                                            this->Output(0)->template GetPtrMutable<DataType>()
-                                            );
-        
         wanna_fill.push(vec_of_tb);
         background_worker.AddTask(std::bind(&DBReaderOp::FillBuffer, this), 0);
     }
@@ -121,11 +112,9 @@ protected:
     
     void FillBuffer(){
         if(!wanna_fill.empty()){
-            TensorBlob<CPUContext> temp;
             flatbuffers::FlatBufferBuilder builder;
             auto tbs = wanna_fill.front();
             wanna_fill.pop();
-            temp.template Reshape<DataType>({tbs[0]->Size() / tbs[0]->Dim(0)});
             for(int b = 0; b < batch_size; ++b){
                 const serializable::TensorBlobs * serialized_tb;
                 std::string serialized_data;
@@ -133,26 +122,23 @@ protected:
                 db->Get(serialized_data);
                 builder.PushFlatBuffer(reinterpret_cast<const unsigned char *>(serialized_data.data()), serialized_data.size());
                 serialized_tb = serializable::GetTensorBlobs(builder.GetBufferPointer());
-                for(int n = 0; n < temp.Size(); ++n){
-                    temp.template GetPtrMutable<DataType>()[n] = static_cast<DataType>(serialized_tb->tensors()->Get(0)->data()->data()[n]);
-                }
                 
                 tbs[0]->CopyToDevice(
                                      b * data_size,
                                      data_size,
-                                     temp.template GetPtrConst<DataType>()
+                                     static_cast<const DataType *>(serialized_tb->tensors()->Get(0)->data()->data())
                                      );
                 
                 if(has_label){
                     if(onehot){
                         data_size = classes;
-                        std::vector<float> onehot_vec(classes);
+                        std::vector<DataType> onehot_vec(classes);
                         int label = serialized_tb->tensors()->Get(1)->data()->data()[0];
-                        onehot_vec[label] = 1.f;
+                        onehot_vec[label] = 1;
                         tbs[1]->CopyToDevice(
                                              b * data_size,
                                              data_size,
-                                             onehot_vec.data()
+                                             static_cast<DataType *>(onehot_vec.data())
                                              );
                     }
                     else{
@@ -161,7 +147,7 @@ protected:
                         tbs[1]->CopyToDevice(
                                              b * data_size,
                                              data_size,
-                                             reinterpret_cast<const float *>(serialized_tb->tensors()->Get(1)->data()->data())
+                                             serialized_tb->tensors()->Get(1)->data()->data()
                                              );
                     }
                 }
@@ -181,7 +167,6 @@ private:
     bool onehot;
     bool has_label;
     int classes;
-    DataType scale;
     ThreadPool background_worker;
     std::queue<std::vector<std::shared_ptr<TensorBlob<DeviceContext>>>> wanna_consume;
     std::queue<std::vector<std::shared_ptr<TensorBlob<DeviceContext>>>> wanna_fill;
