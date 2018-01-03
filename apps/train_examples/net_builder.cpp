@@ -20,12 +20,9 @@ OperatorInfo NetBuilder::AddDBReader(
                                      std::string db_path,
                                      std::string db_type,
                                      std::vector<int> input_dim,
-                                     int classes,
                                      int batch_size,
-                                     float scale,
                                      bool flatten,
-                                     bool has_label,
-                                     bool one_hot
+                                     bool has_label
                                      ){
     std::string data = name + "_data";
     std::string label = name + "_label";
@@ -38,11 +35,8 @@ OperatorInfo NetBuilder::AddDBReader(
     param.Add("BatchSize", batch_size);
     param.Add("Flatten", flatten);
     param.Add("HasLabel", has_label);
-    param.Add("OneHotLabel", one_hot);
-    param.Add("Classes", classes);
-    param.Add("Scale", scale);
     param.Add("DataShape", input_dim);
-    param.Add("LabelShape", std::vector<int>{batch_size, one_hot ? classes : 1});
+    param.Add("LabelShape", std::vector<int>{batch_size, 1});
     
     op_info = op_fact.MakeOpInfo(
                                  "db_reader", {},
@@ -58,6 +52,78 @@ OperatorInfo NetBuilder::AddDBReader(
     std::cout<<"- Add DBReader Operator"<<std::endl;
     std::cout<<"    "<<"Output : "<<data<<", "<<label<<std::endl;
     
+    return op_info;
+}
+
+OperatorInfo NetBuilder::AddScale(std::string name, std::string x, float scaler){
+    std::string y = name + "_y";
+    ParamDef param;
+    OperatorInfo op_info;
+    OperatorCPU_Ptr op;
+    
+    param.Add("Scale", scaler);
+    
+    op_info = op_fact.MakeOpInfo(
+                                 "scale", {x}, {y},
+                                 param
+                                 );
+    op = op_fact.GetOperator(op_info, item_holder);
+    
+    auto scale = std::make_pair(name, op);
+    layers.push_back(scale);
+    op_infos.push_back(op_info);
+    
+    std::cout<<"- Add Scale Operator"<<std::endl;
+    std::cout<<"    "<<"Input : "<<x<<std::endl;
+    std::cout<<"    "<<"Output : "<<y<<std::endl;
+    return op_info;
+}
+
+OperatorInfo NetBuilder::AddCast(std::string name, std::string x, std::string cast_type){
+    std::string y = name + "_y";
+    ParamDef param;
+    OperatorInfo op_info;
+    OperatorCPU_Ptr op;
+    
+    param.Add("Cast", cast_type);
+    
+    op_info = op_fact.MakeOpInfo(
+                                 "cast", {x}, {y},
+                                 param
+                                 );
+    op = op_fact.GetOperator(op_info, item_holder);
+    
+    auto cast = std::make_pair(name, op);
+    layers.push_back(cast);
+    op_infos.push_back(op_info);
+    
+    std::cout<<"- Add Cast Operator"<<std::endl;
+    std::cout<<"    "<<"Input : "<<x<<std::endl;
+    std::cout<<"    "<<"Output : "<<y<<std::endl;
+    return op_info;
+}
+
+OperatorInfo NetBuilder::AddOneHot(std::string name, std::string x, int dim){
+    std::string y = name + "_y";
+    ParamDef param;
+    OperatorInfo op_info;
+    OperatorCPU_Ptr op;
+    
+    param.Add("Dim", dim);
+    
+    op_info = op_fact.MakeOpInfo(
+                                 "onehot", {x}, {y},
+                                 param
+                                 );
+    op = op_fact.GetOperator(op_info, item_holder);
+    
+    auto onehot = std::make_pair(name, op);
+    layers.push_back(onehot);
+    op_infos.push_back(op_info);
+    
+    std::cout<<"- Add One Hot Operator"<<std::endl;
+    std::cout<<"    "<<"Input : "<<x<<std::endl;
+    std::cout<<"    "<<"Output : "<<y<<std::endl;
     return op_info;
 }
 

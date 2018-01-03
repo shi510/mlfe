@@ -9,6 +9,9 @@
 #include <mlfe/operators/softmax_xent_with_label.hpp>
 #include <mlfe/flatbuffers/tensor_blob_fb_generated.h>
 #include <mlfe/operators/db_reader_op.hpp>
+#include <mlfe/operators/cast_op.hpp>
+#include <mlfe/operators/scale_op.hpp>
+#include <mlfe/operators/one_hot.hpp>
 #include "item_holder.hpp"
 #include "common.hpp"
 
@@ -31,6 +34,12 @@ public:
     OperatorInfo GetGradientInfo(OperatorInfo op_info);
     
     OperatorInfo GetGradientDBReader(OperatorInfo op_info);
+    
+    OperatorInfo GetGradientCast(OperatorInfo op_info);
+    
+    OperatorInfo GetGradientScale(OperatorInfo op_info);
+    
+    OperatorInfo GetGradientOneHot(OperatorInfo op_info);
     
     OperatorInfo GetGradientFC(OperatorInfo op_info);
     

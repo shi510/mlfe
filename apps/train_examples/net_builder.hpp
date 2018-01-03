@@ -18,13 +18,16 @@ public:
                              std::string db_path,
                              std::string db_type,
                              std::vector<int> input_dim,
-                             int classes,
                              int batch_size,
-                             float scale,
                              bool flatten,
-                             bool has_label,
-                             bool one_hot
+                             bool has_label
                              );
+    
+    OperatorInfo AddScale(std::string name, std::string input, float scaler);
+    
+    OperatorInfo AddCast(std::string name, std::string input, std::string cast_type);
+    
+    OperatorInfo AddOneHot(std::string name, std::string input, int dim);
     
     OperatorInfo AddFC(std::string name, std::string input, int units);
     

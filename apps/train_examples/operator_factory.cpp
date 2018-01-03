@@ -1,12 +1,51 @@
 #include "operator_factory.hpp"
 
 OperatorFactory::OperatorFactory(){
+    ops["cast"] = [](
+                      std::vector<TensorCPU_Ptr> &inputs,
+                      std::vector<TensorCPU_Ptr> &outputs,
+                      mlfe::ParamDef &param
+                      ) -> OperatorCPU_Ptr{
+        using Op = mlfe::CastOp<mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    gradient_info["cast"] = [this](OperatorInfo &info) -> OperatorInfo{
+        return this->GetGradientCast(info);
+    };
+    
+    ops["scale"] = [](
+                          std::vector<TensorCPU_Ptr> &inputs,
+                          std::vector<TensorCPU_Ptr> &outputs,
+                          mlfe::ParamDef &param
+                          ) -> OperatorCPU_Ptr{
+        using Op = mlfe::ScaleOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    gradient_info["scale"] = [this](OperatorInfo &info) -> OperatorInfo{
+        return this->GetGradientScale(info);
+    };
+    
+    ops["onehot"] = [](
+                     std::vector<TensorCPU_Ptr> &inputs,
+                     std::vector<TensorCPU_Ptr> &outputs,
+                     mlfe::ParamDef &param
+                     ) -> OperatorCPU_Ptr{
+        using Op = mlfe::OneHotOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    gradient_info["onehot"] = [this](OperatorInfo &info) -> OperatorInfo{
+        return this->GetGradientOneHot(info);
+    };
+    
     ops["db_reader"] = [](
                           std::vector<TensorCPU_Ptr> &inputs,
                           std::vector<TensorCPU_Ptr> &outputs,
                           mlfe::ParamDef &param
                           ) -> OperatorCPU_Ptr{
-        using Op = mlfe::DBReaderOp<float, mlfe::CPUContext>;
+        using Op = mlfe::DBReaderOp<unsigned char, mlfe::CPUContext>;
         return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(outputs, param));
     };
     
@@ -90,6 +129,18 @@ OperatorInfo OperatorFactory::GetGradientInfo(OperatorInfo op_info){
 }
 
 OperatorInfo OperatorFactory::GetGradientDBReader(OperatorInfo op_info){
+    return MakeOpInfo("no_gradient", {}, {}, mlfe::ParamDef());
+}
+
+OperatorInfo OperatorFactory::GetGradientScale(OperatorInfo op_info){
+    return MakeOpInfo("no_gradient", {}, {}, mlfe::ParamDef());
+}
+
+OperatorInfo OperatorFactory::GetGradientCast(OperatorInfo op_info){
+    return MakeOpInfo("no_gradient", {}, {}, mlfe::ParamDef());
+}
+
+OperatorInfo OperatorFactory::GetGradientOneHot(OperatorInfo op_info){
     return MakeOpInfo("no_gradient", {}, {}, mlfe::ParamDef());
 }
 
