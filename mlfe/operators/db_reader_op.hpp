@@ -27,16 +27,12 @@ public:
         std::shared_ptr<TensorBlob<DeviceContext>> buffer_data, buffer_label;
         batch_size = 0;
         flatten = false;
-        onehot = false;
-        classes = 0;
         has_label = false;
         this->GetParam().GetParamByName("DataBasePath", db_path);
         this->GetParam().GetParamByName("DataBaseType", db_type);
         this->GetParam().GetParamByName("BatchSize", batch_size);
         this->GetParam().GetParamByName("Flatten", flatten);
         this->GetParam().GetParamByName("HasLabel", has_label);
-        this->GetParam().GetParamByName("OneHotLabel", onehot);
-        this->GetParam().GetParamByName("Classes", classes);
         this->GetParam().GetParamByName("DataShape", data_dim);
         this->GetParam().GetParamByName("LabelShape", label_dim);
         if(db_path.empty() && db_type.empty()){
@@ -130,26 +126,13 @@ protected:
                                      );
                 
                 if(has_label){
-                    if(onehot){
-                        data_size = classes;
-                        std::vector<DataType> onehot_vec(classes);
-                        int label = serialized_tb->tensors()->Get(1)->data()->data()[0];
-                        onehot_vec[label] = 1;
-                        tbs[1]->CopyToDevice(
-                                             b * data_size,
-                                             data_size,
-                                             static_cast<DataType *>(onehot_vec.data())
-                                             );
-                    }
-                    else{
-                        data_size = 1;
-                        
-                        tbs[1]->CopyToDevice(
-                                             b * data_size,
-                                             data_size,
-                                             serialized_tb->tensors()->Get(1)->data()->data()
-                                             );
-                    }
+                    data_size = 1;
+                    
+                    tbs[1]->CopyToDevice(
+                                         b * data_size,
+                                         data_size,
+                                         static_cast<const DataType *>(serialized_tb->tensors()->Get(1)->data()->data())
+                                         );
                 }
                 builder.Clear();
                 if(!db->MoveToNext()){
@@ -164,9 +147,7 @@ private:
     enum OutputSchema{y, label};
     int batch_size;
     bool flatten;
-    bool onehot;
     bool has_label;
-    int classes;
     ThreadPool background_worker;
     std::queue<std::vector<std::shared_ptr<TensorBlob<DeviceContext>>>> wanna_consume;
     std::queue<std::vector<std::shared_ptr<TensorBlob<DeviceContext>>>> wanna_fill;
