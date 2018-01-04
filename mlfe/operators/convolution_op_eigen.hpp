@@ -22,7 +22,6 @@ public:
         const auto w = this->Input(InputSchema::w);
         const auto b = this->Input(InputSchema::b);
         auto y = this->Output(OutputSchema::y);
-        int out_h, out_w;
         
         if(!GetParam().template GetParamByName<int>("Stride", stride)){
             stride = 1;
@@ -118,6 +117,8 @@ public:
 private:
     enum InputSchema{x, w, b};
     enum OutputSchema{y};
+    int out_h;
+    int out_w;
 };
 
 template <class DataType>
