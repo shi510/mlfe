@@ -26,8 +26,8 @@ public:
         auto loss = this->Output(OutputSchema::loss);
         
         if(prob->IsEmpty() && loss->IsEmpty()){
-            prob->template ReshapeLike<DataType>(x);
-            loss->template Reshape<DataType>({1});
+            prob->template Resize<DataType>(x);
+            loss->template Resize<DataType>({1});
         }
         else{
             runtime_assert(x->CompareSizeWith(label) , "x's size must be same with label.");
@@ -37,10 +37,10 @@ public:
             runtime_assert(loss->Size() == 1, "loss's size must be 1.");
         }
         
-        sum_multiplier.template Reshape<DataType, DeviceContext>({prob->Dim(1)});
+        sum_multiplier.template Resize<DataType, DeviceContext>({prob->Dim(1)});
         sum_multiplier.template SetByConst<DataType>((DataType(1)));
-        rows_max.template Reshape<DataType, DeviceContext>({x->Dim(0)});
-        scaler.template Reshape<DataType, DeviceContext>({x->Dim(0)});
+        rows_max.template Resize<DataType, DeviceContext>({x->Dim(0)});
+        scaler.template Resize<DataType, DeviceContext>({x->Dim(0)});
         
         /*
          * batch size.
@@ -130,7 +130,7 @@ public:
         runtime_assert(prob->Dims() == 2, "probability's dim size must be 2.");
         runtime_assert(loss->Size() == 1, "loss's size must be 1.");
         if(dx->IsEmpty()){
-            dx->template ReshapeLike<DataType>(x);
+            dx->template Resize<DataType>(x);
         }
         else{
             runtime_assert(dx->CompareSizeWith(x), "dx's size must be same with x.");

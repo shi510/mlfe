@@ -49,10 +49,10 @@ public:
         OpenDB(db_path, db_type);
         buffer_data = std::make_shared<TensorBlob<DeviceContext>>();
         buffer_label = std::make_shared<TensorBlob<DeviceContext>>();
-        this->Output(0)->template Reshape<DataType>(data_dim);
-        this->Output(1)->template Reshape<DataType>(label_dim);
-        buffer_data->template ReshapeLike<DataType>(this->Output(0));
-        buffer_label->template ReshapeLike<DataType>(this->Output(1));
+        this->Output(0)->template Resize<DataType>(data_dim);
+        this->Output(1)->template Resize<DataType>(label_dim);
+        buffer_data->template Resize<DataType>(this->Output(0));
+        buffer_label->template Resize<DataType>(this->Output(1));
         tbs.push_back(buffer_data);
         tbs.push_back(buffer_label);
         wanna_fill.push(tbs);

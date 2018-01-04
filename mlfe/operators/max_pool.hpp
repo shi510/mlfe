@@ -30,8 +30,8 @@ public:
            x->Dims() == 4){
             out_h = (x->Dim(2) - kernel[0]) / stride[0] + 1;
             out_w = (x->Dim(3) - kernel[1]) / stride[1] + 1;
-            y->template Reshape<DataType>({x->Dim(0), x->Dim(1), out_h, out_w});
-            idx->template ReshapeLike<int>(y);
+            y->template Resize<DataType>({x->Dim(0), x->Dim(1), out_h, out_w});
+            idx->template Resize<int>(y);
         }
         else{
             runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
@@ -110,7 +110,7 @@ public:
            ){
             out_h = dy->Dim(2);
             out_w = dy->Dim(3);
-            dx->template ReshapeLike<DataType>(x);
+            dx->template Resize<DataType>(x);
         }
         else{
             runtime_assert(idx->CompareSizeWith(dy), "[MaxPoolGradient : idx's size must be same with dy.");

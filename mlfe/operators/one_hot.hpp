@@ -24,7 +24,7 @@ public:
            y->IsEmpty() &&
            !x->IsEmpty()
            ){
-            y->template Reshape<DataType>({x->Dim(0), dim});
+            y->template Resize<DataType>({x->Dim(0), dim});
         }
         else{
             runtime_assert(x->Dims() == y->Dims(), "x's dim size must be same with y's dim.");

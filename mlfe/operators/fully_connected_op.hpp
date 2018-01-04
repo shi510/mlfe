@@ -31,9 +31,9 @@ public:
            y->IsEmpty() &&
            !x->IsEmpty() &&
            x->Dims() == 2){
-            w->template Reshape<DataType>({units, x->Dim(1)});
-            b->template Reshape<DataType>({units});
-            y->template Reshape<DataType>({x->Dim(0), units});
+            w->template Resize<DataType>({units, x->Dim(1)});
+            b->template Resize<DataType>({units});
+            y->template Resize<DataType>({x->Dim(0), units});
         }
         else{
             runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
@@ -42,7 +42,7 @@ public:
             runtime_assert(y->Dim(1) == w->Dim(0), "y's dim(1) must be same with w's dim(0).");
         }
         
-        bias_multiplier.template Reshape<DataType, DeviceContext>({x->Dim(0)});
+        bias_multiplier.template Resize<DataType, DeviceContext>({x->Dim(0)});
         bias_multiplier.template SetByConst<DataType>(DataType(1));
         
         /*
@@ -125,9 +125,9 @@ public:
            !x->IsEmpty() &&
            x->Dims() == 2
            ){
-            dw->template ReshapeLike<DataType>(w);
-            db->template Reshape<DataType>({units});
-            dx->template ReshapeLike<DataType>(x);
+            dw->template Resize<DataType>(w);
+            db->template Resize<DataType>({units});
+            dx->template Resize<DataType>(x);
         }
         else{
             runtime_assert(x->Dims() == 2, "x's dim size must be 2.");
@@ -136,7 +136,7 @@ public:
             runtime_assert(dx->CompareSizeWith(x) , "dx's size must be same with x.");
         }
         
-        bias_multiplier.template Reshape<DataType, DeviceContext>({x->Dim(0)});
+        bias_multiplier.template Resize<DataType, DeviceContext>({x->Dim(0)});
         bias_multiplier.template SetByConst<DataType>(DataType(1));
         
         /*

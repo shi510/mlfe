@@ -39,9 +39,9 @@ public:
            x->Dims() == 4){
             out_h = OutHeightSize();
             out_w = OutWidthSize();
-            w->template Reshape<DataType>({filters, x->Dim(1), kernel_size[0], kernel_size[1]});
-            b->template Reshape<DataType>({filters});
-            y->template Reshape<DataType>({x->Dim(0), filters, out_h, out_w});
+            w->template Resize<DataType>({filters, x->Dim(1), kernel_size[0], kernel_size[1]});
+            b->template Resize<DataType>({filters});
+            y->template Resize<DataType>({x->Dim(0), filters, out_h, out_w});
         }
         else{
             runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
@@ -55,10 +55,10 @@ public:
         n = out_h * out_w;
         k = kernel_size[0] * kernel_size[1] * x->Dim(1);
         
-        bias_multiplier.Reshape<DataType, CPUContext>({n});
+        bias_multiplier.Resize<DataType, CPUContext>({n});
         bias_multiplier.SetByConst<DataType>(DataType(1));
         
-        col_buf.Reshape<DataType, CPUContext>({k, n});
+        col_buf.Resize<DataType, CPUContext>({k, n});
     }
     
     void Compute() override{
@@ -156,10 +156,10 @@ public:
         n = out_h * out_w;
         k = kernel_size[0] * kernel_size[1] * x->Dim(1);
         
-        bias_multiplier.Reshape<DataType, CPUContext>({n});
+        bias_multiplier.Resize<DataType, CPUContext>({n});
         bias_multiplier.SetByConst<DataType>(DataType(1));
         
-        col_buf.Reshape<DataType, CPUContext>({k, n});
+        col_buf.Resize<DataType, CPUContext>({k, n});
     }
     
     void Compute() override{

@@ -13,13 +13,33 @@ class = typename std::enable_if<std::is_base_of<Context, DeviceContext>::value, 
 >
 class TensorBlob{
 public:
-    TensorBlob() : size(0), context(new DeviceContext){}
+    TensorBlob() : size(0), context(std::make_shared<DeviceContext>()){}
     
     ~TensorBlob() { Clear(); }
     
     TensorBlob(const TensorBlob &) = delete;
     
-    TensorBlob& operator=(const TensorBlob &) = delete;
+    TensorBlob& operator=(const std::shared_ptr<TensorBlob> &tb){
+        dims = tb->dims;
+        size = tb->size;
+        context = tb->context;
+        type = tb->type;
+        return *this;
+    }
+    
+    void Reshape(const std::vector<int> new_dims){
+        int new_size = 1;
+        
+        dims.clear();
+        for(int n = 0; n < new_dims.size(); ++n){
+            new_size *= new_dims[n];
+            dims.push_back(new_dims[n]);
+        }
+        if(new_size != size){
+            throw std::string("reshape size does not match.");
+        }
+        size = new_size;
+    }
     
     /*
      * @brief reshape tensor's shape.
@@ -27,7 +47,7 @@ public:
     template <typename T,
     class = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void Reshape(const std::vector<int> new_dims){
+    void Resize(const std::vector<int> new_dims){
         int new_size = 1;
         
         dims.clear();
@@ -48,13 +68,13 @@ public:
     template <typename T,
     class = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void ReshapeLike(const std::shared_ptr<TensorBlob> tb) {
+    void Resize(const std::shared_ptr<TensorBlob> tb) {
         std::vector<int> new_size;
         
         for (int i = 0; i < tb->dims.size(); ++i) {
             new_size.push_back(tb->dims[i]);
         }
-        Reshape<T>(new_size);
+        Resize<T>(new_size);
     }
     
     /*
@@ -179,7 +199,7 @@ public:
 private:
     std::vector<int> dims;
     int size;
-    std::unique_ptr<Context> context;
+    std::shared_ptr<Context> context;
     TypeHolder type;
 };
 

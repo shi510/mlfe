@@ -27,16 +27,16 @@ public:
            !x->IsEmpty()
            ){
             if(!cast.compare("char")){
-                y->template ReshapeLike<char>(x);
+                y->template Resize<char>(x);
             }
             else if(!cast.compare("int")){
-                y->template ReshapeLike<int>(x);
+                y->template Resize<int>(x);
             }
             else if(!cast.compare("float")){
-                y->template ReshapeLike<float>(x);
+                y->template Resize<float>(x);
             }
             else if(!cast.compare("double")){
-                y->template ReshapeLike<double>(x);
+                y->template Resize<double>(x);
             }
             else{
                 throw std::string("Wrong Type.");
