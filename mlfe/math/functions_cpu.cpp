@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <chrono>
+#include <random>
 #include "functions.hpp"
 #include "../device_context/cpu_context.hpp"
 
@@ -25,6 +27,16 @@ void ReluGradientFunction<float, CPUContext>(
     for (int i = 0; i < size; ++i) {
         dx[i] = y[i] > 0 ? dy[i] : 0;
     }
+}
+
+unsigned int GetRandomSeed(){
+    int out;
+    uint64_t seed = std::chrono::high_resolution_clock::
+    now().time_since_epoch().count();
+    std::seed_seq seeder{uint32_t(seed),uint32_t(seed >> 32)};
+    ++seed;
+    seeder.generate(&out, &out + 1);
+    return out;
 }
 
 } /* namespace math */
