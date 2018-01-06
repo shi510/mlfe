@@ -41,6 +41,10 @@ public:
         size = new_size;
     }
     
+    void Reshape(const std::shared_ptr<TensorBlob<DeviceContext>> tb){
+        Reshape(tb->dims);
+    }
+    
     /*
      * @brief reshape tensor's shape.
      */

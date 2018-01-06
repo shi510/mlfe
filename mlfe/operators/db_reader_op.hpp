@@ -26,12 +26,10 @@ public:
         std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> tbs;
         std::shared_ptr<TensorBlob<DeviceContext>> buffer_data, buffer_label;
         batch_size = 0;
-        flatten = false;
         has_label = false;
         this->GetParam().GetParamByName("DataBasePath", db_path);
         this->GetParam().GetParamByName("DataBaseType", db_type);
         this->GetParam().GetParamByName("BatchSize", batch_size);
-        this->GetParam().GetParamByName("Flatten", flatten);
         this->GetParam().GetParamByName("HasLabel", has_label);
         this->GetParam().GetParamByName("DataShape", data_dim);
         this->GetParam().GetParamByName("LabelShape", label_dim);
@@ -146,7 +144,6 @@ protected:
 private:
     enum OutputSchema{y, label};
     int batch_size;
-    bool flatten;
     bool has_label;
     ThreadPool background_worker;
     std::queue<std::vector<std::shared_ptr<TensorBlob<DeviceContext>>>> wanna_consume;
