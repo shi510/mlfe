@@ -21,26 +21,18 @@ protected:
     
     int OutHeightSize(){
         int height = this->Input(0)->Dim(2);
-        return (height + 2 * padding - kernel_size[0]) / stride + 1;
+        return (height + 2 * padding - kernel_size[0]) / stride[0] + 1;
     }
     
     int OutWidthSize(){
         int width = this->Input(0)->Dim(3);
-        return (width + 2 * padding - kernel_size[1]) / stride + 1;
+        return (width + 2 * padding - kernel_size[1]) / stride[1] + 1;
     }
     
     std::vector<int> kernel_size;
+    std::vector<int> stride;
     int filters;
-    int stride;
     int padding;
-    TensorBlob<DeviceContext> col_buf;
-    TensorBlob<DeviceContext> bias_multiplier;
-    /*
-     * Variables for GEMM.
-     */
-    int m;
-    int n;
-    int k;
 };
 
 } /* namespace mlfe */

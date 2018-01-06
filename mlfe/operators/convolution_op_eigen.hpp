@@ -23,15 +23,15 @@ public:
         const auto b = this->Input(InputSchema::b);
         auto y = this->Output(OutputSchema::y);
         
-        if(!GetParam().template GetParamByName<int>("Stride", stride)){
-            stride = 1;
+        if(!GetParam().GetParamByName("Stride", stride)){
+            stride = {1, 1};
         }
-        if(!GetParam().template GetParamByName<int>("Padding", padding)){
+        if(!GetParam().GetParamByName("Padding", padding)){
             padding = 0;
         }
         
-        if(GetParam().template GetParamByName<int>("Filters", filters) &&
-           GetParam().template GetParamByName<std::vector<int>>("Kernel", kernel_size) &&
+        if(GetParam().GetParamByName("Filters", filters) &&
+           GetParam().GetParamByName("Kernel", kernel_size) &&
            w->IsEmpty() &&
            b->IsEmpty() &&
            y->IsEmpty() &&
@@ -45,20 +45,11 @@ public:
         }
         else{
             runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
-            runtime_assert(GetParam().template GetParamByName<int>("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
-            runtime_assert(GetParam().template GetParamByName<std::vector<int>>("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
+            runtime_assert(GetParam().GetParamByName("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
+            runtime_assert(GetParam().GetParamByName("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
             runtime_assert(kernel_size.size() == 2, "ConvolutionOp::Setup() : Kernel Param Dim must be 2.");
             runtime_assert(w->Dim(0) == b->Size(), "ConvolutionOp::Setup() : filter's 0 dim must be same bias's size.");
         }
-        
-        m = filters;
-        n = out_h * out_w;
-        k = kernel_size[0] * kernel_size[1] * x->Dim(1);
-        
-        bias_multiplier.Resize<DataType, CPUContext>({n});
-        bias_multiplier.SetByConst<DataType>(DataType(1));
-        
-        col_buf.Resize<DataType, CPUContext>({k, n});
     }
     
     void Compute() override{
@@ -88,7 +79,7 @@ public:
         y_t = x_t.extract_image_patches(
                                         w->Dim(2),
                                         w->Dim(3),
-                                        stride, stride,
+                                        stride[0], stride[1],
                                         1, 1,
                                         1, 1,
                                         padding, padding,
@@ -138,15 +129,27 @@ public:
         int out_h, out_w;
         
         runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
-        runtime_assert(GetParam().template GetParamByName<int>("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
-        runtime_assert(GetParam().template GetParamByName<std::vector<int>>("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
+        runtime_assert(GetParam().GetParamByName("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
+        runtime_assert(GetParam().GetParamByName("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
         runtime_assert(kernel_size.size() == 2, "ConvolutionOp::Setup() : Kernel Param Dim must be 2.");
         
-        if(!GetParam().template GetParamByName<int>("Stride", stride)){
-            stride = 1;
+        if(!GetParam().GetParamByName("Stride", stride)){
+            stride = {1, 1};
         }
-        if(!GetParam().template GetParamByName<int>("Padding", padding)){
+        if(!GetParam().GetParamByName("Padding", padding)){
             padding = 0;
+        }
+        
+        if(dw->IsEmpty() &&
+           db->IsEmpty() &&
+           dx->IsEmpty() &&
+           !x->IsEmpty() &&
+           !w->IsEmpty() &&
+           !dy->IsEmpty()
+           ){
+            dw->template Resize<DataType>(w);
+            db->template Resize<DataType>({filters});
+            dx->template Resize<DataType>(x);
         }
         
         out_h = OutHeightSize();
@@ -205,7 +208,7 @@ public:
             math::im2col<DataType, CPUContext>(
                                                x->Dim(1), x->Dim(2), x->Dim(3),
                                                kernel_size[0], kernel_size[1],
-                                               stride, padding,
+                                               stride[0], padding,
                                                x_ptr, col_ptr
                                                );
             
@@ -239,7 +242,7 @@ public:
             math::col2im<DataType, CPUContext>(
                                                col_ptr,
                                                x->Dim(1), x->Dim(2), x->Dim(3),
-                                               kernel_size[1], stride, padding,
+                                               kernel_size[1], stride[0], padding,
                                                dx_ptr
                                                );
             
@@ -268,6 +271,14 @@ public:
 private:
     enum InputSchema{x, w, dy};
     enum OutputSchema{dw, db, dx};
+    TensorBlob<CPUContext> col_buf;
+    TensorBlob<CPUContext> bias_multiplier;
+    /*
+     * Variables for GEMM.
+     */
+    int m;
+    int n;
+    int k;
 };
 
 } /* namespace mlfe */
