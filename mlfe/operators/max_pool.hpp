@@ -55,8 +55,8 @@ public:
                     for (int pw = 0; pw < out_w; ++pw){
                         int hstart = ph * stride[0];
                         int wstart = pw * stride[1];
-                        int hend = std::min(hstart + kernel[0], x->Dim(2));
-                        int wend = std::min(wstart + kernel[1], x->Dim(3));
+                        int hend = std::min<int>(hstart + kernel[0], x->Dim(2));
+                        int wend = std::min<int>(wstart + kernel[1], x->Dim(3));
                         const int pool_index = ph * out_w + pw;
                         for (int h = hstart; h < hend; ++h) {
                             for (int w = wstart; w < wend; ++w) {
