@@ -53,6 +53,72 @@ OperatorFactory::OperatorFactory(){
         return this->GetGradientDBReader(info);
     };
     
+    ops["conv"] = [](
+                     std::vector<TensorCPU_Ptr> &inputs,
+                     std::vector<TensorCPU_Ptr> &outputs,
+                     mlfe::ParamDef &param
+                     ) -> OperatorCPU_Ptr{
+        using Op = mlfe::ConvolutionWithEigenOp<float>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    ops["conv_gradient"] = [](
+                            std::vector<TensorCPU_Ptr> &inputs,
+                            std::vector<TensorCPU_Ptr> &outputs,
+                            mlfe::ParamDef &param
+                            ) -> OperatorCPU_Ptr{
+        using Op = mlfe::ConvolutionGradientWithEigenOp<float>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    gradient_info["conv"] = [this](OperatorInfo &info) -> OperatorInfo{
+        return this->GetGradientConv(info);
+    };
+    
+    ops["maxpool"] = [](
+                   std::vector<TensorCPU_Ptr> &inputs,
+                   std::vector<TensorCPU_Ptr> &outputs,
+                   mlfe::ParamDef &param
+                   ) -> OperatorCPU_Ptr{
+        using Op = mlfe::MaxPoolOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    ops["maxpool_gradient"] = [](
+                            std::vector<TensorCPU_Ptr> &inputs,
+                            std::vector<TensorCPU_Ptr> &outputs,
+                            mlfe::ParamDef &param
+                            ) -> OperatorCPU_Ptr{
+        using Op = mlfe::MaxPoolGradientOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    gradient_info["maxpool"] = [this](OperatorInfo &info) -> OperatorInfo{
+        return this->GetGradientMaxPool(info);
+    };
+    
+    ops["relu"] = [](
+                     std::vector<TensorCPU_Ptr> &inputs,
+                     std::vector<TensorCPU_Ptr> &outputs,
+                     mlfe::ParamDef &param
+                     ) -> OperatorCPU_Ptr{
+        using Op = mlfe::ReluOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    ops["relu_gradient"] = [](
+                              std::vector<TensorCPU_Ptr> &inputs,
+                              std::vector<TensorCPU_Ptr> &outputs,
+                              mlfe::ParamDef &param
+                              ) -> OperatorCPU_Ptr{
+        using Op = mlfe::ReluGradientOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    gradient_info["relu"] = [this](OperatorInfo &info) -> OperatorInfo{
+        return this->GetGradientRelu(info);
+    };
+    
     ops["fc"] = [](
                    std::vector<TensorCPU_Ptr> &inputs,
                    std::vector<TensorCPU_Ptr> &outputs,
@@ -95,6 +161,48 @@ OperatorFactory::OperatorFactory(){
     
     gradient_info["softmax_xent_loss_with_label"] = [this](OperatorInfo &info) -> OperatorInfo{
         return this->GetGradientSoftmaxXent(info);
+    };
+    
+    ops["flatten"] = [](
+                        std::vector<TensorCPU_Ptr> &inputs,
+                        std::vector<TensorCPU_Ptr> &outputs,
+                        mlfe::ParamDef &param
+                        ) -> OperatorCPU_Ptr{
+        using Op = mlfe::FlattenOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    ops["flatten_gradient"] = [](
+                                 std::vector<TensorCPU_Ptr> &inputs,
+                                 std::vector<TensorCPU_Ptr> &outputs,
+                                 mlfe::ParamDef &param
+                                 ) -> OperatorCPU_Ptr{
+        using Op = mlfe::FlattenGradientOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs));
+    };
+    
+    gradient_info["flatten"] = [this](OperatorInfo &info) -> OperatorInfo{
+        return this->GetGradientFlatten(info);
+    };
+    
+    // Fill Ops.
+    
+    ops["constant_fill"] = [](
+                              std::vector<TensorCPU_Ptr> &inputs,
+                              std::vector<TensorCPU_Ptr> &outputs,
+                              mlfe::ParamDef &param
+                              ) -> OperatorCPU_Ptr{
+        using Op = mlfe::ConstantFillOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
+    };
+    
+    ops["xavier_fill"] = [](
+                        std::vector<TensorCPU_Ptr> &inputs,
+                        std::vector<TensorCPU_Ptr> &outputs,
+                        mlfe::ParamDef &param
+                        ) -> OperatorCPU_Ptr{
+        using Op = mlfe::XavierFillOp<float, mlfe::CPUContext>;
+        return static_cast<OperatorCPU_Ptr>(std::make_shared<Op>(inputs, outputs, param));
     };
 }
 
@@ -144,6 +252,33 @@ OperatorInfo OperatorFactory::GetGradientOneHot(OperatorInfo op_info){
     return MakeOpInfo("no_gradient", {}, {}, mlfe::ParamDef());
 }
 
+OperatorInfo OperatorFactory::GetGradientConv(OperatorInfo op_info){
+    return MakeOpInfo(
+                      op_info.op_type + "_gradient",
+                      {op_info.inputs[0], op_info.inputs[1], GO(op_info, 0)},
+                      {GI(op_info, 1), GI(op_info, 2), GI(op_info, 0)},
+                      op_info.param
+                      );
+}
+
+OperatorInfo OperatorFactory::GetGradientMaxPool(OperatorInfo op_info){
+    return MakeOpInfo(
+                      op_info.op_type + "_gradient",
+                      {op_info.inputs[0], op_info.outputs[1], GO(op_info, 0)},
+                      {GI(op_info, 0)},
+                      op_info.param
+                      );
+}
+
+OperatorInfo OperatorFactory::GetGradientRelu(OperatorInfo op_info){
+    return MakeOpInfo(
+                      op_info.op_type + "_gradient",
+                      {op_info.inputs[0], GO(op_info, 0)},
+                      {GI(op_info, 0)},
+                      op_info.param
+                      );
+}
+
 OperatorInfo OperatorFactory::GetGradientFC(OperatorInfo op_info){
     return MakeOpInfo(
                       op_info.op_type + "_gradient",
@@ -157,6 +292,15 @@ OperatorInfo OperatorFactory::GetGradientSoftmaxXent(OperatorInfo op_info){
     return MakeOpInfo(
                       op_info.op_type + "_gradient",
                       {op_info.inputs[0], op_info.inputs[1], op_info.outputs[0], op_info.outputs[1]},
+                      {GI(op_info, 0)},
+                      op_info.param
+                      );
+}
+
+OperatorInfo OperatorFactory::GetGradientFlatten(OperatorInfo op_info){
+    return MakeOpInfo(
+                      op_info.op_type + "_gradient",
+                      {op_info.inputs[0], GO(op_info, 0)},
                       {GI(op_info, 0)},
                       op_info.param
                       );

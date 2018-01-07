@@ -1,6 +1,7 @@
 #ifndef __NET_BUILDER_HPP__
 #define __NET_BUILDER_HPP__
 
+#include <random>
 #include <mlfe/utils/db/simple_db.hpp>
 #include <mlfe/operators/operator.hpp>
 #include <mlfe/core/tensor_blob.hpp>
@@ -19,7 +20,6 @@ public:
                              std::string db_type,
                              std::vector<int> input_dim,
                              int batch_size,
-                             bool flatten,
                              bool has_label
                              );
     
@@ -29,9 +29,19 @@ public:
     
     OperatorInfo AddOneHot(std::string name, std::string input, int dim);
     
+    OperatorInfo AddConv(std::string name, std::string input, int filters,
+                         std::vector<int> kernel, std::vector<int> stride, int padding);
+    
+    OperatorInfo AddMaxPool(std::string name, std::string input,
+                            std::vector<int> kernel, std::vector<int> stride);
+    
+    OperatorInfo AddRelu(std::string name, std::string input, bool inplace);
+    
     OperatorInfo AddFC(std::string name, std::string input, int units);
     
     OperatorInfo AddSoftmaxXent(std::string name, std::string input, std::string label);
+    
+    OperatorInfo AddFlatten(std::string name, std::string input, int axis);
     
     void AddAllGradientOp();
     
@@ -45,6 +55,7 @@ protected:
     void InitAllTrainableVariables();
     
 private:
+    std::vector<std::pair<std::string, OperatorCPU_Ptr>> init_layers;
     std::vector<std::pair<std::string, OperatorCPU_Ptr>> layers;
     std::vector<std::pair<std::string, OperatorCPU_Ptr>> layers_for_test;
     WorkSpace<std::function<OperatorCPU_Ptr (

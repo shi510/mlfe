@@ -12,7 +12,8 @@ namespace mlfe{ namespace simpledb{
  * async algorithm for put, get, delete,
  * data compression to reduce DB size,
  * efficient key-value management,
- * db options, db status, thread-safe.
+ * db options, db status, thread-safe,
+ * file integrity check.
  */
 class SimpleDB final : public DataBase{
 public:

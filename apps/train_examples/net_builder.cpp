@@ -21,7 +21,6 @@ OperatorInfo NetBuilder::AddDBReader(
                                      std::string db_type,
                                      std::vector<int> input_dim,
                                      int batch_size,
-                                     bool flatten,
                                      bool has_label
                                      ){
     std::string data = name + "_data";
@@ -33,7 +32,6 @@ OperatorInfo NetBuilder::AddDBReader(
     param.Add("DataBasePath", db_path);
     param.Add("DataBaseType", db_type);
     param.Add("BatchSize", batch_size);
-    param.Add("Flatten", flatten);
     param.Add("HasLabel", has_label);
     param.Add("DataShape", input_dim);
     param.Add("LabelShape", std::vector<int>{batch_size, 1});
@@ -127,12 +125,108 @@ OperatorInfo NetBuilder::AddOneHot(std::string name, std::string x, int dim){
     return op_info;
 }
 
+OperatorInfo NetBuilder::AddConv(std::string name, std::string x, int filters,
+                                 std::vector<int> kernel, std::vector<int> stride, int padding){
+    std::string w = name + "_w";
+    std::string b = name + "_b";
+    std::string y = name + "_y";
+    ParamDef param;
+    OperatorInfo op_info, init_w, init_b;
+    OperatorCPU_Ptr op;
+    
+    param.Add("Filters", filters);
+    param.Add("Kernel", kernel);
+    param.Add("Stride", stride);
+    param.Add("Padding", padding);
+    
+    op_info = op_fact.MakeOpInfo(
+                                 "conv", {x, w, b}, {y},
+                                 param
+                                 );
+    init_w = op_fact.MakeOpInfo(
+                                "xavier_fill", {}, {w},
+                                ParamDef()
+                                );
+    
+    init_b = op_fact.MakeOpInfo(
+                                "constant_fill", {}, {b},
+                                ParamDef().Add("Value", 1.f)
+                                );
+    
+    op = op_fact.GetOperator(op_info, item_holder);
+    
+    auto  fc = std::make_pair(name, op);
+    layers.push_back(fc);
+    init_layers.push_back(std::make_pair(name + "init_w", op_fact.GetOperator(init_w, item_holder)));
+    init_layers.push_back(std::make_pair(name + "init_b", op_fact.GetOperator(init_b, item_holder)));
+    op_infos.push_back(op_info);
+    
+    trainable_var.push_back(w);
+    trainable_var.push_back(b);
+    
+    std::cout<<"- Add Conv Operator"<<std::endl;
+    std::cout<<"    "<<"Input : "<<x<<", "<<w<<", "<<b<<std::endl;
+    std::cout<<"    "<<"Output : "<<y<<std::endl;
+    return op_info;
+}
+
+OperatorInfo NetBuilder::AddMaxPool(std::string name, std::string x,
+                                    std::vector<int> kernel, std::vector<int> stride){
+    std::string y = name + "_y";
+    std::string idx = name + "_idx";
+    ParamDef param;
+    OperatorInfo op_info;
+    OperatorCPU_Ptr op;
+    
+    param.Add("Kernel", kernel);
+    param.Add("Stride", stride);
+    
+    op_info = op_fact.MakeOpInfo(
+                                 "maxpool", {x}, {y, idx},
+                                 param
+                                 );
+    op = op_fact.GetOperator(op_info, item_holder);
+    
+    auto  fc = std::make_pair(name, op);
+    layers.push_back(fc);
+    op_infos.push_back(op_info);
+    
+    
+    std::cout<<"- Add MaxPool Operator"<<std::endl;
+    std::cout<<"    "<<"Input : "<<x<<std::endl;
+    std::cout<<"    "<<"Output : "<<y<<", "<<idx<<std::endl;
+    return op_info;
+}
+
+OperatorInfo NetBuilder::AddRelu(std::string name, std::string x, bool inplace){
+    std::string y = name + "_y";
+    ParamDef param;
+    OperatorInfo op_info;
+    OperatorCPU_Ptr op;
+    param.Add("Inplace", inplace);
+    
+    op_info = op_fact.MakeOpInfo(
+                                 "relu", {x}, {y},
+                                 param
+                                 );
+    op = op_fact.GetOperator(op_info, item_holder);
+    
+    auto  relu = std::make_pair(name, op);
+    layers.push_back(relu);
+    op_infos.push_back(op_info);
+    
+    std::cout<<"- Add Relu Operator"<<std::endl;
+    std::cout<<"    "<<"Input : "<<x<<std::endl;
+    std::cout<<"    "<<"Output : "<<y<<std::endl;
+    return op_info;
+}
+
 OperatorInfo NetBuilder::AddFC(std::string name, std::string x, int units){
     std::string w = name + "_w";
     std::string b = name + "_b";
     std::string y = name + "_y";
     ParamDef param;
-    OperatorInfo op_info;
+    OperatorInfo op_info, init_w, init_b;
     OperatorCPU_Ptr op;
     
     param.Add("Units", units);
@@ -141,10 +235,23 @@ OperatorInfo NetBuilder::AddFC(std::string name, std::string x, int units){
                                  "fc", {x, w, b}, {y},
                                  param
                                  );
+    
+    init_w = op_fact.MakeOpInfo(
+                                "xavier_fill", {}, {w},
+                                ParamDef()
+                                );
+    
+    init_b = op_fact.MakeOpInfo(
+                                "constant_fill", {}, {b},
+                                ParamDef().Add("Value", 0)
+                                );
+    
     op = op_fact.GetOperator(op_info, item_holder);
     
     auto  fc = std::make_pair(name, op);
     layers.push_back(fc);
+    init_layers.push_back(std::make_pair(name + "init_w", op_fact.GetOperator(init_w, item_holder)));
+    init_layers.push_back(std::make_pair(name + "init_b", op_fact.GetOperator(init_b, item_holder)));
     op_infos.push_back(op_info);
     
     trainable_var.push_back(w);
@@ -176,6 +283,31 @@ OperatorInfo NetBuilder::AddSoftmaxXent(std::string name, std::string x, std::st
     std::cout<<"- Add Softmax Xent With Label Operator"<<std::endl;
     std::cout<<"    "<<"Input : "<<x<<", "<<label<<std::endl;
     std::cout<<"    "<<"Output : "<<prob<<", "<<loss<<std::endl;
+    return op_info;
+}
+
+OperatorInfo NetBuilder::AddFlatten(std::string name, std::string x, int axis){
+    auto y = name + "_y";
+    ParamDef param;
+    OperatorInfo op_info;
+    OperatorCPU_Ptr op;
+    
+    param.Add("Axis", axis);
+    
+    op_info = op_fact.MakeOpInfo(
+                                 "flatten",
+                                 {x}, {y},
+                                 param
+                                 );
+    op = op_fact.GetOperator(op_info, item_holder);
+    
+    auto flatten = std::make_pair(name, op);
+    layers.push_back(flatten);
+    op_infos.push_back(op_info);
+    
+    std::cout<<"- Add Flatten Operator"<<std::endl;
+    std::cout<<"    "<<"Input : "<<x<<std::endl;
+    std::cout<<"    "<<"Output : "<<y<<std::endl;
     return op_info;
 }
 
@@ -231,12 +363,7 @@ void NetBuilder::UpdateAllTrainableVariables(float lr){
 }
 
 void NetBuilder::InitAllTrainableVariables(){
-    for(auto &var_name : trainable_var){
-        TensorCPU_Ptr var = item_holder->GetItem(var_name);
-        float *ptr = var->GetPtrMutable<float>();
-        
-        for(int n = 0; n < var->Size(); ++n){
-            ptr[n] = 0.f;
-        }
+    for(auto &op : init_layers){
+        op.second->Compute();
     }
 }

@@ -153,8 +153,8 @@ void SaveMNIST(
     }
     
     size = img_h * img_w;
-    data.Reshape<uint8_t>({num_data, img_h, img_w});
-    label.Reshape<uint8_t>({num_label});
+    data.Resize<uint8_t>({num_data, img_h, img_w});
+    label.Resize<uint8_t>({num_label});
     for(int i = 0; i < num_data; ++i){
         std::vector<flatbuffers::Offset<serializable::TensorBlob>> tbs_std_vec;
         string tbs_str;

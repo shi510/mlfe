@@ -12,6 +12,11 @@
 #include <mlfe/operators/cast_op.hpp>
 #include <mlfe/operators/scale_op.hpp>
 #include <mlfe/operators/one_hot.hpp>
+#include <mlfe/operators/convolution_op_eigen.hpp>
+#include <mlfe/operators/max_pool.hpp>
+#include <mlfe/operators/relu.hpp>
+#include <mlfe/operators/flatten.hpp>
+#include <mlfe/operators/filler.hpp>
 #include "item_holder.hpp"
 #include "common.hpp"
 
@@ -41,9 +46,17 @@ public:
     
     OperatorInfo GetGradientOneHot(OperatorInfo op_info);
     
+    OperatorInfo GetGradientConv(OperatorInfo op_info);
+    
+    OperatorInfo GetGradientMaxPool(OperatorInfo op_info);
+    
+    OperatorInfo GetGradientRelu(OperatorInfo op_info);
+    
     OperatorInfo GetGradientFC(OperatorInfo op_info);
     
     OperatorInfo GetGradientSoftmaxXent(OperatorInfo op_info);
+    
+    OperatorInfo GetGradientFlatten(OperatorInfo op_info);
     
     OperatorInfo MakeOpInfo(
                             std::string type,
