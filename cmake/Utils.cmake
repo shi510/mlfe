@@ -11,7 +11,7 @@ function(mlfe_group_files files)
         string(REPLACE "/" "\\" GROUP "${GROUP}")
 
         # Group into "Source Files" and "Header Files"
-        if ("${FILE}" MATCHES ".*\\.[cpp|h]")
+        if ("${FILE}" MATCHES ".*\\.[cpp|h|cu]")
             set(GROUP "${GROUP}")
         endif()
 
