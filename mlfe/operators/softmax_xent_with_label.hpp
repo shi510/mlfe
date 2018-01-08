@@ -96,9 +96,23 @@ public:
         math::cross_entropy<DataType, DeviceContext>(m, n,
                                                      prob->template GetPtrConst<DataType>(),
                                                      label->template GetPtrConst<DataType>(),
-                                                     loss->template GetPtrMutable<DataType>()
+                                                     rows_max.template GetPtrMutable<DataType>()
                                                      );
-        
+
+        math::sum<DataType,
+                  DeviceContext>(
+                                  m,
+                                  rows_max.template GetPtrConst<DataType>(),
+                                  loss->template GetPtrMutable<DataType>()
+                                  );
+
+        math::scal<DataType,
+                    DeviceContext>(
+                                    1,
+                                    static_cast<DataType>(1) / static_cast<DataType>(m),
+                                    loss->template GetPtrConst<DataType>(),
+                                    loss->template GetPtrMutable<DataType>()
+                                    );
     }
     
 private:

@@ -26,13 +26,13 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     auto prob = sm_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     auto loss = sm_outputs[1] = make_shared<TensorBlob<CPUContext>>();
     // make x
-    x->Reshape<double>({batch_size, x_size});
+    x->Resize<double>({batch_size, x_size});
     // make label
-    label->ReshapeLike<double>(x);
+    label->Resize<double>(x);
     // make prob
-    prob->ReshapeLike<double>(x);
+    prob->Resize<double>(x);
     // make loss
-    loss->Reshape<double>({1});
+    loss->Resize<double>({1});
     
     /*
      * softmax xent with loss gradient op IO.
@@ -43,7 +43,7 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     sm_grad_inputs[3] = loss;
     auto dx = sm_grad_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     // make dx
-    dx->ReshapeLike<double>(x);
+    dx->Resize<double>(x);
     
     auto set = [](double *ptr, int from, int to, double val, double inc){
         for(int i = from; i < to; ++i){

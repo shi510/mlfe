@@ -78,6 +78,12 @@ void scal(
           const DataType *x_ptr,
           DataType *y_ptr);
 
+template<class DataType, class DeviceContext>
+void sum(
+          const int size,
+          const DataType *x_ptr,
+          DataType *y_ptr);
+
 } /* namespace math */
 } /* namespace mlfe */
 #endif /* __MATH_BLAS3_HPP__ */

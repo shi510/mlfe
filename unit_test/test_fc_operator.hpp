@@ -28,13 +28,13 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     auto b = fc_inputs[2] = make_shared<TensorBlob<CPUContext>>();
     auto y = fc_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     // make x
-    x->Reshape<double>({batch_size, x_size});
+    x->Resize<double>({batch_size, x_size});
     // make w
-    w->Reshape<double>({out_size, x_size});
+    w->Resize<double>({out_size, x_size});
     // make b
-    b->Reshape<double>({out_size});
+    b->Resize<double>({out_size});
     // make y
-    y->Reshape<double>({batch_size, out_size});
+    y->Resize<double>({batch_size, out_size});
     
     /*
      * fc gradient op IO.
@@ -46,13 +46,13 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     auto db = fc_grad_outputs[1] = make_shared<TensorBlob<CPUContext>>();
     auto dx = fc_grad_outputs[2] = make_shared<TensorBlob<CPUContext>>();
     // make dy
-    dy->ReshapeLike<double>(y);
+    dy->Resize<double>(y);
     // make dw
-    dw->ReshapeLike<double>(w);
+    dw->Resize<double>(w);
     // make db
-    db->ReshapeLike<double>(b);
+    db->Resize<double>(b);
     // make dx
-    dx->ReshapeLike<double>(x);
+    dx->Resize<double>(x);
     
     auto set =[](double *p, double val, int size){ for(int i = 0; i < size; ++i){ p[i] = val; } };
     

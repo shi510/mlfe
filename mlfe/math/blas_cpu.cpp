@@ -217,15 +217,13 @@ void cross_entropy<float, CPUContext>(
                                       const float *label_ptr,
                                       float *loss_ptr
                                       ){
-    loss_ptr[0] = 0.f;
     for(int i = 0; i < m; ++i){
         float row_loss = 0.f;
         for(int j = 0; j < n; ++j){
             row_loss += -std::log(std::max(prob_ptr[i * n + j], 1e-20f)) * label_ptr[i * n + j];
         }
-        loss_ptr[0] += row_loss;
+        loss_ptr[i] = row_loss;
     }
-    loss_ptr[0] /= m;
 }
 
 template <>
@@ -235,15 +233,13 @@ void cross_entropy<double, CPUContext>(
                                        const double *label_ptr,
                                        double *loss_ptr
                                        ){
-    loss_ptr[0] = 0.;
     for(int i = 0; i < m; ++i){
         double row_loss = 0.;
         for(int j = 0; j < n; ++j){
             row_loss += -std::log(std::max(prob_ptr[i * n + j], 1e-20)) * label_ptr[i * n + j];
         }
-        loss_ptr[0] += row_loss;
+        loss_ptr[i] = row_loss;
     }
-    loss_ptr[0] /= m;
 }
 
 template <>
@@ -334,6 +330,22 @@ void scal<double, CPUContext>(const int size,
     else{
         y.setZero();
     }
+}
+
+template <>
+void sum<float, CPUContext>(
+    const int size,
+    const float *x_ptr,
+    float *y_ptr) {
+    y_ptr[0] = Eigen::Map<const Eigen::VectorXf>(x_ptr, size).sum();
+}
+
+template <>
+void sum<double, CPUContext>(
+    const int size,
+    const double *x_ptr,
+    double *y_ptr) {
+    y_ptr[0] = Eigen::Map<const Eigen::VectorXd>(x_ptr, size).sum();
 }
 
 } /* math */

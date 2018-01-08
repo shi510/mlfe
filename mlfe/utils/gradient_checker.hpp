@@ -27,8 +27,8 @@ public:
         
         numerical_gradient = std::make_shared<TensorBlob<DeviceContext> >();
         gradient_checker = std::make_shared<TensorBlob<DeviceContext> >();
-        numerical_gradient->template ReshapeLike<DataType>(y);
-        gradient_checker->template ReshapeLike<DataType>(theta);
+        numerical_gradient->template Resize<DataType>(y);
+        gradient_checker->template Resize<DataType>(theta);
         
         for(int n = 0; n < theta->Size(); ++n){
             DataType *ng_ptr = numerical_gradient->template GetPtrMutable<DataType>();

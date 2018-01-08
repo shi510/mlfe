@@ -17,9 +17,9 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     vector<shared_ptr<TensorBlob<CPUContext>>> conv_inputs(3), conv_grad_inputs(3);
     vector<shared_ptr<TensorBlob<CPUContext>>> conv_outputs(1), conv_grad_outputs(3);
     const std::vector<int> kernel_shape = {3, 3};
+    const std::vector<int> stride_shape = {1, 1};
     const int batch = 2;
     const int out_filters = 2;
-    const int stride = 1;
     const int padding = 0;
     const double acceptable_gradient_check_val = 1e-7;
     
@@ -31,20 +31,20 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     auto b = conv_inputs[2] = make_shared<TensorBlob<CPUContext>>();
     auto y = conv_outputs[0] = make_shared<TensorBlob<CPUContext>>();
     // make x
-    x->Reshape<double>({batch, 2, 6, 6});
+    x->Resize<double>({batch, 2, 6, 6});
     // make w
-    w->Reshape<double>({out_filters, x->Dim(1), kernel_shape[0], kernel_shape[1]});
+    w->Resize<double>({out_filters, x->Dim(1), kernel_shape[0], kernel_shape[1]});
     // make b
-    b->Reshape<double>({w->Dim(0)});
+    b->Resize<double>({w->Dim(0)});
     // make y
-    y->Reshape<double>(
-                       {
-                           x->Dim(0),
-                           out_filters,
-                           (x->Dim(2) + 2 * padding - kernel_shape[0]) / stride + 1,
-                           (x->Dim(3) + 2 * padding - kernel_shape[1]) / stride + 1
-                       }
-                       );
+    y->Resize<double>(
+                                {
+                                    x->Dim(0),
+                                    out_filters,
+                                    (x->Dim(2) + 2 * padding - kernel_shape[0]) / stride_shape[0] + 1,
+                                    (x->Dim(3) + 2 * padding - kernel_shape[1]) / stride_shape[1] + 1
+                                }
+                                );
     
     /*
      * convolution gradient op IO.
@@ -56,13 +56,13 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     auto db = conv_grad_outputs[1] = make_shared<TensorBlob<CPUContext>>();
     auto dx = conv_grad_outputs[2] = make_shared<TensorBlob<CPUContext>>();
     // make dy
-    dy->ReshapeLike<double>(y);
+    dy->Resize<double>(y);
     // make dw
-    dw->ReshapeLike<double>(w);
+    dw->Resize<double>(w);
     // make db
-    db->ReshapeLike<double>(b);
+    db->Resize<double>(b);
     // make dx
-    dx->ReshapeLike<double>(x);
+    dx->Resize<double>(x);
     
     auto set = [](double *ptr, int from, int to, double val, double inc){
         for(int i = from; i < to; ++i){
@@ -78,7 +78,7 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     
     param_conv.Add("Filters", out_filters);
     param_conv.Add("Kernel", kernel_shape);
-    param_conv.Add("Stride", stride);
+    param_conv.Add("Stride", stride_shape);
     param_conv.Add("Padding", padding);
     conv = make_shared<ConvolutionWithEigenOp<Context::ComputePrecision::Double>>(
                                                                                   conv_inputs,
