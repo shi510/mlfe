@@ -7,3 +7,6 @@
 [submodule "third_party/flatbuffers"]
 	path = third_party/flatbuffers
 	url = https://github.com/google/flatbuffers
+[submodule "third_party/cub"]
+	path = third_party/cub
+	url = https://github.com/NVlabs/cub
