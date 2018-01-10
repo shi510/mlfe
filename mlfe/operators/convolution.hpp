@@ -14,8 +14,8 @@ public:
     
 protected:
     explicit ConvolutionBaseOp(
-                               std::vector<std::shared_ptr<TensorBlob<CPUContext>>> inputs,
-                               std::vector<std::shared_ptr<TensorBlob<CPUContext>>> outputs,
+                               std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs,
+                               std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs,
                                ParamDef param
                                ) : Operator<DeviceContext>(inputs, outputs, param){}
     
