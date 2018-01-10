@@ -6,7 +6,7 @@
 #include "../utils/assert.hpp"
 #include "../core/tensor_blob.hpp"
 #include "../core/param_def.hpp"
-#include "convolution_op.hpp"
+#include "convolution.hpp"
 
 namespace mlfe{
 

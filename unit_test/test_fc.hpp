@@ -2,7 +2,7 @@
 #include <random>
 #include <chrono>
 #include <mlfe/device_context/cpu_context.hpp>
-#include <mlfe/operators/fully_connected_op.hpp>
+#include <mlfe/operators/fully_connected.hpp>
 #include <gtest/gtest.h>
 #include <mlfe/utils/gradient_checker.hpp>
 

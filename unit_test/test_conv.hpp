@@ -2,7 +2,7 @@
 #include <random>
 #include <chrono>
 #include <mlfe/device_context/cpu_context.hpp>
-#include <mlfe/operators/convolution_op_eigen.hpp>
+#include <mlfe/operators/convolution_eigen.hpp>
 #include <mlfe/core/param_def.hpp>
 #include <gtest/gtest.h>
 #include <mlfe/utils/gradient_checker.hpp>

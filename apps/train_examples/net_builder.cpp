@@ -4,10 +4,10 @@
 #include <random>
 #include <mlfe/core/tensor_blob.hpp>
 #include <mlfe/device_context/cpu_context.hpp>
-#include <mlfe/operators/fully_connected_op.hpp>
+#include <mlfe/operators/fully_connected.hpp>
 #include <mlfe/operators/softmax_xent_with_label.hpp>
 #include <mlfe/flatbuffers/tensor_blob_fb_generated.h>
-#include <mlfe/operators/db_reader_op.hpp>
+#include <mlfe/operators/db_reader.hpp>
 #include <opencv2/opencv.hpp>
 #include "net_builder.hpp"
 
