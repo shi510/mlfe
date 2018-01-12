@@ -1,9 +1,5 @@
 set(the_app tensor_example)
-
 include_directories(${mlfe_include_dirs})
-
 add_executable(${the_app} tensor_example.cpp)
-
-target_link_libraries(${the_app} mlfe)
-
+target_link_libraries(${the_app} ${mlfe_executable_linker_flags} mlfe)
 set_target_properties(${the_app} PROPERTIES FOLDER "apps")
