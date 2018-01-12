@@ -5,84 +5,106 @@
 #include <memory>
 #include "../core/param_def.hpp"
 #include "../core/tensor_blob.hpp"
+#include "../core/registry.hpp"
+#include "../core/item_holder.hpp"
+#include "../device_context/cpu_context.hpp"
 
 namespace mlfe{
 
-template<class DeviceContext>
-class Operator{
+struct OperatorIO{
+    std::string type;
+    std::string name;
+    std::string accelerator;
+    std::vector<std::string> inputs;
+    std::vector<std::string> outputs;
+    ParamDef param;
+};
+
+class OperatorBase{
 public:
-    Operator(
-             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs_,
-             std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs_,
-             ParamDef param_
-             ):param(param_){
-        for(auto &in : inputs_){
-            AddInput(in);
-        }
-        for(auto &out : outputs_){
-            AddOutput(out);
-        }
-    }
+    OperatorBase(OperatorIO &opio, ItemHolder *ih);
     
-    virtual ~Operator() {}
+    Item *Inputs(const int idx);
     
-    Operator(const Operator &_op) {
-        name = _op.name;
-        inputs = _op.inputs;
-        outputs = _op.outputs;
-        param = _op.param;
-    }
+    Item *Outputs(const int idx);
     
-    std::string Name() {
-        return name;
-    }
+    int Inputs();
     
-    bool SetName(std::string _name) {
-        name = _name;
-        return true;
-    }
+    int Outputs();
     
-    bool AddInput(std::shared_ptr<TensorBlob<DeviceContext>> _input) {
-        inputs.push_back(_input);
-        return true;
-    }
-    
-    bool AddOutput(std::shared_ptr<TensorBlob<DeviceContext>> _output) {
-        outputs.push_back(_output);
-        return true;
-    }
-    
-    std::shared_ptr<TensorBlob<DeviceContext>> Input(const int _idx) {
-        return inputs[_idx];
-    }
-    
-    std::shared_ptr<TensorBlob<DeviceContext>> Output(const int _idx) {
-        return outputs[_idx];
-    }
-    
-    int Inputs() {
-        return inputs.size();
-    }
-    
-    int Outputs() {
-        return outputs.size();
-    }
-    
-    ParamDef & GetParam() {
-        return param;
-    }
+    OperatorIO & GetOperatorIO();
     
     virtual void Compute() = 0;
     
 protected:
-    Operator() : param() {}
+    OperatorIO opio;
+    ItemHolder *ih;
+};
+
+template<class DC>
+class Operator : public OperatorBase{
+public:
+    Operator(OperatorIO &opio, ItemHolder *ih)
+        : OperatorBase(opio, ih){
+            for(auto &in : opio.inputs){
+                ih->AddItem<TensorBlob<DC>>(in);
+                inputs.push_back(ih->GetItem(in)->Get<TensorBlob<DC>>());
+            }
+            for(auto &out : opio.outputs){
+                ih->AddItem<TensorBlob<DC>>(out);
+                outputs.push_back(ih->GetItem(out)->Get<TensorBlob<DC>>());
+            }
+        }
     
-private:
-    std::string name;
-    std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> inputs;
-    std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs;
-    ParamDef param;
+    virtual void Compute() = 0;
+    
+protected:
+    std::vector<TensorBlob<DC> *> inputs;
+    std::vector<TensorBlob<DC> *> outputs;
 };/* class Operater */
+    
+struct GradientIO{
+    GradientIO(){}
+    virtual OperatorIO GetGradientIO(OperatorIO opio) = 0;
+};
+
+DECLARE_REGISTRY(
+                 OperatorCPU,
+                 std::string,
+                 std::shared_ptr<OperatorBase>,
+                 OperatorIO &,
+                 ItemHolder *
+                 )
+    
+DECLARE_REGISTRY(
+                 OperatorGradientIO,
+                 std::string,
+                 std::shared_ptr<GradientIO>
+                 )
+
+#define REGIST_OPERATOR_CPU(Key, ...)                  \
+namespace {   \
+static RegistererOperatorCPU (OperatorCPU_##Key)(      \
+  #Key,                                                \
+  OperatorCPU(),                                       \
+  RegistererOperatorCPU::DefaultCreator<__VA_ARGS__>   \
+);                                                     \
+}
+
+#define REGIST_OPERATOR_GRADIENT_IO(Key, ...)                  \
+namespace {   \
+static RegistererOperatorGradientIO (OperatorGradientIO##Key)(      \
+#Key,                                                \
+OperatorGradientIO(),                                       \
+RegistererOperatorGradientIO::DefaultCreator<__VA_ARGS__>   \
+);                                                     \
+}
+
+std::shared_ptr<OperatorBase>
+    CreateOperator(OperatorIO &opio, ItemHolder *ih);
+    
+std::shared_ptr<OperatorBase>
+    CreateOperatorGradient(OperatorIO &opio, ItemHolder *ih);
 
 } /* namespace mlfe */
 #endif /* __OPERATOR_HPP__ */

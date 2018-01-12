@@ -1,14 +1,12 @@
 #ifndef __DB_READER_OP_HPP__
 #define __DB_READER_OP_HPP__
-#include <vector>
 #include <queue>
 #include <thread>
 #include "operator.hpp"
-#include "../core/tensor_blob.hpp"
-#include "../core/param_def.hpp"
-#include "../utils/assert.hpp"
-#include "../utils/db/simple_db.hpp"
 #include "../utils/thread_pool.hpp"
+#include "../utils/db/data_base.hpp"
+#include "../utils/db/simple_db.hpp"
+#include "../utils/assert.hpp"
 #include "../flatbuffers/tensor_blob_fb_generated.h"
 
 namespace mlfe{
@@ -17,79 +15,13 @@ template <class DataType, class DeviceContext>
 class DBReaderOp final : public Operator<DeviceContext>{
 public:
     explicit DBReaderOp(
-                        std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> outputs,
-                        ParamDef param = ParamDef()
-                        ) : Operator<DeviceContext>(std::vector<std::shared_ptr<TensorBlob<DeviceContext>>>(), outputs, param), background_worker(1) {
-        std::string db_path = "";
-        std::string db_type = "";
-        std::vector<int> data_dim, label_dim;
-        std::vector<std::shared_ptr<TensorBlob<DeviceContext>>> tbs;
-        std::shared_ptr<TensorBlob<DeviceContext>> buffer_data, buffer_label;
-        batch_size = 0;
-        has_label = false;
-        this->GetParam().GetParamByName("DataBasePath", db_path);
-        this->GetParam().GetParamByName("DataBaseType", db_type);
-        this->GetParam().GetParamByName("BatchSize", batch_size);
-        this->GetParam().GetParamByName("HasLabel", has_label);
-        this->GetParam().GetParamByName("DataShape", data_dim);
-        this->GetParam().GetParamByName("LabelShape", label_dim);
-        if(db_path.empty() && db_type.empty()){
-            throw std::string("You must feed \"DataBasePath\" Parameter and \"DataBaseType\" Parameter.");
-        }
-        if(has_label){
-            runtime_assert(this->Outputs() == 2, "The number of outputs must be 2(data, label).");
-        }
-        else{
-            runtime_assert(this->Outputs() == 1, "The number of outputs must be 1(data).");
-        }
-        runtime_assert(batch_size > 0, "The batch size must be greater than 0.");
-        
-        OpenDB(db_path, db_type);
-        buffer_data = std::make_shared<TensorBlob<DeviceContext>>();
-        buffer_label = std::make_shared<TensorBlob<DeviceContext>>();
-        this->Output(0)->template Resize<DataType>(data_dim);
-        this->Output(1)->template Resize<DataType>(label_dim);
-        buffer_data->template Resize<DataType>(this->Output(0));
-        buffer_label->template Resize<DataType>(this->Output(1));
-        tbs.push_back(buffer_data);
-        tbs.push_back(buffer_label);
-        wanna_fill.push(tbs);
-        background_worker.AddTask(std::bind(&DBReaderOp::FillBuffer, this), 0);
-    }
+                        OperatorIO &opio,
+                        ItemHolder *ih
+                        );
     
-    ~DBReaderOp(){
-        if(db->IsOpen()){
-            db->Close();
-        }
-        background_worker.Wait(0);
-    }
+    ~DBReaderOp();
     
-    void Compute() override {
-        if(wanna_consume.empty()){
-            if(!background_worker.IsFinished(0)){
-                background_worker.Wait(0);
-            }
-        }
-        
-        auto vec_of_tb = wanna_consume.front();
-        wanna_consume.pop();
-        this->Output(0)->CopyToDevice(
-                                      0,
-                                      vec_of_tb[0]->Size(),
-                                      vec_of_tb[0]->template GetPtrConst<DataType>()
-                                      );
-
-        if(has_label){
-            this->Output(1)->CopyToDevice(
-                                          0,
-                                          vec_of_tb[1]->Size(),
-                                          vec_of_tb[1]->template GetPtrConst<DataType>()
-                                          );
-        }
-        
-        wanna_fill.push(vec_of_tb);
-        background_worker.AddTask(std::bind(&DBReaderOp::FillBuffer, this), 0);
-    }
+    void Compute() override;
     
 protected:
     void OpenDB(std::string path, std::string type){
@@ -97,9 +29,9 @@ protected:
             db = std::make_shared<simpledb::SimpleDB>();
         }
         else{
-            throw std::string("Database type dose not match. (current version of db reader operator supports only simpledb.)");
+            throw std::string("[DB Reader] Does not support -> ") + type;
         }
-		db->option.binary = true;
+        db->option.binary = true;
         db->Open(path);
         db->MoveToFirst();
     }
@@ -120,7 +52,7 @@ protected:
                 tbs[0]->CopyToDevice(
                                      b * data_size,
                                      data_size,
-                                     static_cast<const DataType *>(serialized_tb->tensors()->Get(0)->data()->data())
+                                     static_cast<const unsigned char *>(serialized_tb->tensors()->Get(0)->data()->data())
                                      );
                 
                 if(has_label){
@@ -129,7 +61,7 @@ protected:
                     tbs[1]->CopyToDevice(
                                          b * data_size,
                                          data_size,
-                                         static_cast<const DataType *>(serialized_tb->tensors()->Get(1)->data()->data())
+                                         static_cast<const unsigned char *>(serialized_tb->tensors()->Get(1)->data()->data())
                                          );
                 }
                 builder.Clear();

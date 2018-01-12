@@ -1,9 +1,9 @@
 #ifndef __CONVOLUTION_EIGEN_OP_HPP__
 #define __CONVOLUTION_EIGEN_OP_HPP__
 #include <unsupported/Eigen/CXX11/Tensor>
+#include "../device_context/cpu_context.hpp"
 #include "../math/blas.hpp"
 #include "../math/transform.hpp"
-#include "../utils/assert.hpp"
 #include "../core/tensor_blob.hpp"
 #include "../core/param_def.hpp"
 #include "convolution.hpp"
@@ -14,29 +14,27 @@ template <class DataType>
 class ConvolutionWithEigenOp : public ConvolutionBaseOp<CPUContext>{
 public:
     explicit ConvolutionWithEigenOp(
-                                    std::vector<std::shared_ptr<TensorBlob<CPUContext>>> inputs,
-                                    std::vector<std::shared_ptr<TensorBlob<CPUContext>>> outputs,
-                                    ParamDef param
-                                    ) : ConvolutionBaseOp<CPUContext>(inputs, outputs, param){
-        const auto x = this->Input(InputSchema::x);
-        const auto w = this->Input(InputSchema::w);
-        const auto b = this->Input(InputSchema::b);
-        auto y = this->Output(OutputSchema::y);
+                                    OperatorIO &opio,
+                                    ItemHolder *ih
+                                    ) : ConvolutionBaseOp<CPUContext>(opio, ih){
+        runtime_assert(inputs.size() == 3,
+                       "[Convolution With Eigen Op] inputs.size() == 3");
+        runtime_assert(outputs.size() == 1,
+                       "[Convolution With Eigen Op] outputs.size() == 1");
+        const auto x = inputs[InputSchema::x];
+        const auto w = inputs[InputSchema::w];
+        const auto b = inputs[InputSchema::b];
+        auto y = outputs[OutputSchema::y];
         
-        if(!GetParam().GetParamByName("Stride", stride)){
-            stride = {1, 1};
-        }
-        if(!GetParam().GetParamByName("Padding", padding)){
-            padding = 0;
-        }
-        
-        if(GetParam().GetParamByName("Filters", filters) &&
-           GetParam().GetParamByName("Kernel", kernel_size) &&
+        if(opio.param.HasParam("Filters") &&
+           opio.param.HasParam("Kernel") &&
            w->IsEmpty() &&
            b->IsEmpty() &&
            y->IsEmpty() &&
            !x->IsEmpty() &&
            x->Dims() == 4){
+            filters = opio.param.GetParam<int>("Filters");
+            kernel_size = opio.param.GetParam<std::vector<int>>("Kernel");
             out_h = OutHeightSize();
             out_w = OutWidthSize();
             w->template Resize<DataType>({filters, x->Dim(1), kernel_size[0], kernel_size[1]});
@@ -44,20 +42,22 @@ public:
             y->template Resize<DataType>({x->Dim(0), filters, out_h, out_w});
         }
         else{
-            runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
-            runtime_assert(GetParam().GetParamByName("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
-            runtime_assert(GetParam().GetParamByName("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
-            runtime_assert(kernel_size.size() == 2, "ConvolutionOp::Setup() : Kernel Param Dim must be 2.");
-            runtime_assert(w->Dim(0) == b->Size(), "ConvolutionOp::Setup() : filter's 0 dim must be same bias's size.");
+            runtime_assert(x->Dims() == 4,
+                           "[Convolution With Eigen Op] x->Dims() == 4");
+            runtime_assert(kernel_size.size() == 2,
+                           "[Convolution With Eigen Op] : kernel.size() == 2");
+            runtime_assert(w->Dim(0) == b->Size(),
+                           "[Convolution With Eigen Op] : filter->Dim(0) == bias->Size()");
         }
     }
     
     void Compute() override{
         using namespace Eigen;
-        const auto x = Input(InputSchema::x);
-        const auto w = Input(InputSchema::w);
-        const auto b = Input(InputSchema::b);
-        auto y = Output(OutputSchema::y);
+        const auto x = inputs[InputSchema::x];
+        const auto w = inputs[InputSchema::w];
+        const auto b = inputs[InputSchema::b];
+        auto y = outputs[OutputSchema::y];
+        
         Tensor<DataType, 4, RowMajor> x_t = TensorMap<Tensor<DataType, 4, RowMajor>>(
                                                                                      x->template GetPtrMutable<DataType>(),
                                                                                      x->Dim(0),
@@ -112,51 +112,52 @@ private:
     int out_w;
 };
 
+REGIST_OPERATOR_CPU(Conv_Eigen, ConvolutionWithEigenOp<float>)
+
 template <class DataType>
-class ConvolutionGradientWithEigenOp : public ConvolutionBaseOp<CPUContext>{
+class ConvolutionGradientOp : public ConvolutionBaseOp<CPUContext>{
 public:
-    explicit ConvolutionGradientWithEigenOp(
-                                            std::vector<std::shared_ptr<TensorBlob<CPUContext>>> inputs,
-                                            std::vector<std::shared_ptr<TensorBlob<CPUContext>>> outputs,
-                                            ParamDef param
-                                            ) : ConvolutionBaseOp<CPUContext>(inputs, outputs, param){
-        const auto x = this->Input(InputSchema::x);
-        const auto w = this->Input(InputSchema::w);
-        const auto dy = this->Input(InputSchema::dy);
-        auto dw = this->Output(OutputSchema::dw);
-        auto db = this->Output(OutputSchema::db);
-        auto dx = this->Output(OutputSchema::dx);
-        int out_h, out_w;
+    explicit ConvolutionGradientOp(
+                                   OperatorIO &opio,
+                                   ItemHolder *ih
+                                   ) : ConvolutionBaseOp<CPUContext>(opio, ih){
+        runtime_assert(inputs.size() == 3,
+                       "[Convolution Gradient Op] inputs.size() == 3");
+        runtime_assert(outputs.size() == 3,
+                       "[Convolution Gradient Op] outputs.size() == 3");
+        const auto x = inputs[InputSchema::x];
+        const auto w = inputs[InputSchema::w];
+        const auto dy = inputs[InputSchema::dy];
+        auto dw = outputs[OutputSchema::dw];
+        auto db = outputs[OutputSchema::db];
+        auto dx = outputs[OutputSchema::dx];
         
-        runtime_assert(x->Dims() == 4, "ConvolutionOp::Setup() : Input x's demension size must be 4.");
-        runtime_assert(GetParam().GetParamByName("Filters", filters), "ConvolutionOp::Setup() : Filter size can not find.");
-        runtime_assert(GetParam().GetParamByName("Kernel", kernel_size), "ConvolutionOp::Setup() : Kernel can not find.");
-        runtime_assert(kernel_size.size() == 2, "ConvolutionOp::Setup() : Kernel Param Dim must be 2.");
-        
-        if(!GetParam().GetParamByName("Stride", stride)){
-            stride = {1, 1};
-        }
-        if(!GetParam().GetParamByName("Padding", padding)){
-            padding = 0;
-        }
-        
-        if(dw->IsEmpty() &&
+        if(opio.param.HasParam("Filters") &&
+           opio.param.HasParam("Kernel") &&
+           dw->IsEmpty() &&
            db->IsEmpty() &&
            dx->IsEmpty() &&
            !x->IsEmpty() &&
            !w->IsEmpty() &&
            !dy->IsEmpty()
            ){
-            dw->template Resize<DataType>(w);
+            filters = opio.param.GetParam<int>("Filters");
+            kernel_size = opio.param.GetParam<std::vector<int>>("Kernel");
+            dw->template Resize<DataType>(*w);
             db->template Resize<DataType>({filters});
-            dx->template Resize<DataType>(x);
+            dx->template Resize<DataType>(*x);
+        }
+        else{
+            runtime_assert(x->Dims() == 4,
+                           "[Convolution Gradient Op] x->Dims() == 4");
+            runtime_assert(kernel_size.size() == 2,
+                           "[Convolution Gradient Op] Kernel Param Dim must be 2.");
+            runtime_assert(w->Size() == dw->Size(),
+                           "[Convolution Gradient Op] : w->Size() == dw->Size()");
         }
         
-        out_h = OutHeightSize();
-        out_w = OutWidthSize();
-        
         m = filters;
-        n = out_h * out_w;
+        n = OutHeightSize() * OutWidthSize();
         k = kernel_size[0] * kernel_size[1] * x->Dim(1);
         
         bias_multiplier.Resize<DataType, CPUContext>({n});
@@ -166,12 +167,12 @@ public:
     }
     
     void Compute() override{
-        const auto x = Input(InputSchema::x);
-        const auto w = Input(InputSchema::w);
-        const auto dy = Input(InputSchema::dy);
-        auto dw = Output(OutputSchema::dw);
-        auto db = Output(OutputSchema::db);
-        auto dx = Output(OutputSchema::dx);
+        const auto x = inputs[InputSchema::x];
+        const auto w = inputs[InputSchema::w];
+        const auto dy = inputs[InputSchema::dy];
+        auto dw = outputs[OutputSchema::dw];
+        auto db = outputs[OutputSchema::db];
+        auto dx = outputs[OutputSchema::dx];
         int batch_size = x->Dim(0);
         const DataType *x_ptr = x->template GetPtrConst<DataType>();
         const DataType *dy_ptr = dy->template GetPtrMutable<DataType>();
@@ -280,6 +281,26 @@ private:
     int n;
     int k;
 };
+
+REGIST_OPERATOR_CPU(Conv_Gradient, ConvolutionGradientOp<float>)
+    
+struct ConvolutionGradientIO : public GradientIO{
+    OperatorIO GetGradientIO(OperatorIO opio) override{
+        OperatorIO opio_grad;
+        opio_grad.type = opio.type + "_Gradient";
+        opio_grad.inputs.push_back(opio.inputs[0]);
+        opio_grad.inputs.push_back(opio.inputs[1]);
+        opio_grad.inputs.push_back(opio.outputs[0] + "_grad");
+        opio_grad.outputs.push_back(opio.inputs[1] + "_grad");
+        opio_grad.outputs.push_back(opio.inputs[2] + "_grad");
+        opio_grad.outputs.push_back(opio.inputs[0] + "_grad");
+        opio_grad.param = opio.param;
+        
+        return opio_grad;
+    }
+};
+    
+REGIST_OPERATOR_GRADIENT_IO(Conv, ConvolutionGradientIO);
 
 } /* namespace mlfe */
 #endif /* __CONVOLUTION_EIGEN_OP_HPP__ */

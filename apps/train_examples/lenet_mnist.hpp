@@ -8,18 +8,18 @@ public:
         this->train_db = train_db;
     }
     void Build(){
-        OperatorInfo db_reader = builder.AddDBReader(
+        OperatorIO db_reader = builder.AddDBReader(
                                                      "input",
                                                      train_db,
                                                      "SimpleDB",
                                                      {60, 1, 28, 28},
-                                                     60,
                                                      true
                                                      );
         std::string data = builder.AddCast("cast_data", db_reader.outputs[0], "float").outputs[0];
         std::string label = builder.AddCast("cast_label", db_reader.outputs[1], "float").outputs[0];
         std::string label_one_hot = builder.AddOneHot("onehot", label, 10).outputs[0];
         std::string prev_layer = data;
+        builder.StopGradient();
         prev_layer = builder.AddScale("scale", prev_layer, 1.f / 256.f).outputs[0];
         prev_layer = builder.AddConv("conv1", prev_layer, 20, {5, 5}, {1, 1}, 0).outputs[0];
         prev_layer = builder.AddMaxPool("maxpool1", prev_layer, {2, 2}, {2, 2}).outputs[0];

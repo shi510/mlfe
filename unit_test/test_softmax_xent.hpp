@@ -10,47 +10,46 @@ using namespace std;
 using namespace mlfe;
 
 TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
-    shared_ptr<Operator<CPUContext>> softmax_xent;
-    shared_ptr<Operator<CPUContext>> softmax_xent_grad;
+    ItemHolder ih;
+    OperatorIO opio, opio_grad;
+    std::shared_ptr<OperatorBase> softmax_xent, softmax_xent_grad;
+    TensorBlob<CPUContext> *x, *label, *prob, *loss, *dx;
     vector<shared_ptr<TensorBlob<CPUContext>>> sm_inputs(2), sm_grad_inputs(4);
     vector<shared_ptr<TensorBlob<CPUContext>>> sm_outputs(2), sm_grad_outputs(1);
     const int batch_size = 2;
     const int x_size = 5;
     const double acceptable_gradient_check_val = 1e-7;
-    
-    /*
-     * softmax xent with loss op IO.
-     */
-    auto x = sm_inputs[0] = make_shared<TensorBlob<CPUContext>>();
-    auto label = sm_inputs[1] = make_shared<TensorBlob<CPUContext>>();
-    auto prob = sm_outputs[0] = make_shared<TensorBlob<CPUContext>>();
-    auto loss = sm_outputs[1] = make_shared<TensorBlob<CPUContext>>();
-    // make x
-    x->Resize<double>({batch_size, x_size});
-    // make label
-    label->Resize<double>(x);
-    // make prob
-    prob->Resize<double>(x);
-    // make loss
-    loss->Resize<double>({1});
-    
-    /*
-     * softmax xent with loss gradient op IO.
-     */
-    sm_grad_inputs[0] = x;
-    sm_grad_inputs[1] = label;
-    sm_grad_inputs[2] = prob;
-    sm_grad_inputs[3] = loss;
-    auto dx = sm_grad_outputs[0] = make_shared<TensorBlob<CPUContext>>();
-    // make dx
-    dx->Resize<double>(x);
-    
     auto set = [](double *ptr, int from, int to, double val, double inc){
         for(int i = from; i < to; ++i){
             ptr[i] = val;
             val += inc;
         }
     };
+    
+    opio.type = "SoftmaxXentLossWithLabel";
+    opio.inputs.push_back("x");
+    opio.inputs.push_back("label");
+    opio.outputs.push_back("prob");
+    opio.outputs.push_back("loss");
+    
+    opio_grad.type = "SoftmaxXentLossWithLabel_Gradient";
+    opio_grad.inputs.push_back("x");
+    opio_grad.inputs.push_back("label");
+    opio_grad.inputs.push_back("prob");
+    opio_grad.inputs.push_back("loss");
+    opio_grad.outputs.push_back("dx");
+    
+    ih.AddItem<TensorBlob<CPUContext>>("x");
+    ih.AddItem<TensorBlob<CPUContext>>("label");
+    x = ih.GetItem<TensorBlob<CPUContext>>("x");
+    label = ih.GetItem<TensorBlob<CPUContext>>("label");
+    x->Resize<double>({batch_size, x_size});
+    label->Resize<double>({batch_size, x_size});
+    softmax_xent = CreateOperator(opio, &ih);
+    softmax_xent_grad = CreateOperator(opio_grad, &ih);
+    prob = ih.GetItem<TensorBlob<CPUContext>>("prob");
+    loss = ih.GetItem<TensorBlob<CPUContext>>("loss");
+    dx = ih.GetItem<TensorBlob<CPUContext>>("dx");
     
     set(x->GetPtrMutable<double>(), 0, x->Size(), 1., 0.5);
     set(label->GetPtrMutable<double>(), 0, label->Size(), 0., 0.);
@@ -65,14 +64,6 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     for(int i = 0; i < batch_size; ++i){
         label->GetPtrMutable<double>()[x_size * i + i % x_size] = 1.;
     }
-    
-    softmax_xent = make_shared<
-    SoftmaxCrossEntropyWithLabelOp<Context::ComputePrecision::Double,CPUContext>
-    >(sm_inputs, sm_outputs);
-    
-    softmax_xent_grad = make_shared<
-    SoftmaxCrossEntropyWithLabelGradientOp<Context::ComputePrecision::Double, CPUContext>
-    >(sm_grad_inputs, sm_grad_outputs);
     
     {
         cout<<"-- Softmax Xent Operator Run"<<endl;
@@ -95,10 +86,10 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
          */
         gc_val = gc.Run(
                         softmax_xent,
-                        softmax_xent->Input(0),
-                        softmax_xent->Output(1),
-                        softmax_xent_grad->Output(0),
-                        softmax_xent->Output(1)->template GetPtrConst<double>()[0]
+                        x,
+                        loss,
+                        dx,
+                        loss->template GetPtrConst<double>()[0]
                         );
         for(int n = 0; n < gc_val->Size(); ++n){
             EXPECT_LT(gc_val->GetPtrConst<double>()[n], acceptable_gradient_check_val);

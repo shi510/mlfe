@@ -16,10 +16,10 @@ public:
     }
     
     std::shared_ptr<TensorBlob<DeviceContext> > Run(
-                                                    std::shared_ptr<Operator<DeviceContext> > op,
-                                                    std::shared_ptr<TensorBlob<DeviceContext> > theta,
-                                                    std::shared_ptr<TensorBlob<DeviceContext> > y,
-                                                    std::shared_ptr<TensorBlob<DeviceContext> > analytical_gradient,
+                                                    std::shared_ptr<OperatorBase> op,
+                                                    TensorBlob<DeviceContext> *theta,
+                                                    TensorBlob<DeviceContext> *y,
+                                                    TensorBlob<DeviceContext> *analytical_gradient,
                                                     DataType scaler
                                                     ){
         std::shared_ptr<TensorBlob<DeviceContext> > numerical_gradient;
@@ -27,8 +27,8 @@ public:
         
         numerical_gradient = std::make_shared<TensorBlob<DeviceContext> >();
         gradient_checker = std::make_shared<TensorBlob<DeviceContext> >();
-        numerical_gradient->template Resize<DataType>(y);
-        gradient_checker->template Resize<DataType>(theta);
+        numerical_gradient->template Resize<DataType>(*y);
+        gradient_checker->template Resize<DataType>(*theta);
         
         for(int n = 0; n < theta->Size(); ++n){
             DataType *ng_ptr = numerical_gradient->template GetPtrMutable<DataType>();

@@ -19,11 +19,11 @@ public:
     
     TensorBlob(const TensorBlob &) = delete;
     
-    TensorBlob& operator=(const std::shared_ptr<TensorBlob> &tb){
-        dims = tb->dims;
-        size = tb->size;
-        context = tb->context;
-        type = tb->type;
+    TensorBlob& operator=(const TensorBlob &tb){
+        dims = tb.dims;
+        size = tb.size;
+        context = tb.context;
+        type = tb.type;
         return *this;
     }
     
@@ -41,8 +41,8 @@ public:
         size = new_size;
     }
     
-    void Reshape(const std::shared_ptr<TensorBlob<DeviceContext>> tb){
-        Reshape(tb->dims);
+    void Reshape(const TensorBlob<DeviceContext> &tb){
+        Reshape(tb.dims);
     }
     
     /*
@@ -72,11 +72,11 @@ public:
     template <typename T,
     class = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void Resize(const std::shared_ptr<TensorBlob> tb) {
+    void Resize(const TensorBlob<DeviceContext> &tb) {
         std::vector<int> new_size;
         
-        for (int i = 0; i < tb->dims.size(); ++i) {
-            new_size.push_back(tb->dims[i]);
+        for (int i = 0; i < tb.dims.size(); ++i) {
+            new_size.push_back(tb.dims[i]);
         }
         Resize<T>(new_size);
     }
@@ -85,12 +85,12 @@ public:
      * @brief compare tensor's size.
      * if same then returns true, or not returns false.
      */
-    bool CompareSizeWith(const std::shared_ptr<TensorBlob> tb){
-        if(this->Dims() != tb->Dims()){
+    bool CompareSizeWith(const TensorBlob<DeviceContext> &tb){
+        if(this->Dims() != tb.Dims()){
             return false;
         }
         for(int i = 0; i < this->Dims(); ++i){
-            if(this->Dim(i) != tb->Dim(i)){
+            if(this->Dim(i) != tb.Dim(i)){
                 return false;
             }
         }

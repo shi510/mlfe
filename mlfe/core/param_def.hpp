@@ -18,21 +18,24 @@ struct ParamValueContainer : public ParamContainerBase {
 
 class ParamDef {
 public:
-    ParamDef() {}
+    bool HasParam(std::string name){
+        return params.at(name).use_count() > 0 ? true : false;
+    }
     
     /*
      * returns true when parameter's key exists.
      * if not, returns false.
      */
     template <class T>
-    bool GetParamByName(std::string key, T &value) {
+    T GetParam(std::string name){
+        T t;
         try {
-            value = static_cast<ParamValueContainer<T> *>(params.at(key).get())->v;
+            t = static_cast<ParamValueContainer<T> *>(params.at(name).get())->v;
+            return t;
         }
         catch (std::out_of_range e) {
-            return false;
+            throw std::string("No Param -> ") + name;
         }
-        return true;
     }
     
     /*

@@ -1,339 +1,247 @@
 #include <iostream>
-#include <memory>
 #include <iomanip>
-#include <random>
-#include <mlfe/core/tensor_blob.hpp>
+#include <mlfe/utils/db/simple_db.hpp>
 #include <mlfe/device_context/cpu_context.hpp>
-#include <mlfe/operators/fully_connected.hpp>
-#include <mlfe/operators/softmax_xent_with_label.hpp>
 #include <mlfe/flatbuffers/tensor_blob_fb_generated.h>
-#include <mlfe/operators/db_reader.hpp>
+#include <mlfe/core/tensor_blob.hpp>
+#include <mlfe/math/blas.hpp>
 #include <opencv2/opencv.hpp>
 #include "net_builder.hpp"
 
-NetBuilder::NetBuilder(){
-    item_holder = std::make_shared<ItemHolder<TensorCPU>>();
-}
+NetBuilder::NetBuilder(){}
 
-OperatorInfo NetBuilder::AddDBReader(
+OperatorIO NetBuilder::AddDBReader(
                                      std::string name,
                                      std::string db_path,
                                      std::string db_type,
                                      std::vector<int> input_dim,
-                                     int batch_size,
                                      bool has_label
                                      ){
-    std::string data = name + "_data";
-    std::string label = name + "_label";
-    ParamDef param;
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
+    OperatorIO opio;
+    opio.type = "DBReader";
+    opio.outputs.push_back(name + "_data");
+    opio.outputs.push_back(name + "_label");
+    opio.param.Add("DatabasePath", db_path);
+    opio.param.Add("DatabaseType", db_type);
+    opio.param.Add("HasLabel", has_label);
+    opio.param.Add("DataShape", input_dim);
+    opio.param.Add("LabelShape", std::vector<int>{input_dim[0], 1});
     
-    param.Add("DataBasePath", db_path);
-    param.Add("DataBaseType", db_type);
-    param.Add("BatchSize", batch_size);
-    param.Add("HasLabel", has_label);
-    param.Add("DataShape", input_dim);
-    param.Add("LabelShape", std::vector<int>{batch_size, 1});
-    
-    op_info = op_fact.MakeOpInfo(
-                                 "db_reader", {},
-                                 {data, label},
-                                 param
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto fc = std::make_pair(name, op);
-    layers.push_back(fc);
-    op_infos.push_back(op_info);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
     std::cout<<"- Add DBReader Operator"<<std::endl;
-    std::cout<<"    "<<"Output : "<<data<<", "<<label<<std::endl;
+    std::cout<<"    "<<"Output : ";
+    std::cout<<opio.outputs[0]<<", ";
+    std::cout<<opio.outputs[1]<<std::endl;
     
-    return op_info;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddScale(std::string name, std::string x, float scaler){
-    std::string y = name + "_y";
-    ParamDef param;
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
+OperatorIO NetBuilder::AddScale(std::string name, std::string x, float scaler){
+    OperatorIO opio;
+    opio.type = "Scale";
+    opio.inputs.push_back(x);
+    opio.outputs.push_back(name + "_y");
     
-    param.Add("Scale", scaler);
+    opio.param.Add("Scale", scaler);
     
-    op_info = op_fact.MakeOpInfo(
-                                 "scale", {x}, {y},
-                                 param
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto scale = std::make_pair(name, op);
-    layers.push_back(scale);
-    op_infos.push_back(op_info);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
     std::cout<<"- Add Scale Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : "<<opio.inputs[0]<<std::endl;
+    std::cout<<"    "<<"Output : "<<opio.outputs[0]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddCast(std::string name, std::string x, std::string cast_type){
-    std::string y = name + "_y";
-    ParamDef param;
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
+OperatorIO NetBuilder::AddCast(std::string name, std::string x, std::string cast_type){
+    OperatorIO opio;
+    opio.type = "Cast";
+    opio.inputs.push_back(x);
+    opio.outputs.push_back(name + "_y");
     
-    param.Add("Cast", cast_type);
+    opio.param.Add("Cast", cast_type);
     
-    op_info = op_fact.MakeOpInfo(
-                                 "cast", {x}, {y},
-                                 param
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto cast = std::make_pair(name, op);
-    layers.push_back(cast);
-    op_infos.push_back(op_info);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
     std::cout<<"- Add Cast Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : "<<opio.inputs[0]<<std::endl;
+    std::cout<<"    "<<"Output : "<<opio.outputs[0]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddOneHot(std::string name, std::string x, int dim){
-    std::string y = name + "_y";
-    ParamDef param;
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
+OperatorIO NetBuilder::AddOneHot(std::string name, std::string x, int dim){
+    OperatorIO opio;
+    opio.type = "OneHot";
+    opio.inputs.push_back(x);
+    opio.outputs.push_back(name + "_y");
+    opio.param.Add("Dim", dim);
     
-    param.Add("Dim", dim);
-    
-    op_info = op_fact.MakeOpInfo(
-                                 "onehot", {x}, {y},
-                                 param
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto onehot = std::make_pair(name, op);
-    layers.push_back(onehot);
-    op_infos.push_back(op_info);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
     std::cout<<"- Add One Hot Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : "<<opio.inputs[0]<<std::endl;
+    std::cout<<"    "<<"Output : "<<opio.outputs[0]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddConv(std::string name, std::string x, int filters,
+OperatorIO NetBuilder::AddConv(std::string name, std::string x, int filters,
                                  std::vector<int> kernel, std::vector<int> stride, int padding){
-    std::string w = name + "_w";
-    std::string b = name + "_b";
-    std::string y = name + "_y";
-    ParamDef param;
-    OperatorInfo op_info, init_w, init_b;
-    OperatorCPU_Ptr op;
+    OperatorIO opio, init_w, init_b;
+    opio.type = "Conv";
+    opio.accelerator = "Eigen";
+    opio.inputs.push_back(x);
+    opio.inputs.push_back(name + "_w");
+    opio.inputs.push_back(name + "_b");
+    opio.outputs.push_back(name + "_y");
+    opio.param.Add("Filters", filters);
+    opio.param.Add("Kernel", kernel);
+    opio.param.Add("Stride", stride);
+    opio.param.Add("Padding", padding);
     
-    param.Add("Filters", filters);
-    param.Add("Kernel", kernel);
-    param.Add("Stride", stride);
-    param.Add("Padding", padding);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
-    op_info = op_fact.MakeOpInfo(
-                                 "conv", {x, w, b}, {y},
-                                 param
-                                 );
-    init_w = op_fact.MakeOpInfo(
-                                "xavier_fill", {}, {w},
-                                ParamDef()
-                                );
+    init_w.type = "XavierFill";
+    init_w.outputs.push_back(name + "_w");
+    init_layers.push_back(std::make_pair(name + "_init_w", CreateOperator(init_w, &ih)));
+    init_b.type = "ConstantFill";
+    init_b.outputs.push_back(name + "_b");
+    init_b.param.Add("Value", static_cast<float>(0));
+    init_layers.push_back(std::make_pair(name + "_init_b", CreateOperator(init_b, &ih)));
     
-    init_b = op_fact.MakeOpInfo(
-                                "constant_fill", {}, {b},
-                                ParamDef().Add("Value", 1.f)
-                                );
-    
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto  fc = std::make_pair(name, op);
-    layers.push_back(fc);
-    init_layers.push_back(std::make_pair(name + "init_w", op_fact.GetOperator(init_w, item_holder)));
-    init_layers.push_back(std::make_pair(name + "init_b", op_fact.GetOperator(init_b, item_holder)));
-    op_infos.push_back(op_info);
-    
-    trainable_var.push_back(w);
-    trainable_var.push_back(b);
+    trainable_var.push_back(name + "_w");
+    trainable_var.push_back(name + "_b");
     
     std::cout<<"- Add Conv Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<", "<<w<<", "<<b<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : ";
+    std::cout<<opio.inputs[0]<<", ";
+    std::cout<<opio.inputs[1]<<", ";
+    std::cout<<opio.inputs[2]<<std::endl;
+    std::cout<<"    "<<"Output : ";
+    std::cout<<opio.outputs[0]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddMaxPool(std::string name, std::string x,
+OperatorIO NetBuilder::AddMaxPool(std::string name, std::string x,
                                     std::vector<int> kernel, std::vector<int> stride){
-    std::string y = name + "_y";
-    std::string idx = name + "_idx";
-    ParamDef param;
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
+    OperatorIO opio;
+    opio.type = "MaxPool";
+    opio.inputs.push_back(x);
+    opio.outputs.push_back(name + "_y");
+    opio.outputs.push_back(name + "_idx");
+    opio.param.Add("Kernel", kernel);
+    opio.param.Add("Stride", stride);
     
-    param.Add("Kernel", kernel);
-    param.Add("Stride", stride);
-    
-    op_info = op_fact.MakeOpInfo(
-                                 "maxpool", {x}, {y, idx},
-                                 param
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto  fc = std::make_pair(name, op);
-    layers.push_back(fc);
-    op_infos.push_back(op_info);
-    
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
     std::cout<<"- Add MaxPool Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<", "<<idx<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : ";
+    std::cout<<opio.inputs[0]<<std::endl;
+    std::cout<<"    "<<"Output : ";
+    std::cout<<opio.outputs[0]<<", ";
+    std::cout<<opio.outputs[1]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddRelu(std::string name, std::string x, bool inplace){
-    std::string y = name + "_y";
-    ParamDef param;
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
-    param.Add("Inplace", inplace);
+OperatorIO NetBuilder::AddRelu(std::string name, std::string x, bool inplace){
+    OperatorIO opio;
+    opio.type = "Relu";
+    opio.inputs.push_back(x);
+    opio.outputs.push_back(name + "_y");
+    opio.param.Add("Inplace", inplace);
     
-    op_info = op_fact.MakeOpInfo(
-                                 "relu", {x}, {y},
-                                 param
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto  relu = std::make_pair(name, op);
-    layers.push_back(relu);
-    op_infos.push_back(op_info);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
     std::cout<<"- Add Relu Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : "<<opio.inputs[0]<<std::endl;
+    std::cout<<"    "<<"Output : "<<opio.outputs[0]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddFC(std::string name, std::string x, int units){
-    std::string w = name + "_w";
-    std::string b = name + "_b";
-    std::string y = name + "_y";
-    ParamDef param;
-    OperatorInfo op_info, init_w, init_b;
-    OperatorCPU_Ptr op;
+OperatorIO NetBuilder::AddFC(std::string name, std::string x, int units){
+    OperatorIO opio, init_w, init_b;
+    opio.type = "FC";
+    opio.inputs.push_back(x);
+    opio.inputs.push_back(name + "_w");
+    opio.inputs.push_back(name + "_b");
+    opio.outputs.push_back(name + "_y");
+    opio.param.Add("Units", units);
     
-    param.Add("Units", units);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
-    op_info = op_fact.MakeOpInfo(
-                                 "fc", {x, w, b}, {y},
-                                 param
-                                 );
+    init_w.type = "XavierFill";
+    init_w.outputs.push_back(name + "_w");
+    init_layers.push_back(std::make_pair(name + "_init_w", CreateOperator(init_w, &ih)));
+    init_b.type = "ConstantFill";
+    init_b.outputs.push_back(name + "_b");
+    init_b.param.Add("Value", static_cast<float>(0));
+    init_layers.push_back(std::make_pair(name + "_init_b", CreateOperator(init_b, &ih)));
     
-    init_w = op_fact.MakeOpInfo(
-                                "xavier_fill", {}, {w},
-                                ParamDef()
-                                );
-    
-    init_b = op_fact.MakeOpInfo(
-                                "constant_fill", {}, {b},
-                                ParamDef().Add("Value", 0)
-                                );
-    
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto  fc = std::make_pair(name, op);
-    layers.push_back(fc);
-    init_layers.push_back(std::make_pair(name + "init_w", op_fact.GetOperator(init_w, item_holder)));
-    init_layers.push_back(std::make_pair(name + "init_b", op_fact.GetOperator(init_b, item_holder)));
-    op_infos.push_back(op_info);
-    
-    trainable_var.push_back(w);
-    trainable_var.push_back(b);
+    trainable_var.push_back(name + "_w");
+    trainable_var.push_back(name + "_b");
     
     std::cout<<"- Add FC Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<", "<<w<<", "<<b<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : ";
+    std::cout<<opio.inputs[0]<<", ";
+    std::cout<<opio.inputs[1]<<", ";
+    std::cout<<opio.inputs[2]<<std::endl;
+    std::cout<<"    "<<"Output : ";
+    std::cout<<opio.outputs[0]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddSoftmaxXent(std::string name, std::string x, std::string label){
-    auto prob = name + "_prob";
-    auto loss = name + "_loss";
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
+OperatorIO NetBuilder::AddSoftmaxXent(std::string name, std::string x, std::string label){
+    OperatorIO opio;
+    opio.type = "SoftmaxXentLossWithLabel";
+    opio.inputs.push_back(x);
+    opio.inputs.push_back(label);
+    opio.outputs.push_back(name + "_prob");
+    opio.outputs.push_back(name + "_loss");
     
-    op_info = op_fact.MakeOpInfo(
-                                 "softmax_xent_loss_with_label",
-                                 {x, label}, {prob, loss},
-                                 ParamDef()
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto xent = std::make_pair(name, op);
-    layers.push_back(xent);
-    op_infos.push_back(op_info);
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     
     std::cout<<"- Add Softmax Xent With Label Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<", "<<label<<std::endl;
-    std::cout<<"    "<<"Output : "<<prob<<", "<<loss<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : ";
+    std::cout<<opio.inputs[0]<<", ";
+    std::cout<<opio.inputs[1]<<std::endl;;
+    std::cout<<"    "<<"Output : ";
+    std::cout<<opio.outputs[0]<<", ";
+    std::cout<<opio.outputs[1]<<std::endl;
+    return opio;
 }
 
-OperatorInfo NetBuilder::AddFlatten(std::string name, std::string x, int axis){
-    auto y = name + "_y";
-    ParamDef param;
-    OperatorInfo op_info;
-    OperatorCPU_Ptr op;
+OperatorIO NetBuilder::AddFlatten(std::string name, std::string x, int axis){
+    OperatorIO opio;
+    opio.type = "Flatten";
+    opio.inputs.push_back(x);
+    opio.outputs.push_back(name + "_y");
+    opio.param.Add("Axis", axis);
     
-    param.Add("Axis", axis);
-    
-    op_info = op_fact.MakeOpInfo(
-                                 "flatten",
-                                 {x}, {y},
-                                 param
-                                 );
-    op = op_fact.GetOperator(op_info, item_holder);
-    
-    auto flatten = std::make_pair(name, op);
-    layers.push_back(flatten);
-    op_infos.push_back(op_info);
-    
+    layers.push_back(std::make_pair(name, CreateOperator(opio, &ih)));
     std::cout<<"- Add Flatten Operator"<<std::endl;
-    std::cout<<"    "<<"Input : "<<x<<std::endl;
-    std::cout<<"    "<<"Output : "<<y<<std::endl;
-    return op_info;
+    std::cout<<"    "<<"Input : ";
+    std::cout<<opio.inputs[0]<<std::endl;
+    std::cout<<"    "<<"Output : ";
+    std::cout<<opio.outputs[0]<<std::endl;
+    return opio;
+}
+
+void NetBuilder::StopGradient(){
+    stop_gradient_pos = layers.size() - 1;
 }
 
 void NetBuilder::AddAllGradientOp(){
-    std::vector<std::pair<std::string, OperatorCPU_Ptr>> layers_gradient;
-    for(int n = layers.size() - 1; n >= 0; --n){
-        std::vector<TensorCPU_Ptr> inputs;
-        std::vector<TensorCPU_Ptr> outputs;
-        auto op_grad_info = op_fact.GetGradientInfo(op_infos[n]);
-        if(op_grad_info.op_type.compare("no_gradient") != 0){
-            auto op_grad = op_fact.GetOperator(op_grad_info, item_holder);
-            auto gradient = std::make_pair(layers[n].first + "_gradient", op_grad);
-            layers.push_back(gradient);
-            
-            std::cout<<"- Add "<<op_grad_info.op_type<<", "<<gradient.first<<std::endl;
-            std::cout<<"    "<<"Input : ";
-            for(auto &in : op_grad_info.inputs){
-                std::cout<<in<<", ";
-            }
-            std::cout<<std::endl;
-            std::cout<<"    "<<"Output : ";
-            for(auto &out : op_grad_info.outputs){
-                std::cout<<out<<", ";
-            }
-            std::cout<<std::endl;
-        }
+    std::vector<std::pair<std::string,
+    std::shared_ptr<OperatorBase>>> gradients;
+    
+    for(int n =  layers.size() - 1; n >= 0 ; --n){
+        if(stop_gradient_pos == n){ break; }
+        auto opio = layers[n].second->GetOperatorIO();
+        auto name = layers[n].first + "_grad";
+        auto op_grad = CreateOperatorGradient(opio, &ih);
+        gradients.push_back(std::make_pair(name, op_grad));
+    }
+    for(auto &op_grad : gradients){
+        layers.push_back(op_grad);
     }
 }
 
@@ -341,7 +249,7 @@ void NetBuilder::Train(int iter, float lr){
     InitAllTrainableVariables();
     AddAllGradientOp();
     for(int i = 0; i < iter; ++i){
-        auto loss = item_holder->GetItem("softmax_xent_loss");
+        auto loss = ih.template GetItem<TensorBlob<CPUContext>>("softmax_xent_loss");
         Forward();
         UpdateAllTrainableVariables(lr);
         std::cout<<i<<" : "<<loss->GetPtrConst<float>()[0]<<", "<<std::endl;
@@ -356,8 +264,8 @@ void NetBuilder::Forward(){
 
 void NetBuilder::UpdateAllTrainableVariables(float lr){
     for(auto &var_name : trainable_var){
-        auto var = item_holder->GetItem(var_name);
-        auto var_grad = item_holder->GetItem(var_name + "_grad");
+        auto var = ih.template GetItem<TensorBlob<CPUContext>>(var_name);
+        auto var_grad = ih.template GetItem<TensorBlob<CPUContext>>(var_name + "_grad");
         math::axpy<float, CPUContext>(var->Size(), -lr, var_grad->GetPtrConst<float>(), var->GetPtrMutable<float>());
     }
 }
