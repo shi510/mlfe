@@ -1,4 +1,5 @@
 #include "db_reader.hpp"
+#include "../device_context/cpu_context.hpp"
 #include "../utils/db/simple_db.hpp"
 #include "../utils/assert.hpp"
 #include "../flatbuffers/tensor_blob_fb_generated.h"

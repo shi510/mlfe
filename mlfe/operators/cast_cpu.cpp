@@ -1,4 +1,5 @@
 #include "cast.hpp"
+#include "../device_context/cpu_context.hpp"
 #include "../math/blas.hpp"
 #include "../utils/assert.hpp"
 

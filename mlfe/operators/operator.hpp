@@ -7,7 +7,6 @@
 #include "../core/tensor_blob.hpp"
 #include "../core/registry.hpp"
 #include "../core/item_holder.hpp"
-#include "../device_context/cpu_context.hpp"
 
 namespace mlfe{
 
