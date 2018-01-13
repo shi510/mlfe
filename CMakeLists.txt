@@ -6,12 +6,12 @@ set(CMAKE_CXX_STANDARD 11)
 
 include(cmake/Utils.cmake)
 
-if(WIN32)
+if(UNIX)
   option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 endif()
 option(BUILD_TEST "Build C++ test binaries (require gtest lib)" OFF)
 option(BUILD_APPS "Build mlfe Applications (require opencv)" OFF)
-OPTION(USE_CUDA "NVIDIA CUDA USE" OFF)
+option(USE_CUDA "NVIDIA CUDA USE" OFF)
 
 if(MSVC)
     msvc_multi_threaded_static_turn(ON)
