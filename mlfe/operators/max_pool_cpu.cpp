@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "max_pool.hpp"
 #include "../device_context/cpu_context.hpp"
 

@@ -246,13 +246,18 @@ void NetBuilder::AddAllGradientOp(){
 }
 
 void NetBuilder::Train(int iter, float lr){
+    float loss_sum = 0.f;
+    auto loss = ih.template GetItem<TensorBlob<CPUContext>>("softmax_xent_loss");
     InitAllTrainableVariables();
     AddAllGradientOp();
-    for(int i = 0; i < iter; ++i){
-        auto loss = ih.template GetItem<TensorBlob<CPUContext>>("softmax_xent_loss");
+    for(int i = 1; i <= iter; ++i){
         Forward();
         UpdateAllTrainableVariables(lr);
-        std::cout<<i<<" : "<<loss->GetPtrConst<float>()[0]<<", "<<std::endl;
+        if (i % 100 == 0) {
+            std::cout << i << " : " << loss_sum / 100.f << std::endl;
+            loss_sum = 0.f;
+        }
+        loss_sum += loss->GetPtrConst<float>()[0];
     }
 }
 
