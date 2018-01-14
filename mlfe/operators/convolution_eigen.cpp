@@ -112,7 +112,8 @@ private:
     int out_w;
 };
 
-REGIST_OPERATOR_CPU(Conv_Eigen, ConvolutionWithEigenOp<float>)
+REGIST_OPERATOR_CPU(Conv_float_Eigen, ConvolutionWithEigenOp<float>)
+REGIST_OPERATOR_CPU(Conv_double_Eigen, ConvolutionWithEigenOp<double>)
 
 template <class DataType>
 class ConvolutionGradientOp : public ConvolutionBaseOp<CPUContext>{
@@ -282,12 +283,14 @@ private:
     int k;
 };
 
-REGIST_OPERATOR_CPU(Conv_Gradient, ConvolutionGradientOp<float>)
+REGIST_OPERATOR_CPU(Conv_float_Gradient, ConvolutionGradientOp<float>)
+REGIST_OPERATOR_CPU(Conv_double_Gradient, ConvolutionGradientOp<double>)
     
 struct ConvolutionGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type + "_Gradient";
+        opio_grad.type = opio.type + "_" + opio.data_type + "_Gradient";
+        opio_grad.data_type = opio.data_type;
         opio_grad.inputs.push_back(opio.inputs[0]);
         opio_grad.inputs.push_back(opio.inputs[1]);
         opio_grad.inputs.push_back(opio.outputs[0] + "_grad");

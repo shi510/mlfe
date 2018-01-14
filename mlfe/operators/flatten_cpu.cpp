@@ -6,11 +6,11 @@
 
 namespace mlfe{
 
-template <>
-FlattenOp<float, CPUContext>::FlattenOp(
+template <class DT, class DC>
+FlattenOp<DT, DC>::FlattenOp(
                                         OperatorIO &opio,
                                         ItemHolder *ih
-                                        ) : Operator<CPUContext>(opio, ih) {
+                                        ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 1,
                    "[Flatten Op] inputs.size() == 1.");
     runtime_assert(outputs.size() == 1,
@@ -40,16 +40,17 @@ FlattenOp<float, CPUContext>::FlattenOp(
     }
 }
 
-template <>
-void FlattenOp<float, CPUContext>::Compute(){}
+template <class DT, class DC>
+void FlattenOp<DT, DC>::Compute(){}
 
-REGIST_OPERATOR_CPU(Flatten, FlattenOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Flatten_float, FlattenOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Flatten_double, FlattenOp<double, CPUContext>)
 
-template <>
-FlattenGradientOp<float, CPUContext>::FlattenGradientOp(
+template <class DT, class DC>
+FlattenGradientOp<DT, DC>::FlattenGradientOp(
                                                         OperatorIO &opio,
                                                         ItemHolder *ih
-                                                        ) : Operator<CPUContext>(opio, ih){
+                                                        ) : Operator<DC>(opio, ih){
     runtime_assert(inputs.size() == 2,
                    "[Flatten Gradient Op] inputs.size() == 2.");
     runtime_assert(outputs.size() == 1,
@@ -70,15 +71,17 @@ FlattenGradientOp<float, CPUContext>::FlattenGradientOp(
     }
 }
 
-template <>
-void FlattenGradientOp<float, CPUContext>::Compute(){}
+template <class DT, class DC>
+void FlattenGradientOp<DT, DC>::Compute(){}
 
-REGIST_OPERATOR_CPU(Flatten_Gradient, FlattenGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Flatten_float_Gradient, FlattenGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Flatten_double_Gradient, FlattenGradientOp<double, CPUContext>)
 
 struct FlattenGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type + "_Gradient";
+        opio_grad.type = opio.type + "_" + opio.data_type + "_Gradient";
+        opio_grad.data_type = opio.data_type;
         opio_grad.inputs.push_back(opio.inputs[0]);
         opio_grad.inputs.push_back(opio.outputs[0] + "_grad");
         opio_grad.outputs.push_back(opio.inputs[0] + "_grad");

@@ -47,6 +47,9 @@ DEFINE_REGISTRY(
 std::shared_ptr<OperatorBase>
 CreateOperator(OperatorIO &opio, ItemHolder *ih){
     auto type = opio.type;
+    if (!opio.data_type.empty()) {
+        type += "_" + opio.data_type;
+    }
     if(!opio.accelerator.empty()){
         type += "_" + opio.accelerator;
     }

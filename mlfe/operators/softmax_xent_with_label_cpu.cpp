@@ -5,12 +5,12 @@
 
 namespace mlfe{
 
-template <>
-SoftmaxCrossEntropyWithLabelOp<float, CPUContext>
+template <class DT, class DC>
+SoftmaxCrossEntropyWithLabelOp<DT, DC>
 ::SoftmaxCrossEntropyWithLabelOp(
                                  OperatorIO &opio,
                                  ItemHolder *ih
-                                 ) : Operator<CPUContext>(opio, ih){
+                                 ) : Operator<DC>(opio, ih){
     runtime_assert(inputs.size() == 2,
                    "[Softmax Cross Entropy With Label Op] inputs.size() == 2");
     runtime_assert(outputs.size() == 2,
@@ -22,8 +22,8 @@ SoftmaxCrossEntropyWithLabelOp<float, CPUContext>
     auto loss = outputs[OutputSchema::loss];
     
     if(prob->IsEmpty() && loss->IsEmpty()){
-        prob->Resize<float>(*x);
-        loss->Resize<float>({1});
+        prob->Resize<DT>(*x);
+        loss->Resize<DT>({1});
     }
     else{
         runtime_assert(x->CompareSizeWith(*label),
@@ -38,10 +38,10 @@ SoftmaxCrossEntropyWithLabelOp<float, CPUContext>
                        "[Softmax Cross Entropy With Label Op] loss->Size() == 1");
     }
     
-    sum_multiplier.Resize<float, CPUContext>({prob->Dim(1)});
-    sum_multiplier.SetByConst<float>((float(1)));
-    rows_max.Resize<float, CPUContext>({x->Dim(0)});
-    scaler.Resize<float, CPUContext>({x->Dim(0)});
+    sum_multiplier.Resize<DT, DC>({prob->Dim(1)});
+    sum_multiplier.SetByConst<DT>((DT(1)));
+    rows_max.Resize<DT, DC>({x->Dim(0)});
+    scaler.Resize<DT, DC>({x->Dim(0)});
     
     /*
      * batch size.
@@ -53,79 +53,82 @@ SoftmaxCrossEntropyWithLabelOp<float, CPUContext>
     n = x->Dim(1);
 }
 
-template <>
-void SoftmaxCrossEntropyWithLabelOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void SoftmaxCrossEntropyWithLabelOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     const auto label = inputs[InputSchema::label];
     auto prob = outputs[OutputSchema::prob];
     auto loss = outputs[OutputSchema::loss];
     
-    math::rowwise_max<float, CPUContext>(
+    math::rowwise_max<DT, DC>(
                                          m, n,
-                                         x->GetPtrConst<float>(),
-                                         rows_max.GetPtrMutable<float>()
+                                         x->GetPtrConst<DT>(),
+                                         rows_max.GetPtrMutable<DT>()
                                          );
     
-    math::scal<float, CPUContext>(
-                                  m * n, float(1),
-                                  x->GetPtrConst<float>(),
-                                  prob->GetPtrMutable<float>()
+    math::scal<DT, DC>(
+                                  m * n, DT(1),
+                                  x->GetPtrConst<DT>(),
+                                  prob->GetPtrMutable<DT>()
                                   );
     
-    math::gemm<float, CPUContext>(false, false,
+    math::gemm<DT, DC>(false, false,
                                   m, n, 1,
-                                  float(-1), rows_max.GetPtrConst<float>(), 1,
-                                  sum_multiplier.GetPtrConst<float>(), n,
-                                  float(1), prob->GetPtrMutable<float>(), n, nullptr);
+                                  DT(-1), rows_max.GetPtrConst<DT>(), 1,
+                                  sum_multiplier.GetPtrConst<DT>(), n,
+                                  DT(1), prob->GetPtrMutable<DT>(), n, nullptr);
     
-    math::exp<float, CPUContext>(
+    math::exp<DT, DC>(
                                  prob->Size(),
-                                 prob->GetPtrConst<float>(),
-                                 prob->GetPtrMutable<float>()
+                                 prob->GetPtrConst<DT>(),
+                                 prob->GetPtrMutable<DT>()
                                  );
     
-    math::gemv<float, CPUContext>(false,
+    math::gemv<DT, DC>(false,
                                   m, n,
-                                  float(1), prob->GetPtrConst<float>(), n,
-                                  sum_multiplier.GetPtrConst<float>(),
-                                  float(0), scaler.GetPtrMutable<float>(), 1, nullptr);
+                                  DT(1), prob->GetPtrConst<DT>(), n,
+                                  sum_multiplier.GetPtrConst<DT>(),
+                                  DT(0), scaler.GetPtrMutable<DT>(), 1, nullptr);
     
-    math::rowwise_normalize<float, CPUContext>(m, n,
-                                               scaler.GetPtrConst<float>(),
-                                               prob->GetPtrMutable<float>()
+    math::rowwise_normalize<DT, DC>(m, n,
+                                               scaler.GetPtrConst<DT>(),
+                                               prob->GetPtrMutable<DT>()
                                                );
     
-    math::cross_entropy<float, CPUContext>(m, n,
-                                           prob->GetPtrConst<float>(),
-                                           label->GetPtrConst<float>(),
-                                           rows_max.GetPtrMutable<float>()
+    math::cross_entropy<DT, DC>(m, n,
+                                           prob->GetPtrConst<DT>(),
+                                           label->GetPtrConst<DT>(),
+                                           rows_max.GetPtrMutable<DT>()
                                            );
     
-    math::sum<float,
-    CPUContext>(
+    math::sum<DT,
+    DC>(
                 m,
-                rows_max.GetPtrConst<float>(),
-                loss->GetPtrMutable<float>()
+                rows_max.GetPtrConst<DT>(),
+                loss->GetPtrMutable<DT>()
                 );
     
-    math::scal<float,
-    CPUContext>(
+    math::scal<DT,
+    DC>(
                 1,
-                static_cast<float>(1) / static_cast<float>(m),
-                loss->GetPtrConst<float>(),
-                loss->GetPtrMutable<float>()
+                static_cast<DT>(1) / static_cast<DT>(m),
+                loss->GetPtrConst<DT>(),
+                loss->GetPtrMutable<DT>()
                 );
 }
 
-REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel,
+REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_float,
                     SoftmaxCrossEntropyWithLabelOp<float, CPUContext>)
 
-template <>
-SoftmaxCrossEntropyWithLabelGradientOp<float, CPUContext>
+REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_double,
+                    SoftmaxCrossEntropyWithLabelOp<double, CPUContext>)
+
+    template <class DT, class DC>
+SoftmaxCrossEntropyWithLabelGradientOp<DT, DC>
 ::SoftmaxCrossEntropyWithLabelGradientOp(
                                          OperatorIO &opio,
                                          ItemHolder *ih
-                                         ) : Operator<CPUContext>(opio, ih) {
+                                         ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 4,
                    "[Softmax Cross Entropy With Label Gradient Op] inputs.size() == 4");
     runtime_assert(outputs.size() == 1,
@@ -142,7 +145,7 @@ SoftmaxCrossEntropyWithLabelGradientOp<float, CPUContext>
     runtime_assert(loss->Size() == 1,
                    "[Softmax Cross Entropy With Label Gradient Op] loss->Size() == 1.");
     if(dx->IsEmpty()){
-        dx->Resize<float>(*x);
+        dx->Resize<DT>(*x);
     }
     else{
         runtime_assert(dx->CompareSizeWith(*x),
@@ -161,32 +164,37 @@ SoftmaxCrossEntropyWithLabelGradientOp<float, CPUContext>
     n = dx->Dim(1);
 }
 
-template <>
-void SoftmaxCrossEntropyWithLabelGradientOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void SoftmaxCrossEntropyWithLabelGradientOp<DT, DC>::Compute(){
     const auto prob = inputs[InputSchema::prob];
     const auto label = inputs[InputSchema::label];
     const auto loss = inputs[InputSchema::loss];
     auto dx = outputs[OutputSchema::dx];
     
-    math::cross_entropy_gradients<float, CPUContext>(m, n,
-                                                     prob->GetPtrConst<float>(),
-                                                     label->GetPtrConst<float>(),
-                                                     dx->GetPtrMutable<float>()
+    math::cross_entropy_gradients<DT, DC>(m, n,
+                                                     prob->GetPtrConst<DT>(),
+                                                     label->GetPtrConst<DT>(),
+                                                     dx->GetPtrMutable<DT>()
                                                      );
     
-    math::scal<float, CPUContext>(m * n,
-                                  loss->GetPtrConst<float>()[0] / static_cast<float>(m),
-                                  dx->GetPtrConst<float>(),
-                                  dx->GetPtrMutable<float>()
+    math::scal<DT, DC>(m * n,
+                                  loss->GetPtrConst<DT>()[0] / static_cast<DT>(m),
+                                  dx->GetPtrConst<DT>(),
+                                  dx->GetPtrMutable<DT>()
                                   );
 }
 
-REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_Gradient, SoftmaxCrossEntropyWithLabelGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_float_Gradient, 
+                    SoftmaxCrossEntropyWithLabelGradientOp<float, CPUContext>)
+
+REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_double_Gradient,
+                    SoftmaxCrossEntropyWithLabelGradientOp<double, CPUContext>)
 
 struct SoftmaxXentLossWithLabelGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type + "_Gradient";
+        opio_grad.type = opio.type + "_" + opio.data_type + "_Gradient";
+        opio_grad.data_type = opio.data_type;
         opio_grad.inputs.push_back(opio.inputs[0]);
         opio_grad.inputs.push_back(opio.inputs[1]);
         opio_grad.inputs.push_back(opio.outputs[0]);

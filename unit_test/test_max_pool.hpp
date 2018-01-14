@@ -29,6 +29,7 @@ TEST(MaxPoolOperatorTest, VerifyCPUResults) {
     };
     
     opio.type = "MaxPool";
+    opio.data_type = "double";
     opio.inputs.push_back("x");
     opio.outputs.push_back("y");
     opio.outputs.push_back("idx");

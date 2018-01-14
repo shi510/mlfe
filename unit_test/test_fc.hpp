@@ -22,6 +22,7 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     auto set =[](double *p, double val, int size){ for(int i = 0; i < size; ++i){ p[i] = val; } };
     
     opio.type = "FC";
+    opio.data_type = "double";
     opio.inputs.push_back("x");
     opio.inputs.push_back("w");
     opio.inputs.push_back("b");

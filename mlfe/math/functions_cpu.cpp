@@ -18,12 +18,35 @@ void ReluFunction<float, CPUContext>(
 }
 
 template <>
+void ReluFunction<double, CPUContext>(
+    const int size,
+    const double *x,
+    double *y
+    ) {
+    for (int i = 0; i < size; ++i) {
+        y[i] = x[i] > 0 ? x[i] : 0;
+    }
+}
+
+template <>
 void ReluGradientFunction<float, CPUContext>(
                                              const int size,
                                              const float *y,
                                              const float *dy,
                                              float *dx
                                              ){
+    for (int i = 0; i < size; ++i) {
+        dx[i] = y[i] > 0 ? dy[i] : 0;
+    }
+}
+
+template <>
+void ReluGradientFunction<double, CPUContext>(
+    const int size,
+    const double *y,
+    const double *dy,
+    double *dx
+    ) {
     for (int i = 0; i < size; ++i) {
         dx[i] = y[i] > 0 ? dy[i] : 0;
     }

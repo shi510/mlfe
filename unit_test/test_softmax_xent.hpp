@@ -27,6 +27,7 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     };
     
     opio.type = "SoftmaxXentLossWithLabel";
+    opio.data_type = "double";
     opio.inputs.push_back("x");
     opio.inputs.push_back("label");
     opio.outputs.push_back("prob");

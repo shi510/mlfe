@@ -19,6 +19,7 @@ OperatorIO NetBuilder::AddDBReader(
                                      ){
     OperatorIO opio;
     opio.type = "DBReader";
+    opio.data_type = "uchar";
     opio.outputs.push_back(name + "_data");
     opio.outputs.push_back(name + "_label");
     opio.param.Add("DatabasePath", db_path);
@@ -56,6 +57,7 @@ OperatorIO NetBuilder::AddScale(std::string name, std::string x, float scaler){
 OperatorIO NetBuilder::AddCast(std::string name, std::string x, std::string cast_type){
     OperatorIO opio;
     opio.type = "Cast";
+    opio.data_type.clear();
     opio.inputs.push_back(x);
     opio.outputs.push_back(name + "_y");
     

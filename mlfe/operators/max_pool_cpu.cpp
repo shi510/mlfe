@@ -4,11 +4,11 @@
 
 namespace mlfe{
 
-template <>
-MaxPoolOp<float, CPUContext>::MaxPoolOp(
+template <class DT, class DC>
+MaxPoolOp<DT, DC>::MaxPoolOp(
                                         OperatorIO &opio,
                                         ItemHolder *ih
-                                        ) : Operator<CPUContext>(opio, ih) {
+                                        ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 1,
                    "[MaxPool Op] inputs.size() == 1.");
     runtime_assert(outputs.size() == 2,
@@ -27,7 +27,7 @@ MaxPoolOp<float, CPUContext>::MaxPoolOp(
         stride = opio.param.GetParam<std::vector<int>>("Stride");
         out_h = (x->Dim(2) - kernel[0]) / stride[0] + 1;
         out_w = (x->Dim(3) - kernel[1]) / stride[1] + 1;
-        y->template Resize<float>({x->Dim(0), x->Dim(1), out_h, out_w});
+        y->template Resize<DT>({x->Dim(0), x->Dim(1), out_h, out_w});
         idx->template Resize<int>(*y);
     }
     else{
@@ -38,16 +38,16 @@ MaxPoolOp<float, CPUContext>::MaxPoolOp(
     }
 }
 
-template <>
-void MaxPoolOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void MaxPoolOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     auto idx = outputs[OutputSchema::idx];
     auto y = outputs[OutputSchema::y];
-    const float *x_ptr = x->GetPtrConst<float>();
-    float *y_ptr = y->GetPtrMutable<float>();
+    const DT *x_ptr = x->GetPtrConst<DT>();
+    DT *y_ptr = y->GetPtrMutable<DT>();
     int *idx_ptr = idx->GetPtrMutable<int>();
     
-    y->template SetByConst<float>(static_cast<float>(-FLT_MAX));
+    y->template SetByConst<DT>(static_cast<DT>(-FLT_MAX));
     for (int n = 0; n < x->Dim(0); ++n){
         for (int c = 0; c < x->Dim(1); ++c){
             for (int ph = 0; ph < out_h; ++ph){
@@ -75,13 +75,14 @@ void MaxPoolOp<float, CPUContext>::Compute(){
     }
 }
 
-REGIST_OPERATOR_CPU(MaxPool, MaxPoolOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(MaxPool_float, MaxPoolOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(MaxPool_double, MaxPoolOp<double, CPUContext>)
 
-template <>
-MaxPoolGradientOp<float, CPUContext>::MaxPoolGradientOp(
+template <class DT, class DC>
+MaxPoolGradientOp<DT, DC>::MaxPoolGradientOp(
                                                         OperatorIO &opio,
                                                         ItemHolder *ih
-                                                        ) : Operator<CPUContext>(opio, ih) {
+                                                        ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 3,
                    "[MaxPool Gradient Op] inputs.size() == 3.");
     runtime_assert(outputs.size() == 1,
@@ -104,7 +105,7 @@ MaxPoolGradientOp<float, CPUContext>::MaxPoolGradientOp(
         stride = opio.param.GetParam<std::vector<int>>("Stride");
         out_h = dy->Dim(2);
         out_w = dy->Dim(3);
-        dx->template Resize<float>(*x);
+        dx->template Resize<DT>(*x);
     }
     else{
         runtime_assert(idx->CompareSizeWith(*dy),
@@ -112,16 +113,16 @@ MaxPoolGradientOp<float, CPUContext>::MaxPoolGradientOp(
     }
 }
 
-template <>
-void MaxPoolGradientOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void MaxPoolGradientOp<DT, DC>::Compute(){
     const auto idx = inputs[InputSchema::idx];
     const auto dy = inputs[InputSchema::dy];
     auto dx = outputs[OutputSchema::dx];
-    const float *dy_ptr = dy->GetPtrConst<float>();
+    const DT *dy_ptr = dy->GetPtrConst<DT>();
     const int *idx_ptr = idx->GetPtrConst<int>();
-    float *dx_ptr = dx->GetPtrMutable<float>();
+    DT *dx_ptr = dx->GetPtrMutable<DT>();
     
-    dx->template SetByConst<float>(static_cast<float>(0));
+    dx->template SetByConst<DT>(static_cast<DT>(0));
     for (int n = 0; n < dy->Dim(0); ++n) {
         for (int c = 0; c < dy->Dim(1); ++c) {
             for (int ph = 0; ph < out_h; ++ph) {
@@ -138,12 +139,14 @@ void MaxPoolGradientOp<float, CPUContext>::Compute(){
     }
 }
 
-REGIST_OPERATOR_CPU(MaxPool_Gradient, MaxPoolGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(MaxPool_float_Gradient, MaxPoolGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(MaxPool_double_Gradient, MaxPoolGradientOp<double, CPUContext>)
 
 struct MaxPoolGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type + "_Gradient";
+        opio_grad.type = opio.type + "_" + opio.data_type + "_Gradient";
+        opio_grad.data_type = opio.data_type;
         opio_grad.inputs.push_back(opio.inputs[0]);
         opio_grad.inputs.push_back(opio.outputs[1]);
         opio_grad.inputs.push_back(opio.outputs[0] + "_grad");

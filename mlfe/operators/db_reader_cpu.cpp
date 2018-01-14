@@ -92,6 +92,6 @@ void DBReaderOp<unsigned char, CPUContext>::Compute(){
     background_worker.AddTask(std::bind(&DBReaderOp::FillBuffer, this), 0);
 }
 
-REGIST_OPERATOR_CPU(DBReader, DBReaderOp<unsigned char, CPUContext>)
+REGIST_OPERATOR_CPU(DBReader_uchar, DBReaderOp<unsigned char, CPUContext>)
 
 } /* namespace mlfe */

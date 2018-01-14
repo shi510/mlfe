@@ -29,6 +29,7 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     };
     
     opio.type = "Conv";
+    opio.data_type = "double";
     opio.accelerator = "Eigen";
     opio.inputs.push_back("x");
     opio.inputs.push_back("w");

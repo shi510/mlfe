@@ -5,11 +5,11 @@
 
 namespace mlfe{
 
-template <>
-OneHotOp<float, CPUContext>::OneHotOp(
+template <class DT, class DC>
+OneHotOp<DT, DC>::OneHotOp(
                                       OperatorIO &opio,
                                       ItemHolder *ih
-                                      ) : Operator<CPUContext>(opio, ih) {
+                                      ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 1,
                    "[OneHot Op] inputs.size() == 1.");
     runtime_assert(outputs.size() == 1,
@@ -22,7 +22,7 @@ OneHotOp<float, CPUContext>::OneHotOp(
        !x->IsEmpty()
        ){
         dim = opio.param.GetParam<int>("Dim");
-        y->Resize<float>({x->Dim(0), dim});
+        y->Resize<DT>({x->Dim(0), dim});
     }
     else{
         runtime_assert(x->Dims() == y->Dims(),
@@ -30,22 +30,23 @@ OneHotOp<float, CPUContext>::OneHotOp(
     }
 }
 
-template <>
-void OneHotOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void OneHotOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     auto y = outputs[OutputSchema::y];
-    math::scal<float, CPUContext>(
+    math::scal<DT, DC>(
                                   y->Size(),
-                                  static_cast<float>(0),
-                                  y->GetPtrConst<float>(),
-                                  y->GetPtrMutable<float>()
+                                  static_cast<DT>(0),
+                                  y->GetPtrConst<DT>(),
+                                  y->GetPtrMutable<DT>()
                                   );
     for(int b = 0; b < x->Dim(0); ++b){
-        int val = x->GetPtrConst<float>()[b];
-        y->GetPtrMutable<float>()[b * dim + val] = static_cast<float>(1);
+        int val = x->GetPtrConst<DT>()[b];
+        y->GetPtrMutable<DT>()[b * dim + val] = static_cast<DT>(1);
     }
 }
 
-REGIST_OPERATOR_CPU(OneHot, OneHotOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(OneHot_float, OneHotOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(OneHot_double, OneHotOp<double, CPUContext>)
 
 } /* namespace mlfe */

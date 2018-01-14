@@ -6,67 +6,69 @@
 
 namespace mlfe{
 
-template <>
-FillOp<CPUContext>::FillOp(
+template <class DC>
+FillOp<DC>::FillOp(
                            OperatorIO &opio,
                            ItemHolder *ih
-                           ) : Operator<CPUContext>(opio, ih), rng(math::GetRandomSeed()) {
+                           ) : Operator<DC>(opio, ih), rng(math::GetRandomSeed()) {
     runtime_assert(inputs.size() == 0,
                    "[Fill Op] inputs.size() == 0.");
     runtime_assert(outputs.size() == 1,
                    "[Fill Op] outputs.size() == 1.");
 }
 
-template <>
-ConstantFillOp<float, CPUContext>::ConstantFillOp(
+template <class DT, class DC>
+ConstantFillOp<DT, DC>::ConstantFillOp(
                                                   OperatorIO &opio,
                                                   ItemHolder *ih
-                                                  ) : FillOp<CPUContext>(opio, ih) {
+                                                  ) : FillOp<DC>(opio, ih) {
     auto y = outputs[OutputSchema::y];
     if(opio.param.HasParam("Value")){
-        val = opio.param.GetParam<float>("Value");
+        val = opio.param.GetParam<DT>("Value");
     }
     else{
-        val = static_cast<float>(0);
+        val = static_cast<DT>(0);
     }
     if(y->IsEmpty()){
         throw std::string("[ConstantFill] Output is empty.");
     }
 }
 
-template <>
-void ConstantFillOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void ConstantFillOp<DT, DC>::Compute(){
     auto y = outputs[OutputSchema::y];
-    float *ptr = y->GetPtrMutable<float>();
+    DT *ptr = y->GetPtrMutable<DT>();
     for(int n = 0; n < y->Size(); ++n){
         ptr[n] = val;
     }
 }
 
-REGIST_OPERATOR_CPU(ConstantFill, ConstantFillOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(ConstantFill_float, ConstantFillOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(ConstantFill_double, ConstantFillOp<double, CPUContext>)
 
-template <>
-XavierFillOp<float, CPUContext>::XavierFillOp(
+template <class DT, class DC>
+XavierFillOp<DT, DC>::XavierFillOp(
                                               OperatorIO &opio,
                                               ItemHolder *ih
-                                              ) : FillOp<CPUContext>(opio, ih) {
+                                              ) : FillOp<DC>(opio, ih) {
     auto y = outputs[OutputSchema::y];
     if(y->IsEmpty()){
         throw std::string("[XaiverFill] Output is empty.");
     }
-    scale = std::sqrt(static_cast<float>(2) / static_cast<float>(y->Size() / y->Dim(0)));
-    uniform = std::uniform_real_distribution<float>(-scale, scale);
+    scale = std::sqrt(static_cast<DT>(2) / static_cast<DT>(y->Size() / y->Dim(0)));
+    uniform = std::uniform_real_distribution<DT>(-scale, scale);
 }
 
-template <>
-void XavierFillOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void XavierFillOp<DT, DC>::Compute(){
     auto y = outputs[OutputSchema::y];
-    float *ptr = y->GetPtrMutable<float>();
+    DT *ptr = y->GetPtrMutable<DT>();
     for(int n = 0; n < y->Size(); ++n){
         ptr[n] = uniform(this->rng);
     }
 }
 
-REGIST_OPERATOR_CPU(XavierFill, XavierFillOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(XavierFill_float, XavierFillOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(XavierFill_double, XavierFillOp<double, CPUContext>)
 
 } /* namespace mlfe */

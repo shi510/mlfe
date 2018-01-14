@@ -3,11 +3,11 @@
 
 namespace mlfe{
 
-template <>
-ReluOp<float, CPUContext>::ReluOp(
+template <class DT, class DC>
+ReluOp<DT, DC>::ReluOp(
                                   OperatorIO &opio,
                                   ItemHolder *ih
-                                  ) : Operator<CPUContext>(opio, ih) {
+                                  ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 1,
                    "[Relu Op] inputs.size() == 1.");
     runtime_assert(outputs.size() == 1,
@@ -26,7 +26,7 @@ ReluOp<float, CPUContext>::ReluOp(
             *y = *x;
         }
         else{
-            y->Resize<float>(*x);
+            y->Resize<DT>(*x);
         }
     }
     else{
@@ -35,25 +35,26 @@ ReluOp<float, CPUContext>::ReluOp(
     }
 }
 
-template <>
-void ReluOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void ReluOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     auto y = outputs[OutputSchema::y];
-    math::ReluFunction<float, CPUContext>(
+    math::ReluFunction<DT, DC>(
                                           x->Size(),
-                                          x->GetPtrConst<float>(),
-                                          y->GetPtrMutable<float>()
+                                          x->GetPtrConst<DT>(),
+                                          y->GetPtrMutable<DT>()
                                           );
 }
 
-REGIST_OPERATOR_CPU(Relu, ReluOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Relu_float, ReluOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Relu_double, ReluOp<double, CPUContext>)
 
 
-template <>
-ReluGradientOp<float, CPUContext>::ReluGradientOp(
+template <class DT, class DC>
+ReluGradientOp<DT, DC>::ReluGradientOp(
                                                   OperatorIO &opio,
                                                   ItemHolder *ih
-                                                  ) : Operator<CPUContext>(opio, ih) {
+                                                  ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 2,
                    "[Relu Gradient Op] inputs.size() == 2.");
     runtime_assert(outputs.size() == 1,
@@ -74,7 +75,7 @@ ReluGradientOp<float, CPUContext>::ReluGradientOp(
             *dx = *dy;
         }
         else{
-            dx->Resize<float>(*x);
+            dx->Resize<DT>(*x);
         }
     }
     else{
@@ -84,25 +85,27 @@ ReluGradientOp<float, CPUContext>::ReluGradientOp(
     
 }
 
-template <>
-void ReluGradientOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void ReluGradientOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     const auto dy = inputs[InputSchema::dy];
     auto dx = outputs[OutputSchema::dx];
-    math::ReluGradientFunction<float, CPUContext>(
+    math::ReluGradientFunction<DT, DC>(
                                                   dy->Size(),
-                                                  x->GetPtrConst<float>(),
-                                                  dy->GetPtrConst<float>(),
-                                                  dx->GetPtrMutable<float>()
+                                                  x->GetPtrConst<DT>(),
+                                                  dy->GetPtrConst<DT>(),
+                                                  dx->GetPtrMutable<DT>()
                                                   );
 }
 
-REGIST_OPERATOR_CPU(Relu_Gradient, ReluGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Relu_float_Gradient, ReluGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Relu_double_Gradient, ReluGradientOp<double, CPUContext>)
 
 struct ReluGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type + "_Gradient";
+        opio_grad.type = opio.type + "_" + opio.data_type + "_Gradient";
+        opio_grad.data_type = opio.data_type;
         opio_grad.inputs.push_back(opio.inputs[0]);
         opio_grad.inputs.push_back(opio.outputs[0] + "_grad");
         opio_grad.outputs.push_back(opio.inputs[0] + "_grad");

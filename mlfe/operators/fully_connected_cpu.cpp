@@ -3,11 +3,11 @@
 
 namespace mlfe{
 
-template <>
-FullyConnectedOp<float, CPUContext>::FullyConnectedOp(
+template <class DT, class DC>
+FullyConnectedOp<DT, DC>::FullyConnectedOp(
                                                       OperatorIO &opio,
                                                       ItemHolder *ih
-                                                      ) : Operator<CPUContext>(opio, ih) {
+                                                      ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 3,
                    "[Fully Connected Op] inputs.size() == 3.");
     runtime_assert(outputs.size() == 1,
@@ -26,9 +26,9 @@ FullyConnectedOp<float, CPUContext>::FullyConnectedOp(
        !x->IsEmpty() &&
        x->Dims() == 2){
         units = opio.param.GetParam<int>("Units");
-        w->Resize<float>({units, x->Dim(1)});
-        b->Resize<float>({units});
-        y->Resize<float>({x->Dim(0), units});
+        w->Resize<DT>({units, x->Dim(1)});
+        b->Resize<DT>({units});
+        y->Resize<DT>({x->Dim(0), units});
     }
     else{
         runtime_assert(x->Dims() == 2,
@@ -41,8 +41,8 @@ FullyConnectedOp<float, CPUContext>::FullyConnectedOp(
                        "[Fully Connected Op] y->Dim(1) == w->Dim(0).");
     }
     
-    bias_multiplier.Resize<float, CPUContext>({x->Dim(0)});
-    bias_multiplier.SetByConst<float>(float(1));
+    bias_multiplier.Resize<DT, DC>({x->Dim(0)});
+    bias_multiplier.SetByConst<DT>(DT(1));
     
     /*
      * batch size.
@@ -58,8 +58,8 @@ FullyConnectedOp<float, CPUContext>::FullyConnectedOp(
     k = w->Dim(1);
 }
 
-template <>
-void FullyConnectedOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void FullyConnectedOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     const auto w = inputs[InputSchema::w];
     const auto b = inputs[InputSchema::b];
@@ -69,12 +69,12 @@ void FullyConnectedOp<float, CPUContext>::Compute(){
      * x(batch_size x input_size) * w(output_size x input_size)^T
      *  = y(batch_size x output_size)
      */
-    math::gemm<float, CPUContext>(
+    math::gemm<DT, DC>(
                                   false, true,
                                   m, n, k,
-                                  float(1), x->GetPtrConst<float>(), k,
-                                  w->GetPtrConst<float>(), k,
-                                  float(0), y->GetPtrMutable<float>(), n, nullptr
+                                  DT(1), x->GetPtrConst<DT>(), k,
+                                  w->GetPtrConst<DT>(), k,
+                                  DT(0), y->GetPtrMutable<DT>(), n, nullptr
                                   );
     
     /*
@@ -82,22 +82,23 @@ void FullyConnectedOp<float, CPUContext>::Compute(){
      * y = y + b;
      */
     
-    math::gemm<float, CPUContext>(
+    math::gemm<DT, DC>(
                                   false, false,
                                   m, n, 1,
-                                  float(1), bias_multiplier.GetPtrConst<float>(), 1
-                                  , b->GetPtrConst<float>(), n,
-                                  float(1), y->GetPtrMutable<float>(), n, nullptr
+                                  DT(1), bias_multiplier.GetPtrConst<DT>(), 1
+                                  , b->GetPtrConst<DT>(), n,
+                                  DT(1), y->GetPtrMutable<DT>(), n, nullptr
                                   );
 }
 
-REGIST_OPERATOR_CPU(FC, FullyConnectedOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(FC_float, FullyConnectedOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(FC_double, FullyConnectedOp<double, CPUContext>)
 
-template <>
-FullyConnectedGradientOp<float, CPUContext>::FullyConnectedGradientOp(
+template <class DT, class DC>
+FullyConnectedGradientOp<DT, DC>::FullyConnectedGradientOp(
                                                                       OperatorIO &opio,
                                                                       ItemHolder *ih
-                                                                      ) : Operator<CPUContext>(opio, ih){
+                                                                      ) : Operator<DC>(opio, ih){
     runtime_assert(inputs.size() == 3,
                    "[Fully Connected Gradient Op] inputs.size() == 3.");
     runtime_assert(outputs.size() == 3,
@@ -119,9 +120,9 @@ FullyConnectedGradientOp<float, CPUContext>::FullyConnectedGradientOp(
        x->Dims() == 2
        ){
         units = opio.param.GetParam<int>("Units");
-        dw->Resize<float>(*w);
-        db->Resize<float>({units});
-        dx->Resize<float>(*x);
+        dw->Resize<DT>(*w);
+        db->Resize<DT>({units});
+        dx->Resize<DT>(*x);
     }
     else{
         runtime_assert(x->Dims() == 2,
@@ -134,8 +135,8 @@ FullyConnectedGradientOp<float, CPUContext>::FullyConnectedGradientOp(
                        "[Fully Connected Gradient Op] dx->CompareSizeWith(x).");
     }
     
-    bias_multiplier.Resize<float, CPUContext>({x->Dim(0)});
-    bias_multiplier.SetByConst<float>(float(1));
+    bias_multiplier.Resize<DT, DC>({x->Dim(0)});
+    bias_multiplier.SetByConst<DT>(DT(1));
     
     /*
      * batch size.
@@ -151,8 +152,8 @@ FullyConnectedGradientOp<float, CPUContext>::FullyConnectedGradientOp(
     k = w->Dim(1);
 }
 
-template <>
-void FullyConnectedGradientOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void FullyConnectedGradientOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     const auto w = inputs[InputSchema::w];
     const auto dy = inputs[InputSchema::dy];
@@ -162,55 +163,57 @@ void FullyConnectedGradientOp<float, CPUContext>::Compute(){
     /*
      * db = dy.
      */
-    math::gemv<float, CPUContext>(true, m, n, float(1),
-                                  dy->GetPtrConst<float>(), n,
-                                  bias_multiplier.GetPtrConst<float>(), float(0),
-                                  db->GetPtrMutable<float>(), n, nullptr);
+    math::gemv<DT, DC>(true, m, n, DT(1),
+                                  dy->GetPtrConst<DT>(), n,
+                                  bias_multiplier.GetPtrConst<DT>(), DT(0),
+                                  db->GetPtrMutable<DT>(), n, nullptr);
     
     /*
      * Calculate gradients of weights.
      * dy(batch_size x output_size)^T * x(batch_size x input_size)
      *  = dw(output_size x input_size)
      */
-    math::gemm<float, CPUContext>(true, false,
+    math::gemm<DT, DC>(true, false,
                                   n, k, m,
-                                  float(1), dy->GetPtrConst<float>(), n,
-                                  x->GetPtrConst<float>(), k,
-                                  float(0), dw->GetPtrMutable<float>(), k, nullptr);
+                                  DT(1), dy->GetPtrConst<DT>(), n,
+                                  x->GetPtrConst<DT>(), k,
+                                  DT(0), dw->GetPtrMutable<DT>(), k, nullptr);
     
     /*
      * Calculate loss to propagate through bottom.
      * dy(batch_size x output_size) * w(output_size x input_size)
      *  = dx(batch_size x input_size)
      */
-    math::gemm<float, CPUContext>(
+    math::gemm<DT, DC>(
                                   false, false,
                                   m, k, n,
-                                  float(1), dy->GetPtrConst<float>(), n,
-                                  w->GetPtrConst<float>(), k,
-                                  float(0), dx->GetPtrMutable<float>(), k, nullptr);
+                                  DT(1), dy->GetPtrConst<DT>(), n,
+                                  w->GetPtrConst<DT>(), k,
+                                  DT(0), dx->GetPtrMutable<DT>(), k, nullptr);
     
-    math::scal<float, CPUContext>(
+    math::scal<DT, DC>(
                                   db->Size(),
-                                  float(1) / static_cast<float>(x->Dim(0)),
-                                  db->GetPtrConst<float>(),
-                                  db->GetPtrMutable<float>()
+                                  DT(1) / static_cast<DT>(x->Dim(0)),
+                                  db->GetPtrConst<DT>(),
+                                  db->GetPtrMutable<DT>()
                                   );
     
-    math::scal<float, CPUContext>(
+    math::scal<DT, DC>(
                                   dw->Size(),
-                                  float(1) / static_cast<float>(x->Dim(0)),
-                                  dw->GetPtrConst<float>(),
-                                  dw->GetPtrMutable<float>()
+                                  DT(1) / static_cast<DT>(x->Dim(0)),
+                                  dw->GetPtrConst<DT>(),
+                                  dw->GetPtrMutable<DT>()
                                   );
 }
 
-REGIST_OPERATOR_CPU(FC_Gradient, FullyConnectedGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(FC_float_Gradient, FullyConnectedGradientOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(FC_double_Gradient, FullyConnectedGradientOp<double, CPUContext>)
 
 struct FCGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type + "_Gradient";
+        opio_grad.type = opio.type + "_" + opio.data_type + "_Gradient";
+        opio_grad.data_type = opio.data_type;
         opio_grad.inputs.push_back(opio.inputs[0]);
         opio_grad.inputs.push_back(opio.inputs[1]);
         opio_grad.inputs.push_back(opio.outputs[0] + "_grad");

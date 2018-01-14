@@ -5,11 +5,11 @@
 
 namespace mlfe{
 
-template <>
-ScaleOp<float, CPUContext>::ScaleOp(
+template <class DT, class DC>
+ScaleOp<DT, DC>::ScaleOp(
                                     OperatorIO &opio,
                                     ItemHolder *ih
-                                    ) : Operator<CPUContext>(opio, ih) {
+                                    ) : Operator<DC>(opio, ih) {
     runtime_assert(inputs.size() == 1,
                    "[Scale Op] inputs.size() == 1.");
     runtime_assert(outputs.size() == 1,
@@ -22,8 +22,8 @@ ScaleOp<float, CPUContext>::ScaleOp(
     if(y->IsEmpty() &&
        !x->IsEmpty()
        ){
-        scaler = opio.param.GetParam<float>("Scale");
-        y->Resize<float>(*x);
+        scaler = opio.param.GetParam<DT>("Scale");
+        y->Resize<DT>(*x);
     }
     else{
         runtime_assert(x->Dims() == y->Dims(),
@@ -31,24 +31,27 @@ ScaleOp<float, CPUContext>::ScaleOp(
     }
 }
 
-template <>
-void ScaleOp<float, CPUContext>::Compute(){
+template <class DT, class DC>
+void ScaleOp<DT, DC>::Compute(){
     const auto x = inputs[InputSchema::x];
     auto y = outputs[OutputSchema::y];
-    math::scal<float, CPUContext>(
+    math::scal<DT, DC>(
                                   x->Size(),
                                   scaler,
-                                  x->GetPtrConst<float>(),
-                                  y->GetPtrMutable<float>()
+                                  x->GetPtrConst<DT>(),
+                                  y->GetPtrMutable<DT>()
                                   );
 }
 
-REGIST_OPERATOR_CPU(Scale, ScaleOp<float, CPUContext>)
+
+REGIST_OPERATOR_CPU(Scale_float, ScaleOp<float, CPUContext>)
+REGIST_OPERATOR_CPU(Scale_double, ScaleOp<double, CPUContext>)
 
 struct ScaleGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type;
+        opio_grad.type = opio.type + "_" + opio.data_type;
+        opio_grad.data_type = opio.data_type;
         opio_grad.inputs.push_back(opio.outputs[0] + "_grad");
         opio_grad.outputs.push_back(opio.inputs[0] + "_grad");
         opio_grad.param.Add("Scale", 1.f);
