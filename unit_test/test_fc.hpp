@@ -11,7 +11,7 @@ using namespace mlfe;
 
 TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     ItemHolder ih;
-    OperatorIO opio, opio_grad;
+    OperatorIO opio;
     std::shared_ptr<OperatorBase> fc, fc_grad;
     TensorBlob<CPUContext> *x, *w, *b, *y, *dy, *dw, *db, *dx;
     const int x_size = 10;
@@ -28,29 +28,20 @@ TEST(FullyConnectedOperatorTest, VerifyCPUResults) {
     opio.outputs.push_back("y");
     opio.param.Add("Units", out_size);
     
-    opio_grad.type = "FC_Gradient";
-    opio_grad.inputs.push_back("x");
-    opio_grad.inputs.push_back("w");
-    opio_grad.inputs.push_back("dy");
-    opio_grad.outputs.push_back("dw");
-    opio_grad.outputs.push_back("db");
-    opio_grad.outputs.push_back("dx");
-    opio_grad.param = opio.param;
-    
     ih.AddItem<TensorBlob<CPUContext>>("x");
-    ih.AddItem<TensorBlob<CPUContext>>("dy");
+    ih.AddItem<TensorBlob<CPUContext>>("y_grad");
     x = ih.GetItem<TensorBlob<CPUContext>>("x");
-    dy = ih.GetItem<TensorBlob<CPUContext>>("dy");
+    dy = ih.GetItem<TensorBlob<CPUContext>>("y_grad");
     x->Resize<double>({batch_size, x_size});
     dy->Resize<double>({batch_size, out_size});
     fc = CreateOperator(opio, &ih);
-    fc_grad = CreateOperator(opio_grad, &ih);
+    fc_grad = CreateOperatorGradient(opio, &ih);
     w = ih.GetItem<TensorBlob<CPUContext>>("w");
     b = ih.GetItem<TensorBlob<CPUContext>>("b");
     y = ih.GetItem<TensorBlob<CPUContext>>("y");
-    dw = ih.GetItem<TensorBlob<CPUContext>>("dw");
-    db = ih.GetItem<TensorBlob<CPUContext>>("db");
-    dx = ih.GetItem<TensorBlob<CPUContext>>("dx");
+    dw = ih.GetItem<TensorBlob<CPUContext>>("w_grad");
+    db = ih.GetItem<TensorBlob<CPUContext>>("b_grad");
+    dx = ih.GetItem<TensorBlob<CPUContext>>("x_grad");
     
     set(x->GetPtrMutable<double>(), 1, batch_size * x_size);
     for(int i = 0; i < out_size; ++i){

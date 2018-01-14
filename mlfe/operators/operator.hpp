@@ -46,11 +46,15 @@ public:
     Operator(OperatorIO &opio, ItemHolder *ih)
         : OperatorBase(opio, ih){
             for(auto &in : opio.inputs){
-                ih->AddItem<TensorBlob<DC>>(in);
+                if (!ih->HasItem(in)){
+                    ih->AddItem<TensorBlob<DC>>(in);
+                }
                 inputs.push_back(ih->GetItem(in)->Get<TensorBlob<DC>>());
             }
             for(auto &out : opio.outputs){
-                ih->AddItem<TensorBlob<DC>>(out);
+                if (!ih->HasItem(out)){
+                    ih->AddItem<TensorBlob<DC>>(out);
+                }
                 outputs.push_back(ih->GetItem(out)->Get<TensorBlob<DC>>());
             }
         }

@@ -18,7 +18,7 @@ public:
     
     void Register(const Key& key, Creator creator) {
         if (registry_.count(key) != 0) {
-            printf("Key already registered.\n");
+            std::cout << "Key already registered ->" << key << std::endl;
             std::exit(1);
         }
         registry_[key] = creator;

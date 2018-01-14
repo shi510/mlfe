@@ -11,7 +11,7 @@ using namespace mlfe;
 
 TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     ItemHolder ih;
-    OperatorIO opio, opio_grad;
+    OperatorIO opio;
     std::shared_ptr<OperatorBase> softmax_xent, softmax_xent_grad;
     TensorBlob<CPUContext> *x, *label, *prob, *loss, *dx;
     vector<shared_ptr<TensorBlob<CPUContext>>> sm_inputs(2), sm_grad_inputs(4);
@@ -32,13 +32,6 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     opio.outputs.push_back("prob");
     opio.outputs.push_back("loss");
     
-    opio_grad.type = "SoftmaxXentLossWithLabel_Gradient";
-    opio_grad.inputs.push_back("x");
-    opio_grad.inputs.push_back("label");
-    opio_grad.inputs.push_back("prob");
-    opio_grad.inputs.push_back("loss");
-    opio_grad.outputs.push_back("dx");
-    
     ih.AddItem<TensorBlob<CPUContext>>("x");
     ih.AddItem<TensorBlob<CPUContext>>("label");
     x = ih.GetItem<TensorBlob<CPUContext>>("x");
@@ -46,10 +39,10 @@ TEST(SoftmaxXentWithLabelOperatorTest, VerifyCPUResults) {
     x->Resize<double>({batch_size, x_size});
     label->Resize<double>({batch_size, x_size});
     softmax_xent = CreateOperator(opio, &ih);
-    softmax_xent_grad = CreateOperator(opio_grad, &ih);
+    softmax_xent_grad = CreateOperatorGradient(opio, &ih);
     prob = ih.GetItem<TensorBlob<CPUContext>>("prob");
     loss = ih.GetItem<TensorBlob<CPUContext>>("loss");
-    dx = ih.GetItem<TensorBlob<CPUContext>>("dx");
+    dx = ih.GetItem<TensorBlob<CPUContext>>("x_grad");
     
     set(x->GetPtrMutable<double>(), 0, x->Size(), 1., 0.5);
     set(label->GetPtrMutable<double>(), 0, label->Size(), 0., 0.);

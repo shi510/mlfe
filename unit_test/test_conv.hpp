@@ -12,7 +12,7 @@ using namespace mlfe;
 
 TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     ItemHolder ih;
-    OperatorIO opio, opio_grad;
+    OperatorIO opio;
     std::shared_ptr<OperatorBase> conv, conv_grad;
     TensorBlob<CPUContext> *x, *w, *b, *y, *dy, *dw, *db, *dx;
     const std::vector<int> kernel_shape = {3, 3};
@@ -28,7 +28,8 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
         }
     };
     
-    opio.type = "Conv_Eigen";
+    opio.type = "Conv";
+    opio.accelerator = "Eigen";
     opio.inputs.push_back("x");
     opio.inputs.push_back("w");
     opio.inputs.push_back("b");
@@ -38,19 +39,10 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
     opio.param.Add("Stride", stride_shape);
     opio.param.Add("Padding", padding);
     
-    opio_grad.type = "Conv_Gradient";
-    opio_grad.inputs.push_back("x");
-    opio_grad.inputs.push_back("w");
-    opio_grad.inputs.push_back("dy");
-    opio_grad.outputs.push_back("dw");
-    opio_grad.outputs.push_back("db");
-    opio_grad.outputs.push_back("dx");
-    opio_grad.param = opio.param;
-    
     ih.AddItem<TensorBlob<CPUContext>>("x");
-    ih.AddItem<TensorBlob<CPUContext>>("dy");
+    ih.AddItem<TensorBlob<CPUContext>>("y_grad");
     x = ih.GetItem<TensorBlob<CPUContext>>("x");
-    dy = ih.GetItem<TensorBlob<CPUContext>>("dy");
+    dy = ih.GetItem<TensorBlob<CPUContext>>("y_grad");
     x->Resize<double>({batch, 2, 6, 6});
     dy->Resize<double>(
     {
@@ -60,13 +52,13 @@ TEST(ConvolutionOperatorTest, VerifyCPUResults) {
         (x->Dim(3) + 2 * padding - kernel_shape[1]) / stride_shape[1] + 1
     });
     conv = CreateOperator(opio, &ih);
-    conv_grad = CreateOperator(opio_grad, &ih);
+    conv_grad = CreateOperatorGradient(opio, &ih);
     w = ih.GetItem<TensorBlob<CPUContext>>("w");
     b = ih.GetItem<TensorBlob<CPUContext>>("b");
     y = ih.GetItem<TensorBlob<CPUContext>>("y");
-    dw = ih.GetItem<TensorBlob<CPUContext>>("dw");
-    db = ih.GetItem<TensorBlob<CPUContext>>("db");
-    dx = ih.GetItem<TensorBlob<CPUContext>>("dx");
+    dw = ih.GetItem<TensorBlob<CPUContext>>("w_grad");
+    db = ih.GetItem<TensorBlob<CPUContext>>("b_grad");
+    dx = ih.GetItem<TensorBlob<CPUContext>>("x_grad");
     
     set(x->GetPtrMutable<double>(), 0, x->Size(), 1., 0.7);
     set(w->GetPtrMutable<double>(), 0, w->Size(), 1., 0.5);
