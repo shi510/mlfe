@@ -8,15 +8,15 @@ FullyConnectedOp<DT, DC>::FullyConnectedOp(
                                                       OperatorIO &opio,
                                                       ItemHolder *ih
                                                       ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 3,
+    runtime_assert(this->inputs.size() == 3,
                    "[Fully Connected Op] inputs.size() == 3.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Fully Connected Op] outputs.size() == 1.");
     
-    const auto x = inputs[InputSchema::x];
-    const auto w = inputs[InputSchema::w];
-    const auto b = inputs[InputSchema::b];
-    auto y = outputs[OutputSchema::y];
+    const auto x = this->inputs[InputSchema::x];
+    const auto w = this->inputs[InputSchema::w];
+    const auto b = this->inputs[InputSchema::b];
+    auto y = this->outputs[OutputSchema::y];
     int units;
     
     if(opio.param.HasParam("Units") &&
@@ -26,9 +26,9 @@ FullyConnectedOp<DT, DC>::FullyConnectedOp(
        !x->IsEmpty() &&
        x->Dims() == 2){
         units = opio.param.GetParam<int>("Units");
-        w->Resize<DT>({units, x->Dim(1)});
-        b->Resize<DT>({units});
-        y->Resize<DT>({x->Dim(0), units});
+        w->template Resize<DT>({units, x->Dim(1)});
+        b->template Resize<DT>({units});
+        y->template Resize<DT>({x->Dim(0), units});
     }
     else{
         runtime_assert(x->Dims() == 2,
@@ -41,8 +41,8 @@ FullyConnectedOp<DT, DC>::FullyConnectedOp(
                        "[Fully Connected Op] y->Dim(1) == w->Dim(0).");
     }
     
-    bias_multiplier.Resize<DT, DC>({x->Dim(0)});
-    bias_multiplier.SetByConst<DT>(DT(1));
+    bias_multiplier.template Resize<DT, DC>({x->Dim(0)});
+    bias_multiplier.template SetByConst<DT>(DT(1));
     
     /*
      * batch size.
@@ -60,10 +60,10 @@ FullyConnectedOp<DT, DC>::FullyConnectedOp(
 
 template <class DT, class DC>
 void FullyConnectedOp<DT, DC>::Compute(){
-    const auto x = inputs[InputSchema::x];
-    const auto w = inputs[InputSchema::w];
-    const auto b = inputs[InputSchema::b];
-    auto y = outputs[OutputSchema::y];
+    const auto x = this->inputs[InputSchema::x];
+    const auto w = this->inputs[InputSchema::w];
+    const auto b = this->inputs[InputSchema::b];
+    auto y = this->outputs[OutputSchema::y];
     /*
      * Forward computation.
      * x(batch_size x input_size) * w(output_size x input_size)^T
@@ -72,9 +72,9 @@ void FullyConnectedOp<DT, DC>::Compute(){
     math::gemm<DT, DC>(
                                   false, true,
                                   m, n, k,
-                                  DT(1), x->GetPtrConst<DT>(), k,
-                                  w->GetPtrConst<DT>(), k,
-                                  DT(0), y->GetPtrMutable<DT>(), n, nullptr
+                                  DT(1), x->template GetPtrConst<DT>(), k,
+                                  w->template GetPtrConst<DT>(), k,
+                                  DT(0), y->template GetPtrMutable<DT>(), n, nullptr
                                   );
     
     /*
@@ -85,9 +85,9 @@ void FullyConnectedOp<DT, DC>::Compute(){
     math::gemm<DT, DC>(
                                   false, false,
                                   m, n, 1,
-                                  DT(1), bias_multiplier.GetPtrConst<DT>(), 1
-                                  , b->GetPtrConst<DT>(), n,
-                                  DT(1), y->GetPtrMutable<DT>(), n, nullptr
+                                  DT(1), bias_multiplier.template GetPtrConst<DT>(), 1
+                                  , b->template GetPtrConst<DT>(), n,
+                                  DT(1), y->template GetPtrMutable<DT>(), n, nullptr
                                   );
 }
 
@@ -99,17 +99,17 @@ FullyConnectedGradientOp<DT, DC>::FullyConnectedGradientOp(
                                                                       OperatorIO &opio,
                                                                       ItemHolder *ih
                                                                       ) : Operator<DC>(opio, ih){
-    runtime_assert(inputs.size() == 3,
+    runtime_assert(this->inputs.size() == 3,
                    "[Fully Connected Gradient Op] inputs.size() == 3.");
-    runtime_assert(outputs.size() == 3,
+    runtime_assert(this->outputs.size() == 3,
                    "[Fully Connected Gradient Op] outputs.size() == 3.");
     
-    const auto x = inputs[InputSchema::x];
-    const auto w = inputs[InputSchema::w];
-    const auto dy = inputs[InputSchema::dy];
-    auto dw = outputs[OutputSchema::dw];
-    auto db = outputs[OutputSchema::db];
-    auto dx = outputs[OutputSchema::dx];
+    const auto x = this->inputs[InputSchema::x];
+    const auto w = this->inputs[InputSchema::w];
+    const auto dy = this->inputs[InputSchema::dy];
+    auto dw = this->outputs[OutputSchema::dw];
+    auto db = this->outputs[OutputSchema::db];
+    auto dx = this->outputs[OutputSchema::dx];
     int units;
     if(opio.param.HasParam("Units") &&
        dw->IsEmpty() &&
@@ -120,9 +120,9 @@ FullyConnectedGradientOp<DT, DC>::FullyConnectedGradientOp(
        x->Dims() == 2
        ){
         units = opio.param.GetParam<int>("Units");
-        dw->Resize<DT>(*w);
-        db->Resize<DT>({units});
-        dx->Resize<DT>(*x);
+        dw->template Resize<DT>(*w);
+        db->template Resize<DT>({units});
+        dx->template Resize<DT>(*x);
     }
     else{
         runtime_assert(x->Dims() == 2,
@@ -135,8 +135,8 @@ FullyConnectedGradientOp<DT, DC>::FullyConnectedGradientOp(
                        "[Fully Connected Gradient Op] dx->CompareSizeWith(x).");
     }
     
-    bias_multiplier.Resize<DT, DC>({x->Dim(0)});
-    bias_multiplier.SetByConst<DT>(DT(1));
+    bias_multiplier.template Resize<DT, DC>({x->Dim(0)});
+    bias_multiplier.template SetByConst<DT>(DT(1));
     
     /*
      * batch size.
@@ -154,19 +154,19 @@ FullyConnectedGradientOp<DT, DC>::FullyConnectedGradientOp(
 
 template <class DT, class DC>
 void FullyConnectedGradientOp<DT, DC>::Compute(){
-    const auto x = inputs[InputSchema::x];
-    const auto w = inputs[InputSchema::w];
-    const auto dy = inputs[InputSchema::dy];
-    auto dw = outputs[OutputSchema::dw];
-    auto db = outputs[OutputSchema::db];
-    auto dx = outputs[OutputSchema::dx];
+    const auto x = this->inputs[InputSchema::x];
+    const auto w = this->inputs[InputSchema::w];
+    const auto dy = this->inputs[InputSchema::dy];
+    auto dw = this->outputs[OutputSchema::dw];
+    auto db = this->outputs[OutputSchema::db];
+    auto dx = this->outputs[OutputSchema::dx];
     /*
      * db = dy.
      */
     math::gemv<DT, DC>(true, m, n, DT(1),
-                                  dy->GetPtrConst<DT>(), n,
-                                  bias_multiplier.GetPtrConst<DT>(), DT(0),
-                                  db->GetPtrMutable<DT>(), n, nullptr);
+                                  dy->template GetPtrConst<DT>(), n,
+                                  bias_multiplier.template GetPtrConst<DT>(), DT(0),
+                                  db->template GetPtrMutable<DT>(), n, nullptr);
     
     /*
      * Calculate gradients of weights.
@@ -175,9 +175,9 @@ void FullyConnectedGradientOp<DT, DC>::Compute(){
      */
     math::gemm<DT, DC>(true, false,
                                   n, k, m,
-                                  DT(1), dy->GetPtrConst<DT>(), n,
-                                  x->GetPtrConst<DT>(), k,
-                                  DT(0), dw->GetPtrMutable<DT>(), k, nullptr);
+                                  DT(1), dy->template GetPtrConst<DT>(), n,
+                                  x->template GetPtrConst<DT>(), k,
+                                  DT(0), dw->template GetPtrMutable<DT>(), k, nullptr);
     
     /*
      * Calculate loss to propagate through bottom.
@@ -187,22 +187,22 @@ void FullyConnectedGradientOp<DT, DC>::Compute(){
     math::gemm<DT, DC>(
                                   false, false,
                                   m, k, n,
-                                  DT(1), dy->GetPtrConst<DT>(), n,
-                                  w->GetPtrConst<DT>(), k,
-                                  DT(0), dx->GetPtrMutable<DT>(), k, nullptr);
+                                  DT(1), dy->template GetPtrConst<DT>(), n,
+                                  w->template GetPtrConst<DT>(), k,
+                                  DT(0), dx->template GetPtrMutable<DT>(), k, nullptr);
     
     math::scal<DT, DC>(
                                   db->Size(),
                                   DT(1) / static_cast<DT>(x->Dim(0)),
-                                  db->GetPtrConst<DT>(),
-                                  db->GetPtrMutable<DT>()
+                                  db->template GetPtrConst<DT>(),
+                                  db->template GetPtrMutable<DT>()
                                   );
     
     math::scal<DT, DC>(
                                   dw->Size(),
                                   DT(1) / static_cast<DT>(x->Dim(0)),
-                                  dw->GetPtrConst<DT>(),
-                                  dw->GetPtrMutable<DT>()
+                                  dw->template GetPtrConst<DT>(),
+                                  dw->template GetPtrMutable<DT>()
                                   );
 }
 

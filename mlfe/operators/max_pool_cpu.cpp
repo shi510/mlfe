@@ -9,13 +9,13 @@ MaxPoolOp<DT, DC>::MaxPoolOp(
                                         OperatorIO &opio,
                                         ItemHolder *ih
                                         ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 1,
+    runtime_assert(this->inputs.size() == 1,
                    "[MaxPool Op] inputs.size() == 1.");
-    runtime_assert(outputs.size() == 2,
+    runtime_assert(this->outputs.size() == 2,
                    "[MaxPool Op] outputs.size() == 2.");
-    const auto x = inputs[InputSchema::x];
-    auto y = outputs[OutputSchema::y];
-    auto idx = outputs[OutputSchema::idx];
+    const auto x = this->inputs[InputSchema::x];
+    auto y = this->outputs[OutputSchema::y];
+    auto idx = this->outputs[OutputSchema::idx];
     
     if(opio.param.HasParam("Kernel") &&
        opio.param.HasParam("Stride") &&
@@ -40,12 +40,12 @@ MaxPoolOp<DT, DC>::MaxPoolOp(
 
 template <class DT, class DC>
 void MaxPoolOp<DT, DC>::Compute(){
-    const auto x = inputs[InputSchema::x];
-    auto idx = outputs[OutputSchema::idx];
-    auto y = outputs[OutputSchema::y];
-    const DT *x_ptr = x->GetPtrConst<DT>();
-    DT *y_ptr = y->GetPtrMutable<DT>();
-    int *idx_ptr = idx->GetPtrMutable<int>();
+    const auto x = this->inputs[InputSchema::x];
+    auto idx = this->outputs[OutputSchema::idx];
+    auto y = this->outputs[OutputSchema::y];
+    const DT *x_ptr = x->template GetPtrConst<DT>();
+    DT *y_ptr = y->template GetPtrMutable<DT>();
+    int *idx_ptr = idx->template GetPtrMutable<int>();
     
     y->template SetByConst<DT>(static_cast<DT>(-FLT_MAX));
     for (int n = 0; n < x->Dim(0); ++n){
@@ -83,15 +83,15 @@ MaxPoolGradientOp<DT, DC>::MaxPoolGradientOp(
                                                         OperatorIO &opio,
                                                         ItemHolder *ih
                                                         ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 3,
+    runtime_assert(this->inputs.size() == 3,
                    "[MaxPool Gradient Op] inputs.size() == 3.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[MaxPool Gradient Op] outputs.size() == 1.");
     
-    const auto x = inputs[InputSchema::x];
-    const auto idx = inputs[InputSchema::idx];
-    const auto dy = inputs[InputSchema::dy];
-    auto dx = outputs[OutputSchema::dx];
+    const auto x = this->inputs[InputSchema::x];
+    const auto idx = this->inputs[InputSchema::idx];
+    const auto dy = this->inputs[InputSchema::dy];
+    auto dx = this->outputs[OutputSchema::dx];
     if(opio.param.HasParam("Kernel") &&
        opio.param.HasParam("Stride") &&
        dx->IsEmpty() &&
@@ -115,12 +115,12 @@ MaxPoolGradientOp<DT, DC>::MaxPoolGradientOp(
 
 template <class DT, class DC>
 void MaxPoolGradientOp<DT, DC>::Compute(){
-    const auto idx = inputs[InputSchema::idx];
-    const auto dy = inputs[InputSchema::dy];
-    auto dx = outputs[OutputSchema::dx];
-    const DT *dy_ptr = dy->GetPtrConst<DT>();
-    const int *idx_ptr = idx->GetPtrConst<int>();
-    DT *dx_ptr = dx->GetPtrMutable<DT>();
+    const auto idx = this->inputs[InputSchema::idx];
+    const auto dy = this->inputs[InputSchema::dy];
+    auto dx = this->outputs[OutputSchema::dx];
+    const DT *dy_ptr = dy->template GetPtrConst<DT>();
+    const int *idx_ptr = idx->template GetPtrConst<int>();
+    DT *dx_ptr = dx->template GetPtrMutable<DT>();
     
     dx->template SetByConst<DT>(static_cast<DT>(0));
     for (int n = 0; n < dy->Dim(0); ++n) {

@@ -11,19 +11,19 @@ SoftmaxCrossEntropyWithLabelOp<DT, DC>
                                  OperatorIO &opio,
                                  ItemHolder *ih
                                  ) : Operator<DC>(opio, ih){
-    runtime_assert(inputs.size() == 2,
+    runtime_assert(this->inputs.size() == 2,
                    "[Softmax Cross Entropy With Label Op] inputs.size() == 2");
-    runtime_assert(outputs.size() == 2,
+    runtime_assert(this->outputs.size() == 2,
                    "[Softmax Cross Entropy With Label Op] outputs.size() == 2");
     
-    const auto x = inputs[InputSchema::x];
-    const auto label = inputs[InputSchema::label];
-    auto prob = outputs[OutputSchema::prob];
-    auto loss = outputs[OutputSchema::loss];
+    const auto x = this->inputs[InputSchema::x];
+    const auto label = this->inputs[InputSchema::label];
+    auto prob = this->outputs[OutputSchema::prob];
+    auto loss = this->outputs[OutputSchema::loss];
     
     if(prob->IsEmpty() && loss->IsEmpty()){
-        prob->Resize<DT>(*x);
-        loss->Resize<DT>({1});
+        prob->template Resize<DT>(*x);
+        loss->template Resize<DT>({1});
     }
     else{
         runtime_assert(x->CompareSizeWith(*label),
@@ -38,10 +38,10 @@ SoftmaxCrossEntropyWithLabelOp<DT, DC>
                        "[Softmax Cross Entropy With Label Op] loss->Size() == 1");
     }
     
-    sum_multiplier.Resize<DT, DC>({prob->Dim(1)});
-    sum_multiplier.SetByConst<DT>((DT(1)));
-    rows_max.Resize<DT, DC>({x->Dim(0)});
-    scaler.Resize<DT, DC>({x->Dim(0)});
+    sum_multiplier.template Resize<DT, DC>({prob->Dim(1)});
+    sum_multiplier.template SetByConst<DT>((DT(1)));
+    rows_max.template Resize<DT, DC>({x->Dim(0)});
+    scaler.template Resize<DT, DC>({x->Dim(0)});
     
     /*
      * batch size.
@@ -55,66 +55,64 @@ SoftmaxCrossEntropyWithLabelOp<DT, DC>
 
 template <class DT, class DC>
 void SoftmaxCrossEntropyWithLabelOp<DT, DC>::Compute(){
-    const auto x = inputs[InputSchema::x];
-    const auto label = inputs[InputSchema::label];
-    auto prob = outputs[OutputSchema::prob];
-    auto loss = outputs[OutputSchema::loss];
+    const auto x = this->inputs[InputSchema::x];
+    const auto label = this->inputs[InputSchema::label];
+    auto prob = this->outputs[OutputSchema::prob];
+    auto loss = this->outputs[OutputSchema::loss];
     
     math::rowwise_max<DT, DC>(
-                                         m, n,
-                                         x->GetPtrConst<DT>(),
-                                         rows_max.GetPtrMutable<DT>()
-                                         );
+                                                 m, n,
+                                                 x->template GetPtrConst<DT>(),
+                                                 rows_max.template GetPtrMutable<DT>()
+                                                 );
     
     math::scal<DT, DC>(
                                   m * n, DT(1),
-                                  x->GetPtrConst<DT>(),
-                                  prob->GetPtrMutable<DT>()
+                                  x->template GetPtrConst<DT>(),
+                                  prob->template GetPtrMutable<DT>()
                                   );
     
     math::gemm<DT, DC>(false, false,
-                                  m, n, 1,
-                                  DT(-1), rows_max.GetPtrConst<DT>(), 1,
-                                  sum_multiplier.GetPtrConst<DT>(), n,
-                                  DT(1), prob->GetPtrMutable<DT>(), n, nullptr);
+                                      m, n, 1,
+                                      DT(-1), rows_max.template GetPtrConst<DT>(), 1,
+                                      sum_multiplier.template GetPtrConst<DT>(), n,
+                                      DT(1), prob->template GetPtrMutable<DT>(), n, nullptr);
     
     math::exp<DT, DC>(
                                  prob->Size(),
-                                 prob->GetPtrConst<DT>(),
-                                 prob->GetPtrMutable<DT>()
+                                 prob->template GetPtrConst<DT>(),
+                                 prob->template GetPtrMutable<DT>()
                                  );
     
     math::gemv<DT, DC>(false,
-                                  m, n,
-                                  DT(1), prob->GetPtrConst<DT>(), n,
-                                  sum_multiplier.GetPtrConst<DT>(),
-                                  DT(0), scaler.GetPtrMutable<DT>(), 1, nullptr);
+                                      m, n,
+                                      DT(1), prob->template GetPtrConst<DT>(), n,
+                                      sum_multiplier.template GetPtrConst<DT>(),
+                                      DT(0), scaler.template GetPtrMutable<DT>(), 1, nullptr);
     
     math::rowwise_normalize<DT, DC>(m, n,
-                                               scaler.GetPtrConst<DT>(),
-                                               prob->GetPtrMutable<DT>()
-                                               );
+                                                           scaler.template GetPtrConst<DT>(),
+                                                           prob->template GetPtrMutable<DT>()
+                                                           );
     
     math::cross_entropy<DT, DC>(m, n,
-                                           prob->GetPtrConst<DT>(),
-                                           label->GetPtrConst<DT>(),
-                                           rows_max.GetPtrMutable<DT>()
-                                           );
+                                                   prob->template GetPtrConst<DT>(),
+                                                   label->template GetPtrConst<DT>(),
+                                                   rows_max.template GetPtrMutable<DT>()
+                                                   );
     
-    math::sum<DT,
-    DC>(
-                m,
-                rows_max.GetPtrConst<DT>(),
-                loss->GetPtrMutable<DT>()
-                );
+    math::sum<DT, DC>(
+                                    m,
+                                    rows_max.template GetPtrConst<DT>(),
+                                    loss->template GetPtrMutable<DT>()
+                                    );
     
-    math::scal<DT,
-    DC>(
-                1,
-                static_cast<DT>(1) / static_cast<DT>(m),
-                loss->GetPtrConst<DT>(),
-                loss->GetPtrMutable<DT>()
-                );
+    math::scal<DT, DC>(
+                                    1,
+                                    static_cast<DT>(1) / static_cast<DT>(m),
+                                    loss->template GetPtrConst<DT>(),
+                                    loss->template GetPtrMutable<DT>()
+                                    );
 }
 
 REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_float,
@@ -129,23 +127,23 @@ SoftmaxCrossEntropyWithLabelGradientOp<DT, DC>
                                          OperatorIO &opio,
                                          ItemHolder *ih
                                          ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 4,
+    runtime_assert(this->inputs.size() == 4,
                    "[Softmax Cross Entropy With Label Gradient Op] inputs.size() == 4");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Softmax Cross Entropy With Label Gradient Op] outputs.size() == 1");
     
-    const auto x = inputs[InputSchema::x];
-    const auto label = inputs[InputSchema::label];
-    const auto prob = inputs[InputSchema::prob];
-    const auto loss = inputs[InputSchema::loss];
-    auto dx = outputs[OutputSchema::dx];
+    const auto x = this->inputs[InputSchema::x];
+    const auto label = this->inputs[InputSchema::label];
+    const auto prob = this->inputs[InputSchema::prob];
+    const auto loss = this->inputs[InputSchema::loss];
+    auto dx = this->outputs[OutputSchema::dx];
     
     runtime_assert(prob->Dims() == 2,
                    "[Softmax Cross Entropy With Label Gradient Op] prob->Dims() == 2.");
     runtime_assert(loss->Size() == 1,
                    "[Softmax Cross Entropy With Label Gradient Op] loss->Size() == 1.");
     if(dx->IsEmpty()){
-        dx->Resize<DT>(*x);
+        dx->template Resize<DT>(*x);
     }
     else{
         runtime_assert(dx->CompareSizeWith(*x),
@@ -166,21 +164,21 @@ SoftmaxCrossEntropyWithLabelGradientOp<DT, DC>
 
 template <class DT, class DC>
 void SoftmaxCrossEntropyWithLabelGradientOp<DT, DC>::Compute(){
-    const auto prob = inputs[InputSchema::prob];
-    const auto label = inputs[InputSchema::label];
-    const auto loss = inputs[InputSchema::loss];
-    auto dx = outputs[OutputSchema::dx];
+    const auto prob = this->inputs[InputSchema::prob];
+    const auto label = this->inputs[InputSchema::label];
+    const auto loss = this->inputs[InputSchema::loss];
+    auto dx = this->outputs[OutputSchema::dx];
     
     math::cross_entropy_gradients<DT, DC>(m, n,
-                                                     prob->GetPtrConst<DT>(),
-                                                     label->GetPtrConst<DT>(),
-                                                     dx->GetPtrMutable<DT>()
-                                                     );
+                                                             prob->template GetPtrConst<DT>(),
+                                                             label->template GetPtrConst<DT>(),
+                                                             dx->template GetPtrMutable<DT>()
+                                                             );
     
     math::scal<DT, DC>(m * n,
-                                  loss->GetPtrConst<DT>()[0] / static_cast<DT>(m),
-                                  dx->GetPtrConst<DT>(),
-                                  dx->GetPtrMutable<DT>()
+                                  loss->template GetPtrConst<DT>()[0] / static_cast<DT>(m),
+                                  dx->template GetPtrConst<DT>(),
+                                  dx->template GetPtrMutable<DT>()
                                   );
 }
 

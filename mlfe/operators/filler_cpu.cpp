@@ -11,9 +11,9 @@ FillOp<DC>::FillOp(
                            OperatorIO &opio,
                            ItemHolder *ih
                            ) : Operator<DC>(opio, ih), rng(math::GetRandomSeed()) {
-    runtime_assert(inputs.size() == 0,
+    runtime_assert(this->inputs.size() == 0,
                    "[Fill Op] inputs.size() == 0.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Fill Op] outputs.size() == 1.");
 }
 
@@ -22,7 +22,7 @@ ConstantFillOp<DT, DC>::ConstantFillOp(
                                                   OperatorIO &opio,
                                                   ItemHolder *ih
                                                   ) : FillOp<DC>(opio, ih) {
-    auto y = outputs[OutputSchema::y];
+    auto y = this->outputs[OutputSchema::y];
     if(opio.param.HasParam("Value")){
         val = opio.param.GetParam<DT>("Value");
     }
@@ -36,8 +36,8 @@ ConstantFillOp<DT, DC>::ConstantFillOp(
 
 template <class DT, class DC>
 void ConstantFillOp<DT, DC>::Compute(){
-    auto y = outputs[OutputSchema::y];
-    DT *ptr = y->GetPtrMutable<DT>();
+    auto y = this->outputs[OutputSchema::y];
+    DT *ptr = y->template GetPtrMutable<DT>();
     for(int n = 0; n < y->Size(); ++n){
         ptr[n] = val;
     }
@@ -51,7 +51,7 @@ XavierFillOp<DT, DC>::XavierFillOp(
                                               OperatorIO &opio,
                                               ItemHolder *ih
                                               ) : FillOp<DC>(opio, ih) {
-    auto y = outputs[OutputSchema::y];
+    auto y = this->outputs[OutputSchema::y];
     if(y->IsEmpty()){
         throw std::string("[XaiverFill] Output is empty.");
     }
@@ -61,8 +61,8 @@ XavierFillOp<DT, DC>::XavierFillOp(
 
 template <class DT, class DC>
 void XavierFillOp<DT, DC>::Compute(){
-    auto y = outputs[OutputSchema::y];
-    DT *ptr = y->GetPtrMutable<DT>();
+    auto y = this->outputs[OutputSchema::y];
+    DT *ptr = y->template GetPtrMutable<DT>();
     for(int n = 0; n < y->Size(); ++n){
         ptr[n] = uniform(this->rng);
     }

@@ -11,12 +11,12 @@ FlattenOp<DT, DC>::FlattenOp(
                                         OperatorIO &opio,
                                         ItemHolder *ih
                                         ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 1,
+    runtime_assert(this->inputs.size() == 1,
                    "[Flatten Op] inputs.size() == 1.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Flatten Op] outputs.size() == 1.");
-    const auto x = inputs[InputSchema::x];
-    auto y = outputs[OutputSchema::y];
+    const auto x = this->inputs[InputSchema::x];
+    auto y = this->outputs[OutputSchema::y];
     
     runtime_assert(opio.param.HasParam("Axis"), "[Flatten Op] Not found Axis param.");
     if(y->IsEmpty() &&
@@ -51,14 +51,14 @@ FlattenGradientOp<DT, DC>::FlattenGradientOp(
                                                         OperatorIO &opio,
                                                         ItemHolder *ih
                                                         ) : Operator<DC>(opio, ih){
-    runtime_assert(inputs.size() == 2,
+    runtime_assert(this->inputs.size() == 2,
                    "[Flatten Gradient Op] inputs.size() == 2.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Flatten Gradient Op] outputs.size() == 1.");
     
-    const auto x = inputs[InputSchema::x];
-    const auto dy = inputs[InputSchema::dy];
-    auto dx = outputs[OutputSchema::dx];
+    const auto x = this->inputs[InputSchema::x];
+    const auto dy = this->inputs[InputSchema::dy];
+    auto dx = this->outputs[OutputSchema::dx];
     if(dx->IsEmpty() &&
        !x->IsEmpty()
        ){

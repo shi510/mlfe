@@ -10,12 +10,12 @@ ScaleOp<DT, DC>::ScaleOp(
                                     OperatorIO &opio,
                                     ItemHolder *ih
                                     ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 1,
+    runtime_assert(this->inputs.size() == 1,
                    "[Scale Op] inputs.size() == 1.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Scale Op] outputs.size() == 1.");
-    const auto x = inputs[InputSchema::x];
-    auto y = outputs[OutputSchema::y];
+    const auto x = this->inputs[InputSchema::x];
+    auto y = this->outputs[OutputSchema::y];
     
     runtime_assert(opio.param.HasParam("Scale"),
                    "[Scale Op] Not found Scale param.");
@@ -23,7 +23,7 @@ ScaleOp<DT, DC>::ScaleOp(
        !x->IsEmpty()
        ){
         scaler = opio.param.GetParam<DT>("Scale");
-        y->Resize<DT>(*x);
+        y->template Resize<DT>(*x);
     }
     else{
         runtime_assert(x->Dims() == y->Dims(),
@@ -33,13 +33,13 @@ ScaleOp<DT, DC>::ScaleOp(
 
 template <class DT, class DC>
 void ScaleOp<DT, DC>::Compute(){
-    const auto x = inputs[InputSchema::x];
-    auto y = outputs[OutputSchema::y];
+    const auto x = this->inputs[InputSchema::x];
+    auto y = this->outputs[OutputSchema::y];
     math::scal<DT, DC>(
                                   x->Size(),
                                   scaler,
-                                  x->GetPtrConst<DT>(),
-                                  y->GetPtrMutable<DT>()
+                                  x->template GetPtrConst<DT>(),
+                                  y->template GetPtrMutable<DT>()
                                   );
 }
 

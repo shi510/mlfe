@@ -8,12 +8,12 @@ ReluOp<DT, DC>::ReluOp(
                                   OperatorIO &opio,
                                   ItemHolder *ih
                                   ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 1,
+    runtime_assert(this->inputs.size() == 1,
                    "[Relu Op] inputs.size() == 1.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Relu Op] outputs.size() == 1.");
-    const auto x = inputs[InputSchema::x];
-    auto y = outputs[OutputSchema::y];
+    const auto x = this->inputs[InputSchema::x];
+    auto y = this->outputs[OutputSchema::y];
     inplace = false;
     if(opio.param.HasParam("Inplace")){
         inplace = opio.param.GetParam<bool>("Inplace");
@@ -26,7 +26,7 @@ ReluOp<DT, DC>::ReluOp(
             *y = *x;
         }
         else{
-            y->Resize<DT>(*x);
+            y->template Resize<DT>(*x);
         }
     }
     else{
@@ -37,12 +37,12 @@ ReluOp<DT, DC>::ReluOp(
 
 template <class DT, class DC>
 void ReluOp<DT, DC>::Compute(){
-    const auto x = inputs[InputSchema::x];
-    auto y = outputs[OutputSchema::y];
+    const auto x = this->inputs[InputSchema::x];
+    auto y = this->outputs[OutputSchema::y];
     math::ReluFunction<DT, DC>(
                                           x->Size(),
-                                          x->GetPtrConst<DT>(),
-                                          y->GetPtrMutable<DT>()
+                                          x->template GetPtrConst<DT>(),
+                                          y->template GetPtrMutable<DT>()
                                           );
 }
 
@@ -55,14 +55,14 @@ ReluGradientOp<DT, DC>::ReluGradientOp(
                                                   OperatorIO &opio,
                                                   ItemHolder *ih
                                                   ) : Operator<DC>(opio, ih) {
-    runtime_assert(inputs.size() == 2,
+    runtime_assert(this->inputs.size() == 2,
                    "[Relu Gradient Op] inputs.size() == 2.");
-    runtime_assert(outputs.size() == 1,
+    runtime_assert(this->outputs.size() == 1,
                    "[Relu Gradient Op] outputs.size() == 1.");
     
-    const auto x = inputs[InputSchema::x];
-    const auto dy = inputs[InputSchema::dy];
-    auto dx = outputs[OutputSchema::dx];
+    const auto x = this->inputs[InputSchema::x];
+    const auto dy = this->inputs[InputSchema::dy];
+    auto dx = this->outputs[OutputSchema::dx];
     inplace = false;
     if(opio.param.HasParam("Inplace")){
         inplace = opio.param.GetParam<bool>("Inplace");
@@ -75,7 +75,7 @@ ReluGradientOp<DT, DC>::ReluGradientOp(
             *dx = *dy;
         }
         else{
-            dx->Resize<DT>(*x);
+            dx->template Resize<DT>(*x);
         }
     }
     else{
@@ -87,14 +87,14 @@ ReluGradientOp<DT, DC>::ReluGradientOp(
 
 template <class DT, class DC>
 void ReluGradientOp<DT, DC>::Compute(){
-    const auto x = inputs[InputSchema::x];
-    const auto dy = inputs[InputSchema::dy];
-    auto dx = outputs[OutputSchema::dx];
+    const auto x = this->inputs[InputSchema::x];
+    const auto dy = this->inputs[InputSchema::dy];
+    auto dx = this->outputs[OutputSchema::dx];
     math::ReluGradientFunction<DT, DC>(
                                                   dy->Size(),
-                                                  x->GetPtrConst<DT>(),
-                                                  dy->GetPtrConst<DT>(),
-                                                  dx->GetPtrMutable<DT>()
+                                                  x->template GetPtrConst<DT>(),
+                                                  dy->template GetPtrConst<DT>(),
+                                                  dx->template GetPtrMutable<DT>()
                                                   );
 }
 
