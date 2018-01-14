@@ -190,11 +190,10 @@ public:
      * @brief set all tensor's elements by const value.
      */
     template <typename T,
-    typename U = T,
     typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void SetByConst(const U val){
-        U * data_ptr = static_cast<U *>(context->GetDevicePtr());
+    void SetByConst(const T val){
+        T * data_ptr = static_cast<T *>(context->GetDevicePtr());
         for(int i = 0; i < size; ++i){
             data_ptr[i] = val;
         }
