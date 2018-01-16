@@ -30,7 +30,7 @@ void SimpleDB::Open(const std::string name) {
      * simplify the file open procedure.
      */
     try{
-        if(option.create){
+        if(option.create && !option.delete_previous){
             FileIO::CreateFile(name);
         }
         FileIO::Open(name, mode);

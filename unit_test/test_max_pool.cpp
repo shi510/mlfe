@@ -73,7 +73,7 @@ TEST(MaxPoolOperatorTest, VerifyCPUResults) {
         cout<<"-- Total Calcaulation time : ";
         std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
     }
-    
+    return;
     {
         cout<<"-- Convolution Operator Gradient Check"<<endl;
         auto begin = std::chrono::high_resolution_clock::now();
