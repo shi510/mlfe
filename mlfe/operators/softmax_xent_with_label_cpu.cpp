@@ -39,7 +39,12 @@ SoftmaxCrossEntropyWithLabelOp<DT, DC>
     }
     
     sum_multiplier.template Resize<DT, DC>({prob->Dim(1)});
-    sum_multiplier.template SetByConst<DT>((DT(1)));
+    math::set<DT, DC>(
+                      sum_multiplier.Size(),
+                      static_cast<DT>(1),
+                      sum_multiplier.template GetPtrMutable<DT>()
+                      );
+
     rows_max.template Resize<DT, DC>({x->Dim(0)});
     scaler.template Resize<DT, DC>({x->Dim(0)});
     

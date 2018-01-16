@@ -42,7 +42,11 @@ FullyConnectedOp<DT, DC>::FullyConnectedOp(
     }
     
     bias_multiplier.template Resize<DT, DC>({x->Dim(0)});
-    bias_multiplier.template SetByConst<DT>(DT(1));
+    math::set<DT, DC>(
+                      bias_multiplier.Size(),
+                      static_cast<DT>(1),
+                      bias_multiplier.template GetPtrMutable<DT>()
+                      );
     
     /*
      * batch size.
@@ -136,7 +140,11 @@ FullyConnectedGradientOp<DT, DC>::FullyConnectedGradientOp(
     }
     
     bias_multiplier.template Resize<DT, DC>({x->Dim(0)});
-    bias_multiplier.template SetByConst<DT>(DT(1));
+    math::set<DT, DC>(
+                      bias_multiplier.Size(),
+                      static_cast<DT>(1),
+                      bias_multiplier.template GetPtrMutable<DT>()
+                      );
     
     /*
      * batch size.

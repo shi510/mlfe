@@ -161,10 +161,14 @@ public:
         n = OutHeightSize() * OutWidthSize();
         k = kernel_size[0] * kernel_size[1] * x->Dim(1);
         
-        bias_multiplier.Resize<DataType, CPUContext>({n});
-        bias_multiplier.SetByConst<DataType>(DataType(1));
+        bias_multiplier.template Resize<DataType, CPUContext>({n});
+        math::set<DataType, CPUContext>(
+                                        bias_multiplier.Size(),
+                                        static_cast<DataType>(1),
+                                        bias_multiplier.template GetPtrMutable<DataType>()
+                                        );
         
-        col_buf.Resize<DataType, CPUContext>({k, n});
+        col_buf.template Resize<DataType, CPUContext>({k, n});
     }
     
     void Compute() override{

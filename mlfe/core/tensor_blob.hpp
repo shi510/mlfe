@@ -70,13 +70,14 @@ public:
     }
     
     template <typename T,
-    class = typename std::enable_if<std::is_fundamental<T>::value, T>::type
+        typename OtherContext,
+        class = typename std::enable_if<std::is_fundamental<T>::value, T>::type
     >
-    void Resize(const TensorBlob<DeviceContext> &tb) {
+    void Resize(const TensorBlob<OtherContext> &tb) {
         std::vector<int> new_size;
         
-        for (int i = 0; i < tb.dims.size(); ++i) {
-            new_size.push_back(tb.dims[i]);
+        for (int i = 0; i < tb.Dims(); ++i) {
+            new_size.push_back(tb.Dim(i));
         }
         Resize<T>(new_size);
     }
@@ -184,19 +185,6 @@ public:
     template <class T>
     bool MatchType(){
         return type.Id() == TypeHolder::Id<T>();
-    }
-    
-    /*
-     * @brief set all tensor's elements by const value.
-     */
-    template <typename T,
-    typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
-    >
-    void SetByConst(const T val){
-        T * data_ptr = static_cast<T *>(context->GetDevicePtr());
-        for(int i = 0; i < size; ++i){
-            data_ptr[i] = val;
-        }
     }
     
 private:

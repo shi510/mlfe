@@ -348,5 +348,23 @@ void sum<double, CPUContext>(
     y_ptr[0] = Eigen::Map<const Eigen::VectorXd>(x_ptr, size).sum();
 }
 
+template<>
+void set<float, CPUContext>(
+    const int size,
+    const float val,
+    float *x_ptr
+    ){
+    Eigen::Map<Eigen::VectorXf>(x_ptr, size).setConstant(val);
+}
+
+template<>
+void set<double, CPUContext>(
+    const int size,
+    const double val,
+    double *x_ptr
+    ) {
+    Eigen::Map<Eigen::VectorXd>(x_ptr, size).setConstant(val);
+}
+
 } /* math */
 } /* mlfe */

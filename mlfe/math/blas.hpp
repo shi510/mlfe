@@ -84,6 +84,12 @@ void sum(
           const DataType *x_ptr,
           DataType *y_ptr);
 
+template<class DataType, class DeviceContext>
+void set(
+    const int size,
+    const DataType val,
+    DataType *x_ptr);
+
 } /* namespace math */
 } /* namespace mlfe */
 #endif /* __MATH_BLAS3_HPP__ */

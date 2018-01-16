@@ -47,7 +47,11 @@ void MaxPoolOp<DT, DC>::Compute(){
     DT *y_ptr = y->template GetPtrMutable<DT>();
     int *idx_ptr = idx->template GetPtrMutable<int>();
     
-    y->template SetByConst<DT>(static_cast<DT>(-FLT_MAX));
+    math::set<DT, DC>(
+                      y->Size(),
+                      static_cast<DT>(-FLT_MAX),
+                      y->template GetPtrMutable<DT>()
+                      );
     for (int n = 0; n < x->Dim(0); ++n){
         for (int c = 0; c < x->Dim(1); ++c){
             for (int ph = 0; ph < out_h; ++ph){
@@ -122,7 +126,11 @@ void MaxPoolGradientOp<DT, DC>::Compute(){
     const int *idx_ptr = idx->template GetPtrConst<int>();
     DT *dx_ptr = dx->template GetPtrMutable<DT>();
     
-    dx->template SetByConst<DT>(static_cast<DT>(0));
+    math::set<DT, DC>(
+                      dx->Size(),
+                      static_cast<DT>(0),
+                      dx->template GetPtrMutable<DT>()
+                      );
     for (int n = 0; n < dy->Dim(0); ++n) {
         for (int c = 0; c < dy->Dim(1); ++c) {
             for (int ph = 0; ph < out_h; ++ph) {

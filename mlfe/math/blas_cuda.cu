@@ -160,13 +160,27 @@ rowwise_max<double, CUDAContext>(
         CUDA_CONTEXT_NUM_THREADS>>>(m, n, a_ptr, b_ptr);
 }
 
+template <class DT>
+__global__ void rowwise_normalize_kernel(
+    const int nthreads,
+    const int D,
+    const DT* scales,
+    DT* out) {
+    CUDA_1D_KERNEL_LOOP(index, nthreads) {
+        int n = index / D;
+        out[index] /= scales[n];
+    }
+}
+
 template <> void
 rowwise_normalize<float, CUDAContext>(
                                       const int m, const int n,
                                       const float *scaler_ptr,
                                       float *norm_dest
                                       ){
-
+    rowwise_normalize_kernel<float><<<
+        CUDA_CONTEXT_GET_BLOCKS(m),
+        CUDA_CONTEXT_NUM_THREADS>>>(m, n, scaler_ptr, norm_dest);
 }
 
 template <> void
@@ -175,7 +189,9 @@ rowwise_normalize<double, CUDAContext>(
                                         const double *scaler_ptr,
                                         double *norm_dest
                                         ){
-
+    rowwise_normalize_kernel<double><<<
+        CUDA_CONTEXT_GET_BLOCKS(m),
+        CUDA_CONTEXT_NUM_THREADS>>>(m, n, scaler_ptr, norm_dest);
 }
 
 template <class DataType> __global__
@@ -419,6 +435,35 @@ void sum<double, CUDAContext>(
     const double *x_ptr,
     double *y_ptr){
     SumKernel<double><<<1, 128>>>(size, x_ptr, y_ptr);
+}
+
+template <class DataType> __global__
+void set_kernel(
+    const int size,
+    const DataType val,
+    DataType *x
+    ){
+    CUDA_1D_KERNEL_LOOP(index, size) {
+        x[index] = val;
+    }
+}
+
+template<>
+void set<float, CUDAContext>(
+    const int size,
+    const float val,
+    float *x_ptr
+    ){
+    set_kernel<float><<<1, 128>>>(size, val, x_ptr);
+}
+
+template<>
+void set<double, CUDAContext>(
+    const int size,
+    const double val,
+    double *x_ptr
+    ){
+    set_kernel<double><<<1, 128>>>(size, val, x_ptr);
 }
 
 } /* math */
