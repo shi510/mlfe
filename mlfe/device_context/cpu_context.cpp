@@ -5,7 +5,7 @@
 
 namespace mlfe {
 
-CPUContext::CPUContext() {
+CPUContext::CPUContext() : Context(Accelerator::Default){
     Clear();
 }
 CPUContext::~CPUContext() {
@@ -49,7 +49,7 @@ void CPUContext::CopyTo(
                         const unsigned int size,
                         const unsigned int block_size,
                         void *to
-                        ){
+                        ) const{
     if((offset + size) * block_size > size_){
         throw std::string("Copy size is bigger than allocated device memory.");
     }
@@ -75,5 +75,17 @@ void CPUContext::CopyFrom(
         to_[i + offset * block_size] = from_[i];
     }
 }
+
+REGIST_CONTEXT(Context_Default, CPUContext)
+
+struct Cpu2CpuCopyFunctor : ContextSwitchCopier {
+    void copy(
+        const std::shared_ptr<Context> src,
+        std::shared_ptr<Context> dst) override {
+        dst->CopyToDevice(0, src->Size(), (unsigned char *)(src->GetDevicePtr()));
+    }
+};
+
+REGIST_CONTEXT_SWITCH_COPY(Context_Copy_Default_Default, Cpu2CpuCopyFunctor)
     
 } /* namespace mlfe */

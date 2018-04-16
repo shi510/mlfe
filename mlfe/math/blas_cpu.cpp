@@ -247,13 +247,12 @@ void cross_entropy_gradients<float, CPUContext>(
                                                 const int m, const int n,
                                                 const float *prob_ptr,
                                                 const float *label_ptr,
+                                                const float *loss_ptr,
                                                 float *dx_ptr
                                                 ){
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j) {
-            int idx = i * n + j;
-            dx_ptr[idx] = prob_ptr[idx] - label_ptr[idx];
-        }
+    float avg_loss = loss_ptr[0] / static_cast<float>(m);
+    for (int i = 0; i < m * n; ++i) {
+        dx_ptr[i] = (prob_ptr[i] - label_ptr[i]) * avg_loss;
     }
 }
 
@@ -262,13 +261,12 @@ void cross_entropy_gradients<double, CPUContext>(
                                                  const int m, const int n,
                                                  const double *prob_ptr,
                                                  const double *label_ptr,
+                                                 const double *loss_ptr,
                                                  double *dx_ptr
                                                  ){
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j) {
-            int idx = i * n + j;
-            dx_ptr[idx] = prob_ptr[idx] - label_ptr[idx];
-        }
+    double avg_loss = loss_ptr[0] / static_cast<double>(m);
+    for (int i = 0; i < m * n; ++i) {
+        dx_ptr[i] = (prob_ptr[i] - label_ptr[i]) * avg_loss;
     }
 }
 

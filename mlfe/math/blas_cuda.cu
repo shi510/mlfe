@@ -179,8 +179,8 @@ rowwise_normalize<float, CUDAContext>(
                                       float *norm_dest
                                       ){
     rowwise_normalize_kernel<float><<<
-        CUDA_CONTEXT_GET_BLOCKS(m),
-        CUDA_CONTEXT_NUM_THREADS>>>(m, n, scaler_ptr, norm_dest);
+        CUDA_CONTEXT_GET_BLOCKS(m * n),
+        CUDA_CONTEXT_NUM_THREADS>>>(m * n, n, scaler_ptr, norm_dest);
 }
 
 template <> void
@@ -190,8 +190,8 @@ rowwise_normalize<double, CUDAContext>(
                                         double *norm_dest
                                         ){
     rowwise_normalize_kernel<double><<<
-        CUDA_CONTEXT_GET_BLOCKS(m),
-        CUDA_CONTEXT_NUM_THREADS>>>(m, n, scaler_ptr, norm_dest);
+        CUDA_CONTEXT_GET_BLOCKS(m * n),
+        CUDA_CONTEXT_NUM_THREADS>>>(m * n, n, scaler_ptr, norm_dest);
 }
 
 template <class DataType> __global__
@@ -258,10 +258,12 @@ void CrossEntropyGradientKernel(
                                 const int D,
                                 const DataType* Pdata,
                                 const DataType* labeldata,
+                                const DataType* lossdata,
                                 DataType* dXdata
                                 ){
+    DataType avg = lossdata[0] / static_cast<DataType>(N);
     CUDA_1D_KERNEL_LOOP(idx, N * D){
-        dXdata[idx] = Pdata[idx] - labeldata[idx];
+        dXdata[idx] = (Pdata[idx] - labeldata[idx]) * avg;
     }
 }
 
@@ -270,11 +272,12 @@ cross_entropy_gradients<float, CUDAContext>(
                                             const int m, const int n,
                                             const float *prob_ptr,
                                             const float *label_ptr,
+                                            const float *loss_ptr,
                                             float *dx_ptr
                                             ){
     CrossEntropyGradientKernel<float><<<
         CUDA_CONTEXT_GET_BLOCKS(m * n),
-        CUDA_CONTEXT_NUM_THREADS>>>(m, n, prob_ptr, label_ptr, dx_ptr);
+        CUDA_CONTEXT_NUM_THREADS>>>(m, n, prob_ptr, label_ptr, loss_ptr, dx_ptr);
 }
 
 template <> void
@@ -282,11 +285,12 @@ cross_entropy_gradients<double, CUDAContext>(
                                             const int m, const int n,
                                             const double *prob_ptr,
                                             const double *label_ptr,
+                                            const double *loss_ptr,
                                             double *dx_ptr
                                             ){
     CrossEntropyGradientKernel<double><<<
         CUDA_CONTEXT_GET_BLOCKS(m * n),
-        CUDA_CONTEXT_NUM_THREADS>>>(m, n, prob_ptr, label_ptr, dx_ptr);
+        CUDA_CONTEXT_NUM_THREADS>>>(m, n, prob_ptr, label_ptr, loss_ptr, dx_ptr);
 }
 
 template <class DataType> __global__

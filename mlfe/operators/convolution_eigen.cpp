@@ -52,13 +52,12 @@ public:
     }
     
     void Compute() override{
-        using namespace Eigen;
         const auto x = inputs[InputSchema::x];
         const auto w = inputs[InputSchema::w];
         const auto b = inputs[InputSchema::b];
         auto y = outputs[OutputSchema::y];
         
-        Tensor<DataType, 4, RowMajor> x_t = TensorMap<Tensor<DataType, 4, RowMajor>>(
+        Eigen::Tensor<DataType, 4, Eigen::RowMajor> x_t = Eigen::TensorMap<Eigen::Tensor<DataType, 4, Eigen::RowMajor>>(
                                                                                      x->template GetPtrMutable<DataType>(),
                                                                                      x->Dim(0),
                                                                                      x->Dim(1),
@@ -66,7 +65,7 @@ public:
                                                                                      x->Dim(3)
                                                                                      ).shuffle(Eigen::array<int, 4>{{0, 2, 3, 1}});
         
-        Tensor<DataType, 4, RowMajor> kernel_t = TensorMap<Tensor<DataType, 4, RowMajor>>(
+        Eigen::Tensor<DataType, 4, Eigen::RowMajor> kernel_t = Eigen::TensorMap<Eigen::Tensor<DataType, 4, Eigen::RowMajor>>(
                                                                                           w->template GetPtrMutable<DataType>(),
                                                                                           w->Dim(0),
                                                                                           w->Dim(1),
@@ -74,7 +73,7 @@ public:
                                                                                           w->Dim(3)
                                                                                           ).shuffle(Eigen::array<int, 4>{{2, 3, 1, 0}});
         
-        Tensor<DataType, 4, RowMajor> y_t(y->Dim(0), y->Dim(2), y->Dim(3), y->Dim(1));
+        Eigen::Tensor<DataType, 4, Eigen::RowMajor> y_t(y->Dim(0), y->Dim(2), y->Dim(3), y->Dim(1));
         
         y_t = x_t.extract_image_patches(
                                         w->Dim(2),
@@ -88,15 +87,15 @@ public:
         .reshape(Eigen::array<int, 2>{{y->Size() / y->Dim(1), w->Size() / w->Dim(0)}})
         .contract(
                   kernel_t.reshape(Eigen::array<int, 2>{{w->Size() / w->Dim(0), w->Dim(0)}}),
-                  Eigen::array<IndexPair<int>, 1>{{IndexPair<int>(1, 0)}}
+                  Eigen::array<Eigen::IndexPair<int>, 1>{{Eigen::IndexPair<int>(1, 0)}}
                   )
         .reshape(y_t.dimensions());
         
-        Map<Array<DataType, Dynamic, Dynamic, RowMajor>> y_arr(y_t.data(), y->Dim(1), y->Size() / y->Dim(1));
-        Map<Array<DataType, Dynamic, 1>> b_arr(b->template GetPtrMutable<DataType>(), b->Size(), 1);
+        Eigen::Map<Eigen::Array<DataType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> y_arr(y_t.data(), y->Dim(1), y->Size() / y->Dim(1));
+        Eigen::Map<Eigen::Array<DataType, Eigen::Dynamic, 1>> b_arr(b->template GetPtrMutable<DataType>(), b->Size(), 1);
         y_arr = y_arr.colwise() + b_arr;
         
-        TensorMap<Tensor<DataType, 4, RowMajor>>(
+        Eigen::TensorMap<Eigen::Tensor<DataType, 4, Eigen::RowMajor>>(
                                                  y->template GetPtrMutable<DataType>(),
                                                  y->Dim(0),
                                                  y->Dim(1),
@@ -307,7 +306,7 @@ struct ConvolutionGradientIO : public GradientIO{
     }
 };
     
-REGIST_OPERATOR_GRADIENT_IO(Conv, ConvolutionGradientIO);
+REGIST_OPERATOR_GRADIENT_IO(Conv, ConvolutionGradientIO)
 
 } /* namespace mlfe */
 #endif /* __CONVOLUTION_EIGEN_OP_HPP__ */

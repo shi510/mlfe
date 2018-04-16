@@ -13,7 +13,7 @@ public:
     
     void * GetDevicePtr() const override;
     
-    void Clear();
+    void Clear() override;
     
     int Size() const override;
     
@@ -28,7 +28,7 @@ protected:
                 const unsigned int size,
                 const unsigned int block_size,
                 void *to
-                ) override;
+                ) const override;
     
     void CopyFrom(
                   const unsigned int offset,

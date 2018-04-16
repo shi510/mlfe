@@ -61,7 +61,20 @@ void CastOp<CPUContext>::Compute(){
         TypeCaster<TypeLists<char, unsigned char, int, float, double>, double>::Run(x, y);
     }
     else{
-        throw std::string("Wrong Type.");
+        throw std::string("Wrong Type. -> ") + std::string(cast);
+    }
+}
+
+template <>
+template <class From, class To>
+void CastOp<CPUContext>::TypeCast(
+    TensorBlob<CPUContext> *from,
+    TensorBlob<CPUContext> *to
+) {
+    const From *from_ptr = from->template GetPtrConst<From>();
+    To *to_ptr = to->template GetPtrMutable<To>();
+    for (int n = 0; n < from->Size(); ++n) {
+        to_ptr[n] = static_cast<To>(from_ptr[n]);
     }
 }
 

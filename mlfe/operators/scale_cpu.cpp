@@ -60,6 +60,6 @@ struct ScaleGradientIO : public GradientIO{
     }
 };
 
-REGIST_OPERATOR_GRADIENT_IO(Scale, ScaleGradientIO);
+REGIST_OPERATOR_GRADIENT_IO(Scale, ScaleGradientIO)
 
 } /* namespace mlfe */

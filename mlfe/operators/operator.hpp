@@ -11,7 +11,9 @@
 namespace mlfe{
 
 struct OperatorIO{
-    OperatorIO():data_type("float"){}
+    OperatorIO():data_type("float"){
+        accelerator.clear();
+    }
     std::string type;
     std::string name;
     std::string data_type;

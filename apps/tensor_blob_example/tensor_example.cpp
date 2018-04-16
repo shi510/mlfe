@@ -79,10 +79,5 @@ int main(){
      */
     std::cout<<"Does tensor_1 has int type? "<<tensor_1.MatchType<int>()<<std::endl;
     std::cout<<"Does tensor_1 has float type? "<<tensor_1.MatchType<float>()<<std::endl;
-    
-    /*
-     * Set all tensor's elements by const value.
-     */
-    tensor_1.SetByConst<float>(3.141592);
     return 0;
 }

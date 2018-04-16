@@ -54,6 +54,7 @@ void cross_entropy_gradients(
                              const int m, const int n,
                              const DataType *prob_ptr,
                              const DataType *label_ptr,
+                             const DataType *loss_ptr,
                              DataType *dx_ptr
                              );
     

@@ -1,0 +1,3 @@
+add_subdirectory(utils)
+set(mlfe_source_files ${mlfe_source_files} PARENT_SCOPE)
+set(mlfe_header_files ${mlfe_header_files} PARENT_SCOPE)

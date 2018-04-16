@@ -82,7 +82,6 @@ ReluGradientOp<DT, DC>::ReluGradientOp(
         runtime_assert(dx->CompareSizeWith(*x),
                        "[Relu Gradient Op] dx->CompareSizeWith(x).");
     }
-    
 }
 
 template <class DT, class DC>
@@ -115,6 +114,6 @@ struct ReluGradientIO : public GradientIO{
     }
 };
 
-REGIST_OPERATOR_GRADIENT_IO(Relu, ReluGradientIO);
+REGIST_OPERATOR_GRADIENT_IO(Relu, ReluGradientIO)
 
 } /* namespace mlfe */

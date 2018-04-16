@@ -165,6 +165,6 @@ struct MaxPoolGradientIO : public GradientIO{
     }
 };
 
-REGIST_OPERATOR_GRADIENT_IO(MaxPool, MaxPoolGradientIO);
+REGIST_OPERATOR_GRADIENT_IO(MaxPool, MaxPoolGradientIO)
 
 } /* namespace mlfe */

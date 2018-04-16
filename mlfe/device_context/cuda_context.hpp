@@ -9,8 +9,8 @@ constexpr int CUDA_CONTEXT_NUM_THREADS = 512;
 constexpr int CUDA_CONTEXT_MAXIMUM_NUM_BLOCKS = 2048;
 
 #define CUDA_1D_KERNEL_LOOP(i, n)                          \
-  for (int i = blockIdx.x * blockDim.x + threadIdx.x;       \
-       i < (n);                                                                \
+  for (int i = blockIdx.x * blockDim.x + threadIdx.x;      \
+       i < (n);                                            \
        i += blockDim.x * gridDim.x)
 
 inline int CUDA_CONTEXT_GET_BLOCKS(const int N) {
@@ -28,9 +28,9 @@ public:
 
 	void * GetDevicePtr() const override;
 
-	cublasHandle_t GetHandler();
+	cublasHandle_t GetHandler() const;
 
-	void Clear();
+	void Clear() override;
 
 	int Size() const override;
 
@@ -45,7 +45,7 @@ protected:
               const unsigned int size,
               const unsigned int block_size,
               void *to
-              ) override;
+              ) const override;
 
 	void CopyFrom(
                 const unsigned int offset,

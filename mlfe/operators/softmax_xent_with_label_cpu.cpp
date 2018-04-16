@@ -177,14 +177,9 @@ void SoftmaxCrossEntropyWithLabelGradientOp<DT, DC>::Compute(){
     math::cross_entropy_gradients<DT, DC>(m, n,
                                                              prob->template GetPtrConst<DT>(),
                                                              label->template GetPtrConst<DT>(),
+                                                             loss->template GetPtrConst<DT>(),
                                                              dx->template GetPtrMutable<DT>()
                                                              );
-    
-    math::scal<DT, DC>(m * n,
-                                  loss->template GetPtrConst<DT>()[0] / static_cast<DT>(m),
-                                  dx->template GetPtrConst<DT>(),
-                                  dx->template GetPtrMutable<DT>()
-                                  );
 }
 
 REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_float_Gradient, 
@@ -196,8 +191,11 @@ REGIST_OPERATOR_CPU(SoftmaxXentLossWithLabel_double_Gradient,
 struct SoftmaxXentLossWithLabelGradientIO : public GradientIO{
     OperatorIO GetGradientIO(OperatorIO opio) override{
         OperatorIO opio_grad;
-        opio_grad.type = opio.type + "_" + opio.data_type + "_Gradient";
-        opio_grad.data_type = opio.data_type;
+        opio_grad.type = opio.type + "_" + opio.data_type;
+        if (!opio.accelerator.empty()) {
+            opio_grad.type += "_" + opio.accelerator;
+        }
+        opio_grad.type += "_Gradient";
         opio_grad.inputs.push_back(opio.inputs[0]);
         opio_grad.inputs.push_back(opio.inputs[1]);
         opio_grad.inputs.push_back(opio.outputs[0]);
@@ -209,6 +207,6 @@ struct SoftmaxXentLossWithLabelGradientIO : public GradientIO{
     }
 };
 
-REGIST_OPERATOR_GRADIENT_IO(SoftmaxXentLossWithLabel, SoftmaxXentLossWithLabelGradientIO);
+REGIST_OPERATOR_GRADIENT_IO(SoftmaxXentLossWithLabel, SoftmaxXentLossWithLabelGradientIO)
 
 } /* namespace mlfe */

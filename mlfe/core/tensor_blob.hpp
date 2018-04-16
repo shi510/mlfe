@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <numeric>
+#include "../core/registry.hpp"
 #include "../device_context/context.hpp"
 #include "../utils/type_holder.hpp"
 
@@ -11,19 +13,37 @@ namespace mlfe{
 template <class DeviceContext,
 class = typename std::enable_if<std::is_base_of<Context, DeviceContext>::value, DeviceContext>::type
 >
-class TensorBlob{
+class TensorBlob {
 public:
-    TensorBlob() : size(0), context(std::make_shared<DeviceContext>()){}
+    TensorBlob() : size(0), block_size(0), context(std::make_shared<DeviceContext>()){}
     
     ~TensorBlob() { Clear(); }
     
-    TensorBlob(const TensorBlob &) = delete;
+    TensorBlob(const TensorBlob &) = default;
+
+    template <class OtherContext>
+    TensorBlob(const TensorBlob<OtherContext> &tb) :
+        context(std::make_shared<DeviceContext>()) {
+        *this = tb;
+    }
     
     TensorBlob& operator=(const TensorBlob &tb){
         dims = tb.dims;
         size = tb.size;
+        block_size = tb.block_size;
         context = tb.context;
         type = tb.type;
+        return *this;
+    }
+
+    template <class OtherContext>
+    TensorBlob& operator=(const TensorBlob<OtherContext> &tb) {
+        dims = tb.Dim_();
+        size = tb.Size();
+        block_size = tb.BlockSize();
+        Resize(dims, block_size);
+        Context::Copy(tb.GetContext(), this->context);
+        type = tb.Type();
         return *this;
     }
     
@@ -67,6 +87,25 @@ public:
             size = new_size;
         }
         type.Set<T>();
+        block_size = sizeof(T);
+    }
+
+    void Resize(const std::vector<int> new_dims, const int block_size) {
+        int new_size = 1;
+
+        dims.clear();
+        for (int n = 0; n < new_dims.size(); ++n) {
+            new_size *= new_dims[n];
+            dims.push_back(new_dims[n]);
+        }
+        if (new_size > size || context->Size() == 0) {
+            size = new_size;
+            context->Allocate(size, block_size);
+        }
+        else {
+            size = new_size;
+        }
+        this->block_size = block_size;
     }
     
     template <typename T,
@@ -119,6 +158,10 @@ public:
     int Size() const {
         return size;
     }
+
+    int BlockSize() const {
+        return block_size;
+    }
     
     /*
      * @brief returns number of dimensions.
@@ -127,11 +170,23 @@ public:
         return dims.size();
     }
     
+    std::vector<int> Dim_() const {
+        return dims;
+    }
+    
     /*
      * @brief returns dimension size.
      */
     int Dim(int idx) const {
         return dims[idx];
+    }
+
+    TypeHolder Type() const {
+        return type;
+    }
+
+    std::shared_ptr<Context> GetContext() const{
+        return context;
     }
     
     /*
@@ -186,10 +241,13 @@ public:
     bool MatchType(){
         return type.Id() == TypeHolder::Id<T>();
     }
+
+public:
     
 private:
     std::vector<int> dims;
     int size;
+    int block_size;
     std::shared_ptr<Context> context;
     TypeHolder type;
 };
