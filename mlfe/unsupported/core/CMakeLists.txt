@@ -1,0 +1,6 @@
+file(GLOB core_srcs "*.cpp")
+file(GLOB core_hdrs "*.hpp")
+list(APPEND mlfe_source_files ${core_srcs})
+list(APPEND mlfe_header_files ${core_hdrs})
+set(mlfe_source_files ${mlfe_source_files} PARENT_SCOPE)
+set(mlfe_header_files ${mlfe_header_files} PARENT_SCOPE)
