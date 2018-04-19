@@ -126,20 +126,6 @@ struct DenseGradCpuF : NodeFunctor {
             T(1), _dy->GetPtr<T>(), _n,
             _w->GetPtr<T>(), _k,
             T(0), _dx->GetPtr<T>(), _k, nullptr);
-
-        math::scal<T, D>(
-            _n,
-            T(1) / static_cast<T>(_m),
-            _db->GetPtr<T>(),
-            _db->GetPtr<T>()
-            );
-
-        math::scal<T, D>(
-            _n * _k,
-            T(1) / static_cast<T>(_m),
-            _dw->GetPtr<T>(),
-            _dw->GetPtr<T>()
-            );
     }
 
     Tensor *_x, *_w, *_dy;
