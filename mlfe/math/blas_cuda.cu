@@ -145,7 +145,7 @@ rowwise_max<float, CUDAContext>(
                                 float *b_ptr
                                 ){
     rowwise_max_kernel<float><<<
-        std::min<int>(n, CUDA_CONTEXT_MAXIMUM_NUM_BLOCKS),
+        CUDA_CONTEXT_GET_BLOCKS(n),
         CUDA_CONTEXT_NUM_THREADS>>>(m, n, a_ptr, b_ptr);
 }
 
@@ -156,7 +156,7 @@ rowwise_max<double, CUDAContext>(
                                  double *b_ptr
                                  ){
     rowwise_max_kernel<double><<<
-        std::min<int>(n, CUDA_CONTEXT_MAXIMUM_NUM_BLOCKS),
+        CUDA_CONTEXT_GET_BLOCKS(n),
         CUDA_CONTEXT_NUM_THREADS>>>(m, n, a_ptr, b_ptr);
 }
 
@@ -212,7 +212,7 @@ void ProbCrossEntropyKernel(
             int idx = i * D + j;
             total_prob += labeldata[idx];
             sum += -log(max(Pdata[idx],
-                                          static_cast<DataType>(FLT_MIN))
+                                          static_cast<DataType>(1e-20))
                                           ) * labeldata[idx];
         }
 
@@ -458,7 +458,7 @@ void set<float, CUDAContext>(
     const float val,
     float *x_ptr
     ){
-    set_kernel<float><<<1, 128>>>(size, val, x_ptr);
+    set_kernel<float><<<CUDA_CONTEXT_GET_BLOCKS(size), CUDA_CONTEXT_NUM_THREADS>>>(size, val, x_ptr);
 }
 
 template<>
@@ -467,7 +467,7 @@ void set<double, CUDAContext>(
     const double val,
     double *x_ptr
     ){
-    set_kernel<double><<<1, 128>>>(size, val, x_ptr);
+    set_kernel<double><<<CUDA_CONTEXT_GET_BLOCKS(size), CUDA_CONTEXT_NUM_THREADS>>>(size, val, x_ptr);
 }
 
 } /* math */

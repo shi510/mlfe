@@ -23,8 +23,8 @@ TensorAllocator::TensorAllocator()
     _context = Context::Create(_acc);
 }
 
-TensorAllocator::TensorAllocator(DataType dt, Accelerator acc)
-    : _dt(dt), _acc(acc){
+TensorAllocator::TensorAllocator(Accelerator acc, DataType dt)
+    : _acc(acc), _dt(dt) {
     _context = Context::Create(_acc);
 }
 
@@ -35,6 +35,17 @@ void TensorAllocator::Allocate(unsigned int size) {
         break;
     case DataType::F64:
         _context->Allocate<double>(size);
+        break;
+    }
+}
+
+void TensorAllocator::Allocate(unsigned int size, void *ptr) {
+    switch (_dt) {
+    case DataType::F32:
+        _context->Allocate<float>(size, ptr);
+        break;
+    case DataType::F64:
+        _context->Allocate<double>(size, ptr);
         break;
     }
 }
@@ -55,19 +66,34 @@ Accelerator TensorAllocator::Accel() const {
     return _acc;
 }
 
-Tensor::Tensor(Accelerator acc, DataType dt) 
-    : trainable(false), bias(false) {
-    _shape = std::make_shared<TensorShape>();
-    _ta = std::make_shared<TensorAllocator>(dt, acc);
+void TensorAllocator::Type(DataType dt) {
+    _dt = dt;
+}
+
+void TensorAllocator::Accel(Accelerator acc) {
+    _acc = acc;
+}
+
+Tensor::Tensor() : trainable(false), bias(false) {}
+
+Tensor::Tensor(std::vector<int> shape) 
+    : trainable(false), bias(false)
+{
+    _shape = std::make_shared<TensorShape>(shape);
+    _size = std::accumulate(_shape->Dims().begin(),
+        _shape->Dims().end(), 1, std::multiplies<int>());
 }
 
 Tensor::Tensor(
     std::vector<int> shape,
-    Accelerator acc, DataType dt) 
-    : trainable(false), bias(false){
+    void *ptr,
+    Accelerator acc, DataType dt)
+    : trainable(false), bias(false) {
     _shape = std::make_shared<TensorShape>(shape);
-    _ta = std::make_shared<TensorAllocator>(dt, acc);
-    _ta->Allocate(Size());
+    _ta = std::make_shared<TensorAllocator>(acc, dt);
+    _size = std::accumulate(_shape->Dims().begin(),
+        _shape->Dims().end(), 1, std::multiplies<int>());
+    _ta->Allocate(Size(), ptr);
 }
 
 Tensor::~Tensor() { }
@@ -77,17 +103,19 @@ void Tensor::Clear() {
 }
 
 Tensor *Tensor::Reshape(std::vector<int> shape) {
-    *_shape = TensorShape(shape);
+    _shape = std::make_shared<TensorShape>(shape);
+    _size = std::accumulate(_shape->Dims().begin(),
+        _shape->Dims().end(), 1, std::multiplies<int>());
     return this;
 }
 
-void Tensor::Allocate() {
+void Tensor::Allocate(Accelerator acc, DataType dt) {
+    _ta = std::make_shared<TensorAllocator>(acc, dt);
     _ta->Allocate(Size());
 }
 
 int Tensor::Size() const {
-    return std::accumulate(_shape->Dims().begin(), 
-        _shape->Dims().end(), 1, std::multiplies<int>());
+    return _size;
 }
 
 int Tensor::Dims() const{
@@ -96,6 +124,10 @@ int Tensor::Dims() const{
 
 int Tensor::Dim(int idx) const{
     return _shape->Dims()[idx];
+}
+
+std::vector<int> Tensor::Shape() const {
+    return _shape->Dims();
 }
 
 void Tensor::CopyFrom(const Tensor &t) {
@@ -128,19 +160,6 @@ bool Tensor::IsTrainable() const {
 
 bool Tensor::IsBias() const {
     return bias;
-}
-
-std::ostream &operator<<(std::ostream &os, Tensor &t) {
-    const float *ptr = t.GetPtr<float>();
-    const int dim0 = t.Size() / t.Dim(0);
-    for (int n = 0; n < t.Size(); ++n) {
-        os << std::fixed << std::setw(9) << std::setprecision(6) << std::setfill(' ') << ptr[n];
-        if ((n + 1) == dim0) {
-            os << std::endl;
-        }
-    }
-    os << std::endl;
-    return os;
 }
 
 } // end namespace mlfe

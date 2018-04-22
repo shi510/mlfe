@@ -12,16 +12,16 @@ struct DenseCudaF : NodeFunctor {
         _b = oc->inputs[2];
         _y = oc->outputs[0];
 
-        _w->Allocate();
-        _b->Allocate();
-        _y->Allocate();
+        _w->Allocate(Accelerator::CUDA);
+        _b->Allocate(Accelerator::CUDA);
+        _y->Allocate(Accelerator::CUDA);
 
         _m = _x->Dim(0);
         _n = _w->Dim(0);
         _k = _x->Dim(1);
 
         _bias_multiplier.Reshape({ _m });
-        _bias_multiplier.Allocate();
+        _bias_multiplier.Allocate(Accelerator::CUDA);
 
         math::set<T, D>(
             _bias_multiplier.Size(),
@@ -77,16 +77,16 @@ struct DenseGradCudaF : NodeFunctor {
         _db = oc->outputs[1];
         _dx = oc->outputs[2];
         
-        _dw->Allocate();
-        _db->Allocate();
-        _dx->Allocate();
+        _dw->Allocate(Accelerator::CUDA);
+        _db->Allocate(Accelerator::CUDA);
+        _dx->Allocate(Accelerator::CUDA);
 
         _m = _x->Dim(0);
         _n = _w->Dim(0);
         _k = _x->Dim(1);
 
         _bias_multiplier.Reshape({ _m });
-        _bias_multiplier.Allocate();
+        _bias_multiplier.Allocate(Accelerator::CUDA);
 
         math::set<T, D>(
             _bias_multiplier.Size(),
@@ -96,7 +96,6 @@ struct DenseGradCudaF : NodeFunctor {
     }
 
     void Run() override {
-
         /*
         * _db = _dy.
         */

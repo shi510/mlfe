@@ -10,9 +10,8 @@
 namespace mlfe{
 class ThreadPool{
 public:
-    explicit ThreadPool(unsigned int size){
+    ThreadPool(unsigned int size) : is_stop(false){
         runtime_assert(size == 1, "thread size must be 1.(in current version, supported upto 1)");
-        is_stop = false;
         for(int n = 0; n < size; ++n){
             threads.push_back(std::thread(std::bind(&ThreadPool::InternalExecutor, this)));
         }

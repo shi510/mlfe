@@ -14,15 +14,15 @@ struct SoftmaxXentCudaF : NodeFunctor {
         _m = _x->Dim(0);
         _n = _x->Dim(1);
 
-        _prob->Allocate();
-        _loss->Allocate();
+        _prob->Allocate(Accelerator::CUDA);
+        _loss->Allocate(Accelerator::CUDA);
 
         _sum_multiplier.Reshape({ _n });
-        _sum_multiplier.Allocate();
+        _sum_multiplier.Allocate(Accelerator::CUDA);
         _rowwise_max.Reshape({ _m });
-        _rowwise_max.Allocate();
+        _rowwise_max.Allocate(Accelerator::CUDA);
         _scaler.Reshape({ _m });
-        _scaler.Allocate();
+        _scaler.Allocate(Accelerator::CUDA);
 
         math::set<T, D>(
             _sum_multiplier.Size(),
@@ -108,6 +108,8 @@ struct SoftmaxXentGradCudaF : NodeFunctor {
 
         _m = _prob->Dim(0);
         _n = _prob->Dim(1);
+
+        _dx->Allocate(Accelerator::CUDA);
     }
 
     void Run() override {

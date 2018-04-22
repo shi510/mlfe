@@ -10,7 +10,7 @@
 
 namespace mlfe{
 
-class TensorShape {
+class TensorShape final{
 public:
     TensorShape();
 
@@ -24,15 +24,17 @@ private:
     std::vector<int> _dims;
 };
 
-class TensorAllocator {
+class TensorAllocator final{
 public:
     TensorAllocator();
 
-    TensorAllocator(DataType dt, Accelerator acc);
+    TensorAllocator(Accelerator acc, DataType dt);
 
     TensorAllocator(const TensorAllocator &ta) = default;
 
     void Allocate(unsigned int size);
+
+    void Allocate(unsigned int size, void *ptr);
 
     void CopyTo(TensorAllocator &ta) const;
 
@@ -47,6 +49,10 @@ public:
 
     Accelerator Accel() const;
 
+    void Type(DataType dt);
+
+    void Accel(Accelerator acc);
+
 private:
     DataType _dt;
     Accelerator _acc;
@@ -55,24 +61,27 @@ private:
 
 class Tensor final{
 public:
-    explicit Tensor(
-        Accelerator acc = Accelerator::Default,
-        DataType dt = DataType::F32
-    );
+    Tensor();
+
+    explicit Tensor(std::vector<int> shape);
 
     explicit Tensor(
-        std::vector<int> shape, 
+        std::vector<int> shape,
+        void *ptr,
         Accelerator acc = Accelerator::Default,
         DataType dt = DataType::F32
     );
 
     ~Tensor();
 
-    Tensor(const Tensor &t) = default;
+    Tensor(const Tensor &) = default;
 
     Tensor *Reshape(std::vector<int> shape);
 
-    void Allocate();
+    void Allocate(
+        Accelerator acc = Accelerator::Default,
+        DataType dt = DataType::F32
+    );
 
     void Clear();
 
@@ -81,6 +90,8 @@ public:
     int Dims() const;
 
     int Dim(int idx) const;
+    
+    std::vector<int> Shape() const;
 
     void CopyFrom(const Tensor &t);
 
@@ -106,11 +117,10 @@ public:
 private:
     std::shared_ptr<TensorShape> _shape;
     std::shared_ptr<TensorAllocator> _ta;
+    int _size;
     bool trainable;
     bool bias;
 };
-
-std::ostream &operator<<(std::ostream &os, Tensor &t);
 
 } // end namespace mlfe
 #endif // end ifndef __TENSOR_HPP__
