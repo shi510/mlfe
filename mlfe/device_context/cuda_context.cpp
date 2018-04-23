@@ -19,6 +19,13 @@ CUDAContext::CUDAContext()
   ++static_shared_counter;
 }
 CUDAContext::~CUDAContext() {
+    --static_shared_counter;
+
+    if (static_shared_counter == 0 && ptr_ != nullptr) {
+        if (cublasDestroy(handler) != cudaSuccess) {
+            throw std::string("CUDAContext::Clear() : cuda free handler failed.");
+        }
+    }
   Clear();
 }
 
@@ -31,14 +38,6 @@ cublasHandle_t CUDAContext::GetHandler() const{
 }
 
 void CUDAContext::Clear() {
-  --static_shared_counter;
-  
-  if (static_shared_counter == 0 && ptr_ != nullptr) {
-      if (cublasDestroy(handler) != cudaSuccess) {
-          throw std::string("CUDAContext::Clear() : cuda free handler failed.");
-      }
-  }
-
   if (ptr_ != nullptr) {
       if (cudaFree(ptr_) != cudaSuccess) {
           throw std::string("CUDAContext::Clear() : cuda free memory failed.");
@@ -55,10 +54,21 @@ void CUDAContext::Allocator(
                             const unsigned int size,
                             const unsigned int block_size
                             ){
-  size_ = size * block_size;
-  if (cudaMalloc((void**)&ptr_, size_) != cudaSuccess) {
-  throw std::string("CUDAContext::Allocator() : device memory allocation failed.");
-  }
+    Clear();
+    size_ = size * block_size;
+    if (cudaMalloc((void**)&ptr_, size_) != cudaSuccess) {
+        throw std::string("CUDAContext::Allocator() : device memory allocation failed.");
+    }
+}
+
+void CUDAContext::Allocator(
+    const unsigned int size,
+    const unsigned int block_size,
+    void *ptr) 
+{
+    Clear();
+    size_ = size * block_size;
+    ptr_ = ptr;
 }
 
 void CUDAContext::CopyTo(
@@ -84,8 +94,10 @@ void CUDAContext::CopyFrom(
   if (size * block_size > size_) {
   throw std::string("Copy size is bigger than allocated device memory.");
   }
-  if (cudaMemcpy(ptr_, from, size * block_size, cudaMemcpyHostToDevice) != cudaSuccess) {
-  throw std::string("CUDAContext::CopyFrom() : host to device copy failed.");
+  cudaError_t error = cudaMemcpy(ptr_, from, size * block_size, cudaMemcpyHostToDevice);
+  if (error != cudaSuccess) {
+      std::string message(cudaGetErrorString(error));
+  throw std::string("CUDAContext::CopyFrom() : host to device copy failed. ->" + message);
   }
 }
 

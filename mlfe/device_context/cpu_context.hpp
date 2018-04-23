@@ -22,6 +22,12 @@ protected:
                    const unsigned int size,
                    const unsigned int block_size
                    ) override;
+
+    void Allocator(
+                   const unsigned int size,
+                   const unsigned int block_size,
+                   void *ptr
+    ) override;
     
     void CopyTo(
                 const unsigned int offset,

@@ -44,6 +44,16 @@ void CPUContext::Allocator(
     }
 }
 
+void CPUContext::Allocator(
+    const unsigned int size,
+    const unsigned int block_size,
+    void *ptr
+) {
+    Clear();
+    size_ = size * block_size;
+    ptr_ = ptr;
+}
+
 void CPUContext::CopyTo(
                         const unsigned int offset,
                         const unsigned int size,

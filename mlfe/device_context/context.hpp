@@ -30,6 +30,21 @@ public:
         }
     }
 
+    /*
+    * @brief Hold the external memory address.
+    */
+    template <typename T,
+        typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
+    >
+    void Allocate(const int size, void *ptr) {
+        try {
+            Allocator(size, sizeof(T), ptr);
+        }
+        catch (std::string &e) {
+            throw e;
+        }
+    }
+
     static std::shared_ptr<Context> Create(Accelerator acc);
 
     void Allocate(const int size, const int block_size);
@@ -89,6 +104,15 @@ protected:
                            const unsigned int size,
                            const unsigned int block_size
                            ) = 0;
+
+    /*
+    * @brief Hold the external memory address.
+    */
+    virtual void Allocator(
+        const unsigned int size,
+        const unsigned int block_size,
+        void *ptr
+    ) = 0;
     
     /*
      * @brief Copy from host memory to device memory.
