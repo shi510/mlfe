@@ -7,6 +7,7 @@ namespace mlfe {namespace node {
 template <typename T, typename D = CUDAContext>
 struct SoftmaxXentCudaF : NodeFunctor {
     void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
         _x = oc->inputs[0];
         _label = oc->inputs[1];
         _prob = oc->outputs[0];
@@ -14,15 +15,19 @@ struct SoftmaxXentCudaF : NodeFunctor {
         _m = _x->Dim(0);
         _n = _x->Dim(1);
 
-        _prob->Allocate(Accelerator::CUDA);
-        _loss->Allocate(Accelerator::CUDA);
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+        _prob->Allocate(Accelerator::CUDA, dt);
+        _loss->Allocate(Accelerator::CUDA, dt);
 
         _sum_multiplier.Reshape({ _n });
-        _sum_multiplier.Allocate(Accelerator::CUDA);
+        _sum_multiplier.Allocate(Accelerator::CUDA, dt);
         _rowwise_max.Reshape({ _m });
-        _rowwise_max.Allocate(Accelerator::CUDA);
+        _rowwise_max.Allocate(Accelerator::CUDA, dt);
         _scaler.Reshape({ _m });
-        _scaler.Allocate(Accelerator::CUDA);
+        _scaler.Allocate(Accelerator::CUDA, dt);
 
         math::set<T, D>(
             _sum_multiplier.Size(),
@@ -101,6 +106,7 @@ REGIST_NODE_FUNCTOR(SoftmaxXent, DataType::F64, Accelerator::CUDA, SoftmaxXentCu
 template <typename T, typename D = CUDAContext>
 struct SoftmaxXentGradCudaF : NodeFunctor {
     void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
         _label = oc->inputs[0];
         _prob = oc->inputs[1];
         _loss = oc->inputs[2];
@@ -109,7 +115,11 @@ struct SoftmaxXentGradCudaF : NodeFunctor {
         _m = _prob->Dim(0);
         _n = _prob->Dim(1);
 
-        _dx->Allocate(Accelerator::CUDA);
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+        _dx->Allocate(Accelerator::CUDA, dt);
     }
 
     void Run() override {

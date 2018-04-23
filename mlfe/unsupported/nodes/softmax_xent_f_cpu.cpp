@@ -7,6 +7,7 @@ namespace mlfe { namespace node {
 template <typename T, typename D = CPUContext>
 struct SoftmaxXentCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
         _x = oc->inputs[0];
         _label = oc->inputs[1];
         _prob = oc->outputs[0];
@@ -14,15 +15,19 @@ struct SoftmaxXentCpuF : NodeFunctor {
         _m = _x->Dim(0);
         _n = _x->Dim(1);
 
-        _prob->Allocate();
-        _loss->Allocate();
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+        _prob->Allocate(Accelerator::Default, dt);
+        _loss->Allocate(Accelerator::Default, dt);
 
         _sum_multiplier.Reshape({ _n });
-        _sum_multiplier.Allocate();
+        _sum_multiplier.AllocateAccelerator::Default, dt();
         _rowwise_max.Reshape({ _m });
-        _rowwise_max.Allocate();
+        _rowwise_max.Allocate(Accelerator::Default, dt);
         _scaler.Reshape({ _m });
-        _scaler.Allocate();
+        _scaler.Allocate(Accelerator::Default, dt);
 
         math::set<T, D>(
             _sum_multiplier.Size(),
@@ -101,6 +106,7 @@ REGIST_NODE_FUNCTOR(SoftmaxXent, DataType::F64, Accelerator::Default, SoftmaxXen
 template <typename T, typename D = CPUContext>
 struct SoftmaxXentGradCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
         _label = oc->inputs[0];
         _prob = oc->inputs[1];
         _loss = oc->inputs[2];
@@ -109,7 +115,11 @@ struct SoftmaxXentGradCpuF : NodeFunctor {
         _m = _prob->Dim(0);
         _n = _prob->Dim(1);
 
-        _dx->Allocate();
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+        _dx->Allocate(Accelerator::Default, dt);
     }
     void Run() override {
         math::cross_entropy_gradients<T, D>(_m, _n,

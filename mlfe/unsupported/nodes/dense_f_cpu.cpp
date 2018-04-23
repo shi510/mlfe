@@ -7,21 +7,27 @@ namespace mlfe { namespace node {
 template <typename T, typename D = CPUContext>
 struct DenseCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
         _x = oc->inputs[0];
         _w = oc->inputs[1];
         _b = oc->inputs[2];
         _y = oc->outputs[0];
 
-        _w->Allocate();
-        _b->Allocate();
-        _y->Allocate();
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+
+        _w->Allocate(Accelerator::Default, dt);
+        _b->Allocate(Accelerator::Default, dt);
+        _y->Allocate(Accelerator::Default, dt);
 
         _m = _x->Dim(0);
         _n = _w->Dim(0);
         _k = _x->Dim(1);
 
         _bias_multiplier.Reshape({ _m });
-        _bias_multiplier.Allocate();
+        _bias_multiplier.Allocate(Accelerator::Default, dt);
 
         math::set<T, D>(
             _bias_multiplier.Size(),
@@ -70,6 +76,7 @@ REGIST_NODE_FUNCTOR(Dense, DataType::F64, Accelerator::Default, DenseCpuF<double
 template <typename T, typename D = CPUContext>
 struct DenseGradCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
         _x = oc->inputs[0];
         _w = oc->inputs[1];
         _dy = oc->inputs[2];
@@ -77,16 +84,20 @@ struct DenseGradCpuF : NodeFunctor {
         _db = oc->outputs[1];
         _dx = oc->outputs[2];
         
-        _dw->Allocate();
-        _db->Allocate();
-        _dx->Allocate();
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+        _dw->Allocate(Accelerator::Default, dt);
+        _db->Allocate(Accelerator::Default, dt);
+        _dx->Allocate(Accelerator::Default, dt);
 
         _m = _x->Dim(0);
         _n = _w->Dim(0);
         _k = _x->Dim(1);
 
         _bias_multiplier.Reshape({ _m });
-        _bias_multiplier.Allocate();
+        _bias_multiplier.Allocate(Accelerator::Default, dt);
 
         math::set<T, D>(
             _bias_multiplier.Size(),
