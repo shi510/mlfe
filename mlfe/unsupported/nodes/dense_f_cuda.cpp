@@ -19,7 +19,7 @@ struct DenseCudaF : NodeFunctor {
         }
         _w->Allocate(Accelerator::CUDA, dt);
         _b->Allocate(Accelerator::CUDA, dt);
-        _y->Allocate(Accelerator::CUDA, dt;
+        _y->Allocate(Accelerator::CUDA, dt);
 
         _m = _x->Dim(0);
         _n = _w->Dim(0);

@@ -28,7 +28,6 @@ struct ConstantInitCpuF : NodeFunctor {
 };
 
 REGIST_NODE_FUNCTOR(ConstantInit, DataType::F32, Accelerator::Default, ConstantInitCpuF<float>)
-REGIST_NODE_FUNCTOR(ConstantInit, DataType::F64, Accelerator::Default, ConstantInitCpuF<double>)
 
 template <typename T, typename D = CPUContext>
 struct ConstantInitGradCpuF : NodeFunctor {
@@ -38,7 +37,6 @@ struct ConstantInitGradCpuF : NodeFunctor {
 };
 
 REGIST_NODE_GRADIENT_FUNCTOR(ConstantInit, DataType::F32, Accelerator::Default, ConstantInitGradCpuF<float>)
-REGIST_NODE_GRADIENT_FUNCTOR(ConstantInit, DataType::F64, Accelerator::Default, ConstantInitGradCpuF<double>)
 
 template <typename T>
 struct XavierInitCpuF : NodeFunctor {
@@ -67,7 +65,6 @@ struct XavierInitCpuF : NodeFunctor {
 };
 
 REGIST_NODE_FUNCTOR(XavierInit, DataType::F32, Accelerator::Default, XavierInitCpuF<float>)
-REGIST_NODE_FUNCTOR(XavierInit, DataType::F64, Accelerator::Default, XavierInitCpuF<double>)
 
 template <typename T>
 struct XavierInitGradCpuF : NodeFunctor {
@@ -77,7 +74,6 @@ struct XavierInitGradCpuF : NodeFunctor {
 };
 
 REGIST_NODE_GRADIENT_FUNCTOR(XavierInit, DataType::F32, Accelerator::Default, XavierInitGradCpuF<float>)
-REGIST_NODE_GRADIENT_FUNCTOR(XavierInit, DataType::F64, Accelerator::Default, XavierInitGradCpuF<double>)
 
 } // end namespace node
 } // end namespace mlfe

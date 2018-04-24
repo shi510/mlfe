@@ -23,7 +23,7 @@ struct SoftmaxXentCpuF : NodeFunctor {
         _loss->Allocate(Accelerator::Default, dt);
 
         _sum_multiplier.Reshape({ _n });
-        _sum_multiplier.AllocateAccelerator::Default, dt();
+        _sum_multiplier.Allocate(Accelerator::Default, dt);
         _rowwise_max.Reshape({ _m });
         _rowwise_max.Allocate(Accelerator::Default, dt);
         _scaler.Reshape({ _m });

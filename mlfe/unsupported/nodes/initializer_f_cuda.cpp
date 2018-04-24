@@ -29,7 +29,6 @@ struct ConstantInitCudaF : NodeFunctor {
 };
 
 REGIST_NODE_FUNCTOR(ConstantInit, DataType::F32, Accelerator::CUDA, ConstantInitCudaF<float>)
-REGIST_NODE_FUNCTOR(ConstantInit, DataType::F64, Accelerator::CUDA, ConstantInitCudaF<double>)
 
 template <typename T>
 struct XavierInitCudaF : NodeFunctor {
@@ -65,7 +64,6 @@ struct XavierInitCudaF : NodeFunctor {
 };
 
 REGIST_NODE_FUNCTOR(XavierInit, DataType::F32, Accelerator::CUDA, XavierInitCudaF<float>)
-REGIST_NODE_FUNCTOR(XavierInit, DataType::F64, Accelerator::CUDA, XavierInitCudaF<double>)
 
 } // end namespace node
 } // end namespace mlfe
