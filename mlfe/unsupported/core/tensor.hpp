@@ -74,7 +74,7 @@ public:
 
     ~Tensor();
 
-    Tensor(const Tensor &) = default;
+    Tensor(const Tensor &t);
 
     Tensor *Reshape(std::vector<int> shape);
 

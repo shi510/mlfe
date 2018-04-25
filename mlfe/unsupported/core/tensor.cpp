@@ -74,10 +74,15 @@ void TensorAllocator::Accel(Accelerator acc) {
     _acc = acc;
 }
 
-Tensor::Tensor() : trainable(false), bias(false) {}
+Tensor::Tensor() 
+    : trainable(false), bias(false), _size(0), 
+    _ta(std::make_shared<TensorAllocator>()),
+    _shape(std::make_shared<TensorShape>()){
+    
+}
 
 Tensor::Tensor(std::vector<int> shape) 
-    : trainable(false), bias(false)
+    : trainable(false), bias(false), _ta(std::make_shared<TensorAllocator>())
 {
     _shape = std::make_shared<TensorShape>(shape);
     _size = std::accumulate(_shape->Dims().begin(),
@@ -94,6 +99,11 @@ Tensor::Tensor(
     _size = std::accumulate(_shape->Dims().begin(),
         _shape->Dims().end(), 1, std::multiplies<int>());
     _ta->Allocate(Size(), ptr);
+}
+
+Tensor::Tensor(const Tensor &t) {
+    Reshape(t.Shape());
+    _ta = t._ta;
 }
 
 Tensor::~Tensor() { }
