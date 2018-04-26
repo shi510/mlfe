@@ -30,6 +30,18 @@ void UniformCurand<float>(curandState_t *states, unsigned int n, float *numbers,
         CUDA_CONTEXT_NUM_THREADS >>>(states, n, numbers, a, b);
 }
 
+template <typename T>
+__global__ void one_hot_kernel(const int classes, const T *label, T *onehot) {
+    int n = threadIdx.x;
+    int label_val = static_cast<int>(label[n]);
+    onehot[n * classes + label_val] = static_cast<T>(1);
+}
+
+template <>
+void OneHotCuda<float>(const int batch, const int classes, const float *label, float *onehot) {
+    one_hot_kernel<float><<<1, batch>>>(classes, label, onehot);
+}
+
 
 } // end namespace math
 } // end namespace mlfe
