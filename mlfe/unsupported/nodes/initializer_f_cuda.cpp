@@ -1,4 +1,5 @@
 #include <random>
+#include <curand.h>
 #include "../core/node.hpp"
 #include "../../device_context/cuda_context.hpp"
 #include "../../math/blas.hpp"
@@ -43,24 +44,24 @@ struct XavierInitCudaF : NodeFunctor {
         );
         _a = -scale;
         _b = scale;
-
-        cudaMalloc((void**)&_states, _x->Size() * sizeof(curandState_t));
-        math::InitCurand(to_value<T>(seed_str), _x->Size(), _states);
+        _seed = to_value<T>(seed_str);
+        curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
+        curandSetPseudoRandomGeneratorSeed(gen, _seed);
     }
 
     void Run() override {
-        int size = _x->Size();
         T *x_ptr = _x->GetPtr<T>();
-        math::UniformCurand<T>(_states, size, x_ptr, _a, _b);
+        math::UniformCurand<T>(&gen, _x->Size(), x_ptr, _a, _b);
     }
-    
+
     ~XavierInitCudaF() {
         cudaFree(_states);
     }
 
     Tensor *_x;
     T _a, _b;
-    curandState_t *_states;
+    int _seed;
+    curandGenerator_t gen;
 };
 
 REGIST_NODE_FUNCTOR(XavierInit, DataType::F32, Accelerator::CUDA, XavierInitCudaF<float>)

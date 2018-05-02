@@ -7,10 +7,13 @@ namespace mlfe { namespace math {
 void InitCurand(unsigned int seed, unsigned int n, curandState_t *states);
 
 template <typename T>
-void UniformCurand(curandState_t *states, unsigned int n, T *numbers, T a, T b);
+void UniformCurand(curandGenerator_t *gen, const unsigned int size, T *numbers, const T a, const T b);
 
 template <typename T>
 void OneHotCuda(const int batch, const int classes, const T *label, T *onehot);
+
+template <typename T>
+void AccuracyCuda(const int batch, const int classes, const int top_k, const T *prob, const T *label, T *accuracy);
 
 } // namespace math
 } // namespace mlfe

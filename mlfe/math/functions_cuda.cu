@@ -1,33 +1,32 @@
 #include "functions_cuda.hpp"
+#include "functions.hpp"
 #include <cub\block\block_reduce.cuh>
 #include "../device_context/cuda_context.hpp"
 #include <cuda.h>
 #include <cuda_runtime.h>
 namespace mlfe { namespace math {
 
-__global__ void curand_init_kernel(const int size, unsigned int seed, curandState_t *states) {
-    CUDA_1D_KERNEL_LOOP(n, size) {
-        curand_init(seed, n, 0, &states[n]);
-    }
-}
-
 template <typename T>
-__global__ void curand_uniform_kernel(curandState_t *states, const int size, T *numbers, T a, T b) {
+__global__ void random_uniform_shift_kernel(
+    const unsigned int size,
+    T *numbers, const T a, const T b)
+{
+    const T scale = b - a;
     CUDA_1D_KERNEL_LOOP(n, size) {
-        numbers[n] = curand_uniform(&states[n]);
-        numbers[n] = numbers[n] * (b - a) + a;
+        numbers[n] = numbers[n] * scale + a;
     }
-}
-
-void InitCurand(unsigned int seed, unsigned int n, curandState_t* states) {
-    curand_init_kernel<<<CUDA_CONTEXT_GET_BLOCKS(n),
-        CUDA_CONTEXT_NUM_THREADS >>>(n, seed, states);
 }
 
 template <>
-void UniformCurand<float>(curandState_t *states, unsigned int n, float *numbers, float a, float b) {
-    curand_uniform_kernel<float><<<CUDA_CONTEXT_GET_BLOCKS(n),
-        CUDA_CONTEXT_NUM_THREADS >>>(states, n, numbers, a, b);
+void UniformCurand<float>(
+    curandGenerator_t *gen,
+    const unsigned int size,
+    float *numbers, const float a, const float b)
+{
+    curandGenerateUniform(*gen, numbers, size);
+    random_uniform_shift_kernel<float><<<
+        CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, numbers, a, b);
 }
 
 template <typename T>
@@ -42,6 +41,48 @@ void OneHotCuda<float>(const int batch, const int classes, const float *label, f
     one_hot_kernel<float><<<1, batch>>>(classes, label, onehot);
 }
 
+
+template <typename T>
+__global__ void divide_by_val_kernel(const int val, T *arg) {
+    arg[0] = arg[0] / static_cast<T>(val);
+}
+
+template <typename T>
+__global__ void top_k_correct_count_kernel(const int batch, const int classes, const int top_k, const T *prob, const T *label, T *accuracy) {
+    typedef cub::BlockReduce<int, CUDA_CONTEXT_NUM_THREADS> BlockReduce;
+    __shared__ typename BlockReduce::TempStorage temp_storage;
+    int correct = 0;
+    for (int b = blockIdx.x; b < batch; b += gridDim.x) {
+        const int gt = static_cast<int>(label[b]);
+        const T gt_prob = prob[b * classes + gt];
+        int rank = 0;
+        for (int n = threadIdx.x; n < classes; n += blockDim.x) {
+            const T prob_ = prob[b * classes + n];
+            if (prob_ > gt_prob) {
+                ++rank;
+            }
+        }
+        rank = BlockReduce(temp_storage).Sum(rank);
+        if (rank < top_k) {
+            ++correct;
+        }
+        __syncthreads();
+    }
+
+    if (threadIdx.x == 0) {
+        atomicAdd(accuracy, static_cast<T>(correct));
+    }
+}
+
+template <>
+void AccuracyCuda<float>(const int batch, const int classes, const int top_k, const float *prob, const float *label, float *accuracy) {
+    top_k_correct_count_kernel<float><<<
+        CUDA_CONTEXT_GET_BLOCKS(batch * classes),
+        CUDA_CONTEXT_NUM_THREADS>>>(
+            batch, classes, top_k, prob, label, accuracy
+            );
+    divide_by_val_kernel<float><<<1, 1>>>(batch, accuracy);
+}
 
 } // end namespace math
 } // end namespace mlfe
