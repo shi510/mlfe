@@ -55,7 +55,7 @@ struct XavierInitCudaF : NodeFunctor {
     }
 
     ~XavierInitCudaF() {
-        cudaFree(_states);
+        curandDestroyGenerator(gen);
     }
 
     Tensor *_x;
