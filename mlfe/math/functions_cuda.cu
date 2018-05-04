@@ -29,6 +29,61 @@ void UniformCurand<float>(
         CUDA_CONTEXT_NUM_THREADS>>>(size, numbers, a, b);
 }
 
+template <class DataType>
+__global__ void ReLUKernel(const int size, const DataType *x, DataType *y) {
+    CUDA_1D_KERNEL_LOOP(i, size) {
+        y[i] = x[i] > 0 ? x[i] : 0;
+    }
+}
+
+template <class DataType>
+__global__ void ReLUGradientKernel(const int size, const DataType *x, const DataType *dy, DataType *dx) {
+    CUDA_1D_KERNEL_LOOP(i, size) {
+        dx[i] = x[i] > 0 ? dy[i] : 0;
+    }
+}
+
+template <>
+void ReluFunction<float, CUDAContext>(const int size, const float *x, float *y) {
+    ReLUKernel<float> << <CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS >> >(size, x, y);
+}
+
+template <>
+void ReluGradientFunction<float, CUDAContext>(const int size, const float *x, const float *dy, float *dx) {
+    ReLUGradientKernel<float><<<CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, x, dy, dx);
+}
+
+
+template <class DataType>
+__global__ void SigmoidKernel(const int size, const DataType *x, DataType *y) {
+    CUDA_1D_KERNEL_LOOP(i, size) {
+        y[i] = 1.f / (1.f + exp(-x[i]));
+    }
+}
+
+template <class DataType>
+__global__  void SigmoidGradientKernel(const int size, const DataType *y, const DataType *dy, DataType *dx) {
+    CUDA_1D_KERNEL_LOOP(i, size) {
+        dx[i] = dy[i] * y[i] * (1. - y[i]);
+    }
+}
+
+template <>
+void SigmoidFunction<float, CUDAContext>(const int size, const float *x, float *y) {
+    SigmoidKernel<float><<<
+        CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, x, y);
+}
+
+template <>
+void SigmoidGradientFunction<float, CUDAContext>(const int size, const float *y, const float *dy, float *dx) {
+    SigmoidGradientKernel<float><<<
+        CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, y, dy, dx);
+}
+
 template <typename T>
 __global__ void one_hot_kernel(const int classes, const T *label, T *onehot) {
     int n = threadIdx.x;
