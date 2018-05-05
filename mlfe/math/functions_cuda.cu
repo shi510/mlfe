@@ -139,5 +139,55 @@ void AccuracyCuda<float>(const int batch, const int classes, const int top_k, co
     divide_by_val_kernel<float><<<1, 1>>>(batch, accuracy);
 }
 
+#define DEFINE_BINARY_OP_KERNEL(OpName, Expr) \
+template <typename T>\
+__global__ void OpName##_binary_op(const int size, const T *a, const T *b, T *c) {\
+    CUDA_1D_KERNEL_LOOP(n, size){\
+        c[n] = a[n] Expr b[n]; \
+    }\
+}\
+template <typename T>\
+__global__ void OpName##_val_binary_op(const int size, const T val, const T *a, T *c) {\
+    CUDA_1D_KERNEL_LOOP(n, size){\
+        c[n] = val Expr a[n]; \
+    }\
+}
+
+DEFINE_BINARY_OP_KERNEL(Add, +)
+DEFINE_BINARY_OP_KERNEL(Sub, -)
+DEFINE_BINARY_OP_KERNEL(Mul, *)
+DEFINE_BINARY_OP_KERNEL(Div, /)
+
+#define DEFINE_CUDA_BINARY_OP(OpName) \
+template <>\
+void OpName##Cuda<float>(const int size, const float *a, const float *b, float *c){\
+    OpName##_binary_op<float><<<\
+    CUDA_CONTEXT_GET_BLOCKS(size), \
+    CUDA_CONTEXT_NUM_THREADS>>>(size, a, b, c);\
+}\
+template <>\
+void OpName##ValCuda<float>(const int size, const float val, const float *a, float *c) {\
+    OpName##_val_binary_op<float><<<\
+    CUDA_CONTEXT_GET_BLOCKS(size), \
+    CUDA_CONTEXT_NUM_THREADS>>>(size, val, a, c);\
+}\
+template <>\
+void OpName##Cuda<double>(const int size, const double *a, const double *b, double *c) {\
+    OpName##_binary_op<double><<<\
+    CUDA_CONTEXT_GET_BLOCKS(size), \
+    CUDA_CONTEXT_NUM_THREADS>>>(size, a, b, c);\
+}\
+template <>\
+void OpName##ValCuda<double>(const int size, const double val, const double *a, double *c) {\
+    OpName##_val_binary_op<double><<<\
+    CUDA_CONTEXT_GET_BLOCKS(size), \
+    CUDA_CONTEXT_NUM_THREADS>>>(size, val, a, c);\
+}
+
+DEFINE_CUDA_BINARY_OP(Add)
+DEFINE_CUDA_BINARY_OP(Sub)
+DEFINE_CUDA_BINARY_OP(Mul)
+DEFINE_CUDA_BINARY_OP(Div)
+
 } // end namespace math
 } // end namespace mlfe
