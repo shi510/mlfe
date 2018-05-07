@@ -13,7 +13,6 @@ void Accuracy::InternalInit(Workspace *ws, OperatorContext *oc) {
     oc->inputs.push_back(prob);
     oc->inputs.push_back(label);
     oc->outputs.push_back(accuracy);
-    std::cout << Name() << " -> " << "InternalInit on Node." << std::endl;
 }
 
 void Accuracy::InternalGradientInit(Workspace *ws, OperatorContext *oc) { }

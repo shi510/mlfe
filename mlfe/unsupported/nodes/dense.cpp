@@ -29,7 +29,7 @@ void Dense::InternalInit(Workspace *ws, OperatorContext *oc) {
     
     const int batch = x->Dim(0);
     const int in_neurons = x->Dim(1);
-    const int out_neurons = to_value<int>(GetParam("Outputs"));
+    const int out_neurons = oc->attr->GetParam<int>("Outputs");
 
     w->Reshape({ out_neurons, in_neurons });
     b->Reshape({ out_neurons });
@@ -39,7 +39,6 @@ void Dense::InternalInit(Workspace *ws, OperatorContext *oc) {
     oc->inputs.push_back(w);
     oc->inputs.push_back(b);
     oc->outputs.push_back(y);
-    std::cout << Name() << " -> " << "InternalInit on Node." << std::endl;
 }
 
 void Dense::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
@@ -53,7 +52,7 @@ void Dense::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
 
     const int batch = x->Dim(0);
     const int in_neurons = x->Dim(1);
-    const int out_neurons = to_value<int>(GetParam("Outputs"));
+    const int out_neurons = oc->attr->GetParam<int>("Outputs");
 
     dw->Reshape({ out_neurons, in_neurons });
     db->Reshape({ out_neurons });
@@ -65,7 +64,6 @@ void Dense::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
     oc->outputs.push_back(dw);
     oc->outputs.push_back(db);
     oc->outputs.push_back(dx);
-    std::cout << Name() << " -> " << "InternalInit on NodeGradient." << std::endl;
 }
 } // end namespace node
 } // end namespace mlfe

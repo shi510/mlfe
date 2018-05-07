@@ -42,7 +42,6 @@ void SoftmaxCrossEntropy::InternalInit(Workspace *ws, OperatorContext *oc) {
     oc->inputs.push_back(label);
     oc->outputs.push_back(prob);
     oc->outputs.push_back(loss);
-    std::cout << Name() << " -> " << "InternalInit on Node." << std::endl;
 }
 
 void SoftmaxCrossEntropy::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
@@ -69,7 +68,6 @@ void SoftmaxCrossEntropy::InternalGradientInit(Workspace *ws, OperatorContext *o
     oc->inputs.push_back(prob);
     oc->inputs.push_back(loss);
     oc->outputs.push_back(dx);
-    std::cout << Name() << " -> " << "InternalInit on NodeGradient." << std::endl;
 }
 } // end namespace node
 } // end namespace mlfe

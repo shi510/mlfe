@@ -10,8 +10,7 @@ namespace mlfe { namespace node {
 template <typename T, typename D = CPUContext>
 struct ConstantInitCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
-        auto val_str = oc->attr->GetParam<std::string>("Value");
-        _val = to_value<T>(val_str);
+        _val = oc->attr->GetParam<int>("Value");
         _x = oc->inputs[0];
     }
 
@@ -41,9 +40,9 @@ REGIST_NODE_GRADIENT_FUNCTOR(ConstantInit, DataType::F32, Accelerator::Default, 
 template <typename T>
 struct XavierInitCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
-        auto seed_str = oc->attr->GetParam<std::string>("Seed");
+        int seed = oc->attr->GetParam<int>("Seed");
         _x = oc->inputs[0];
-        _rng = std::mt19937(to_value<T>(seed_str));
+        _rng = std::mt19937(seed);
         T scale = std::sqrt(
             static_cast<T>(6) /
             static_cast<T>(_x->Size() / _x->Dim(0))

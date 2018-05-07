@@ -14,7 +14,6 @@ void Scale::InternalInit(Workspace *ws, OperatorContext *oc) {
     }
     oc->inputs.push_back(x);
     oc->outputs.push_back(y);
-    std::cout << Name() << " -> " << "InternalInit on Node." << base->Input(0) <<", "<< base->Output(0) << std::endl;
 }
 
 void Scale::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
@@ -26,7 +25,6 @@ void Scale::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
     }
     oc->inputs.push_back(dy);
     oc->outputs.push_back(dx);
-    std::cout << Name() << " -> " << "InternalInit on NodeGradient." << std::endl;
 }
 
 } // end namespace node

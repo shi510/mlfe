@@ -11,8 +11,7 @@ template <typename T, typename D = CPUContext>
 struct ScaleCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
         auto dt = DataType::F32;
-        auto val_str = oc->attr->GetParam<std::string>("Value");
-        _val = to_value<T>(val_str);
+        _val = oc->attr->GetParam<double>("Value");
         _x = oc->inputs[0];
         _y = oc->outputs[0];
         // TODO : not use type size compare.
@@ -45,8 +44,7 @@ template <typename T, typename D = CPUContext>
 struct ScaleGradCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
         auto dt = DataType::F32;
-        auto val_str = oc->attr->GetParam<std::string>("Value");
-        _val = to_value<T>(val_str);
+        _val = oc->attr->GetParam<double>("Value");
         _dy = oc->inputs[0];
         _dx = oc->outputs[0];
         // TODO : not use type size compare.

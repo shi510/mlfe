@@ -18,7 +18,7 @@ struct OpName##CpuF : NodeFunctor {\
             _b = oc->inputs[1];\
         }\
         else{\
-            _val = to_value<T>(oc->attr->GetParam<std::string>("Value"));\
+            _val = oc->attr->GetParam<double>("Value");\
         }\
         _size = _c->Size();\
     }\

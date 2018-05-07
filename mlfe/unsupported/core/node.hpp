@@ -62,6 +62,8 @@ protected:
 
     unsigned int OutputSize() const;
 
+    ParamDef *GetParam();
+
     virtual void InternalInit(Workspace *ws, OperatorContext *oc) = 0;
 
 protected:
@@ -96,17 +98,10 @@ public:
         AddOutput(output);
         return *reinterpret_cast<InheritedType *>(this);
     }
-    
-    template <typename T, 
-        typename = typename std::enable_if<std::is_fundamental<T>::value, T>::type
-    >
-    InheritedType &Attr(std::string name, T val) {
-        AddParam(name, std::to_string(val));
-        return *reinterpret_cast<InheritedType *>(this);
-    }
 
-    InheritedType &Attr(std::string name, std::string val) {
-        AddParam(name, val);
+    template <typename T>
+    InheritedType &Attr(std::string name, T val) {
+        GetParam()->Add(name, val);
         return *reinterpret_cast<InheritedType *>(this);
     }
     

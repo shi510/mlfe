@@ -67,6 +67,15 @@ void Node::Init(Workspace *ws) {
     std::string acc_str = to_string(Accel());
     std::string f_name = _inode->name + "_" + type_str + "_" + acc_str;
     OperatorContext oc;
+    if (!acc_str.compare(to_string(Accelerator::CUDNN))) {
+        if (!NodeFunctorRegistry()->Has(f_name)) {
+            acc_str = to_string(Accelerator::CUDA);
+        }
+    }
+    f_name = _inode->name + "_" + type_str + "_" + acc_str;
+    if (!NodeFunctorRegistry()->Has(f_name)) {
+        throw std::string("Can not find the functor : ") + f_name;
+    }
     oc.attr = &_inode->_pd;
     _inode->_nf = NodeFunctorRegistry()->Create(f_name);
     InternalInit(ws, &oc);
@@ -99,6 +108,10 @@ unsigned int Node::InputSize() const {
 
 unsigned int Node::OutputSize() const {
     return _inode->_outputs.size();
+}
+
+ParamDef *Node::GetParam() {
+    return &_inode->_pd;
 }
 
 void NodeGradient::Init(Workspace *ws) {

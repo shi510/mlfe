@@ -19,9 +19,8 @@ struct OpName##CudaF : NodeFunctor {\
             _b = oc->inputs[1];\
         }\
         else{\
-            _val = to_value<T>(oc->attr->GetParam<std::string>("Value"));\
+            _val = oc->attr->GetParam<double>("Value");\
         }\
-\
         _size = _c->Size();\
     }\
     void Run() override {\

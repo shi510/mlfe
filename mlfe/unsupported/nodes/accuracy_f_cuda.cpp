@@ -11,8 +11,7 @@ template <typename T, typename D = CUDAContext>
 struct AccuracyCudaF : NodeFunctor {
     void Init(OperatorContext *oc) override {
         auto dt = DataType::F32;
-        auto val_str = oc->attr->GetParam<std::string>("Top");
-        _top_k = to_value<T>(val_str);
+        _top_k = oc->attr->GetParam<int>("Top");
         _prob = oc->inputs[0];
         _label = oc->inputs[1];
         _accuracy = oc->outputs[0];
