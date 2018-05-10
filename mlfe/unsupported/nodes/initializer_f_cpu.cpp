@@ -10,7 +10,7 @@ namespace mlfe { namespace node {
 template <typename T, typename D = CPUContext>
 struct ConstantInitCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
-        _val = oc->attr->GetParam<int>("Value");
+        _val = oc->attr->GetParam<double>("Value");
         _x = oc->inputs[0];
     }
 

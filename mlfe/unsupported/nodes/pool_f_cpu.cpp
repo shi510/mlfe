@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cfloat>
 #include "../core/node.hpp"
 #include "../../device_context/cpu_context.hpp"
 #include "../../math/blas.hpp"
