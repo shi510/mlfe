@@ -1,6 +1,8 @@
 #include "../core/node.hpp"
 #include "../../device_context/cuda_context.hpp"
 #include "../../math/blas.hpp"
+#include "../../math/functions.hpp"
+#include "../../math/functions_cuda.hpp"
 
 namespace mlfe {namespace node {
 
@@ -138,6 +140,110 @@ struct SoftmaxXentWithLabelGradCudaF : NodeFunctor {
 
 REGIST_NODE_GRADIENT_FUNCTOR(SoftmaxXentWithLabel, DataType::F32, Accelerator::CUDA, SoftmaxXentWithLabelGradCudaF<float>)
 REGIST_NODE_GRADIENT_FUNCTOR(SoftmaxXentWithLabel, DataType::F64, Accelerator::CUDA, SoftmaxXentWithLabelGradCudaF<double>)
+
+template <typename T, typename D = CUDAContext>
+struct SigmoidXentCudaF : NodeFunctor {
+    void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
+        _x = oc->inputs[0];
+        _sig = oc->inputs[1];
+        _t = oc->inputs[2];
+        _loss = oc->outputs[0];
+        _m = _x->Dim(0);
+        _n = _x->Dim(1);
+
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+        _loss->Allocate(Accelerator::CUDA, dt);
+        _sig->Allocate(Accelerator::CUDA, dt);
+    }
+
+    void Run() override {
+        const T *x_ptr = _x->GetPtr<T>();
+        T *sig_ptr = _sig->GetPtr<T>();
+        T *t_ptr = _t->GetPtr<T>();
+        T *loss_ptr = _loss->GetPtr<T>();
+
+        math::set<T, D>(_loss->Size(), static_cast<T>(0), loss_ptr);
+
+        math::SigmoidFunction<T, D>(
+            _x->Size(),
+            x_ptr,
+            sig_ptr
+            );
+
+        math::sigmoid_cross_entropy<T, D>(
+            _m, _n,
+            sig_ptr,
+            t_ptr,
+            loss_ptr
+            );
+
+        //math::scal<T, D>(
+        //    1,
+        //    static_cast<T>(1) / static_cast<T>(_m * _n),
+        //    loss_ptr,
+        //    loss_ptr
+        //    );
+    }
+
+    Tensor *_x, *_sig, *_t;
+    Tensor *_loss;
+    int _m, _n;
+};
+
+REGIST_NODE_FUNCTOR(SigmoidXent, DataType::F32, Accelerator::CUDA, SigmoidXentCudaF<float>)
+//REGIST_NODE_FUNCTOR(SigmoidXent, DataType::F64, Accelerator::CUDA, SigmoidXentCudaF<double>)
+
+template <typename T, typename D = CUDAContext>
+struct SigmoidXentGradCudaF : NodeFunctor {
+    void Init(OperatorContext *oc) override {
+        auto dt = DataType::F32;
+        _x = oc->inputs[0];
+        _sig = oc->inputs[1];
+        _t = oc->inputs[2];
+        _loss = oc->inputs[3];
+        _dx = oc->outputs[0];
+        _m = _x->Dim(0);
+        _n = _x->Dim(1);
+
+        // TODO : not use type size compare.
+        if (sizeof(T) == 8) {
+            dt = DataType::F64;
+        }
+        _dx->Allocate(Accelerator::CUDA, dt);
+        _avg_loss.Reshape({ 1 });
+        _avg_loss.Allocate(Accelerator::CUDA, dt);
+    }
+
+    void Run() override {
+        const T *sig_ptr = _sig->GetPtr<T>();
+        const T *t_ptr = _t->GetPtr<T>();
+        const T *loss_ptr = _loss->GetPtr<T>();
+        T *avg_loss_ptr = _avg_loss.GetPtr<T>();
+        T *dx_ptr = _dx->GetPtr<T>();
+
+        math::sum<T, D>(_loss->Size(), loss_ptr, avg_loss_ptr);
+
+        math::sigmoid_cross_entropy_gradients<T, D>(
+            _m, _n,
+            sig_ptr,
+            t_ptr,
+            avg_loss_ptr,
+            dx_ptr
+            );
+    }
+
+    Tensor *_x, *_sig, *_t, *_loss;
+    Tensor *_dx;
+    Tensor _avg_loss;
+    int _m, _n;
+};
+
+REGIST_NODE_GRADIENT_FUNCTOR(SigmoidXent, DataType::F32, Accelerator::CUDA, SigmoidXentGradCudaF<float>)
+//REGIST_NODE_GRADIENT_FUNCTOR(SigmoidXent, DataType::F64, Accelerator::CUDA, SigmoidXentGradCudaF<double>)
 
 } // end namespace node
 } // end namespace mlfe
