@@ -52,6 +52,52 @@ void ReluGradientFunction<double, CPUContext>(
     }
 }
 
+template <>
+void SigmoidFunction<float, CPUContext>(
+    const int size,
+    const float *x,
+    float *y
+    ) {
+    for (int i = 0; i < size; ++i) {
+        y[i] = 1.f / (1.f + std::exp(-x[i]));
+    }
+}
+
+template <>
+void SigmoidFunction<double, CPUContext>(
+    const int size,
+    const double *x,
+    double *y
+    ) {
+    for (int i = 0; i < size; ++i) {
+        y[i] = 1.f / (1.f + std::exp(-x[i]));
+    }
+}
+
+template <>
+void SigmoidGradientFunction<float, CPUContext>(
+    const int size,
+    const float *y,
+    const float *dy,
+    float *dx
+    ) {
+    for (int i = 0; i < size; ++i) {
+        dx[i] = dy[i] * y[i] * (1.f - y[i]);
+    }
+}
+
+template <>
+void SigmoidGradientFunction<double, CPUContext>(
+    const int size,
+    const double *y,
+    const double *dy,
+    double *dx
+    ) {
+    for (int i = 0; i < size; ++i) {
+        dx[i] = dy[i] * y[i] * (1. - y[i]);
+    }
+}
+
 unsigned int GetRandomSeed(){
     int out;
     uint64_t seed = std::chrono::high_resolution_clock::
