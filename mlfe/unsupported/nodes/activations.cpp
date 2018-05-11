@@ -2,7 +2,7 @@
 
 namespace mlfe {namespace node {
 
-Activation::Activation() : NodeIO<Activation>("Activation"){ }
+Activation::Activation() : NodeSchema<Activation>("Activation"){ }
 
 void Activation::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);

@@ -2,7 +2,7 @@
 
 namespace mlfe {namespace node {
 
-MaxPool::MaxPool() : NodeIO<MaxPool>("MaxPool"){ }
+MaxPool::MaxPool() : NodeSchema<MaxPool>("MaxPool"){ }
 
 void MaxPool::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);

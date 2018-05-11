@@ -2,7 +2,7 @@
 
 namespace mlfe {namespace node {
 
-Accuracy::Accuracy() : NodeIO<Accuracy>("Accuracy"){ }
+Accuracy::Accuracy() : NodeSchema<Accuracy>("Accuracy"){ }
 
 void Accuracy::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);

@@ -7,7 +7,7 @@
 namespace mlfe {namespace node {
 
 #define DECLARE_BIANRY_OP_NODE(OpName)\
-class OpName : public NodeIO<OpName> {\
+class OpName : public NodeSchema<OpName> {\
 public:\
     OpName();\
 protected:\

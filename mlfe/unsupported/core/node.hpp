@@ -87,7 +87,7 @@ private:
 };
 
 template <typename InheritedType>
-class NodeIO : public NodeGradient {
+class NodeSchema : public NodeGradient {
 public:
     InheritedType &Input(std::string input) {
         AddInput(input);
@@ -110,7 +110,7 @@ public:
     }
 
 protected:
-    NodeIO(std::string name) : NodeGradient(name) {}
+    NodeSchema(std::string name) : NodeGradient(name) {}
 
     virtual void InternalInit(Workspace *ws, OperatorContext *oc) = 0;
 

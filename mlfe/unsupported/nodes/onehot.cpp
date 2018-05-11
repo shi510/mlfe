@@ -2,7 +2,7 @@
 
 namespace mlfe {namespace node {
 
-OneHot::OneHot() : NodeIO<OneHot>("OneHot"){ }
+OneHot::OneHot() : NodeSchema<OneHot>("OneHot"){ }
 
 void OneHot::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);

@@ -6,7 +6,7 @@
 
 namespace mlfe { namespace node {
 
-class Dense : public NodeIO<Dense> {
+class Dense : public NodeSchema<Dense> {
 public:
     Dense();
 

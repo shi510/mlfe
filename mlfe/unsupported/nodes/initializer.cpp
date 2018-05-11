@@ -3,7 +3,7 @@
 namespace mlfe {namespace node {
 
 ConstantInit::ConstantInit() 
-    : NodeIO<ConstantInit>("ConstantInit"){ }
+    : NodeSchema<ConstantInit>("ConstantInit"){ }
 
 void ConstantInit::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);
@@ -14,7 +14,7 @@ void ConstantInit::InternalInit(Workspace *ws, OperatorContext *oc) {
 void ConstantInit::InternalGradientInit(Workspace *ws, OperatorContext *oc) {}
 
 XavierInit::XavierInit() 
-    : NodeIO<XavierInit>("XavierInit") { }
+    : NodeSchema<XavierInit>("XavierInit") { }
 
 void XavierInit::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);

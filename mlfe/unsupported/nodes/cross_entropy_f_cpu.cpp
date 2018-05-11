@@ -1,11 +1,11 @@
 #include "../core/node.hpp"
-#include "../../device_context/cuda_context.hpp"
+#include "../../device_context/cpu_context.hpp"
 #include "../../math/blas.hpp"
 
-namespace mlfe {namespace node {
+namespace mlfe { namespace node {
 
-template <typename T, typename D = CUDAContext>
-struct SoftmaxXentCudaF : NodeFunctor {
+template <typename T, typename D = CPUContext>
+struct SoftmaxXentWithLabelCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
         auto dt = DataType::F32;
         _x = oc->inputs[0];
@@ -19,15 +19,15 @@ struct SoftmaxXentCudaF : NodeFunctor {
         if (sizeof(T) == 8) {
             dt = DataType::F64;
         }
-        _prob->Allocate(Accelerator::CUDA, dt);
-        _loss->Allocate(Accelerator::CUDA, dt);
+        _prob->Allocate(Accelerator::Default, dt);
+        _loss->Allocate(Accelerator::Default, dt);
 
         _sum_multiplier.Reshape({ _n });
-        _sum_multiplier.Allocate(Accelerator::CUDA, dt);
+        _sum_multiplier.Allocate(Accelerator::Default, dt);
         _rowwise_max.Reshape({ _m });
-        _rowwise_max.Allocate(Accelerator::CUDA, dt);
+        _rowwise_max.Allocate(Accelerator::Default, dt);
         _scaler.Reshape({ _m });
-        _scaler.Allocate(Accelerator::CUDA, dt);
+        _scaler.Allocate(Accelerator::Default, dt);
 
         math::set<T, D>(
             _sum_multiplier.Size(),
@@ -100,11 +100,11 @@ struct SoftmaxXentCudaF : NodeFunctor {
     int _m, _n;
 };
 
-REGIST_NODE_FUNCTOR(SoftmaxXent, DataType::F32, Accelerator::CUDA, SoftmaxXentCudaF<float>)
-REGIST_NODE_FUNCTOR(SoftmaxXent, DataType::F64, Accelerator::CUDA, SoftmaxXentCudaF<double>)
+REGIST_NODE_FUNCTOR(SoftmaxXentWithLabel, DataType::F32, Accelerator::Default, SoftmaxXentWithLabelCpuF<float>)
+REGIST_NODE_FUNCTOR(SoftmaxXentWithLabel, DataType::F64, Accelerator::Default, SoftmaxXentWithLabelCpuF<double>)
 
-template <typename T, typename D = CUDAContext>
-struct SoftmaxXentGradCudaF : NodeFunctor {
+template <typename T, typename D = CPUContext>
+struct SoftmaxXentWithLabelGradCpuF : NodeFunctor {
     void Init(OperatorContext *oc) override {
         auto dt = DataType::F32;
         _label = oc->inputs[0];
@@ -119,9 +119,8 @@ struct SoftmaxXentGradCudaF : NodeFunctor {
         if (sizeof(T) == 8) {
             dt = DataType::F64;
         }
-        _dx->Allocate(Accelerator::CUDA, dt);
+        _dx->Allocate(Accelerator::Default, dt);
     }
-
     void Run() override {
         math::cross_entropy_gradients<T, D>(_m, _n,
             _prob->GetPtr<T>(),
@@ -136,8 +135,9 @@ struct SoftmaxXentGradCudaF : NodeFunctor {
     int _m, _n;
 };
 
-REGIST_NODE_GRADIENT_FUNCTOR(SoftmaxXent, DataType::F32, Accelerator::CUDA, SoftmaxXentGradCudaF<float>)
-REGIST_NODE_GRADIENT_FUNCTOR(SoftmaxXent, DataType::F64, Accelerator::CUDA, SoftmaxXentGradCudaF<double>)
+REGIST_NODE_GRADIENT_FUNCTOR(SoftmaxXentWithLabel, DataType::F32, Accelerator::Default, SoftmaxXentWithLabelGradCpuF<float>)
+REGIST_NODE_GRADIENT_FUNCTOR(SoftmaxXentWithLabel, DataType::F64, Accelerator::Default, SoftmaxXentWithLabelGradCpuF<double>)
+
 
 } // end namespace node
 } // end namespace mlfe

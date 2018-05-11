@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-class Activation final : public NodeIO<Activation> {
+class Activation final : public NodeSchema<Activation> {
 public:
     Activation();
 

@@ -3,7 +3,7 @@
 namespace mlfe {namespace node {
 
 Scale::Scale()
-    : NodeIO<Scale>("Scale"){ }
+    : NodeSchema<Scale>("Scale"){ }
 
 void Scale::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);

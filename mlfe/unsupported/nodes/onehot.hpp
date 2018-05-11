@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-class OneHot final : public NodeIO<OneHot> {
+class OneHot final : public NodeSchema<OneHot> {
 public:
     OneHot();
 

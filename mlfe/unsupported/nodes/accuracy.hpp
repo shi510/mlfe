@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-class Accuracy final : public NodeIO<Accuracy> {
+class Accuracy final : public NodeSchema<Accuracy> {
 public:
     Accuracy();
 

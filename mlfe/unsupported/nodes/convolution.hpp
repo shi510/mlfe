@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-class Conv final : public NodeIO<Conv> {
+class Conv final : public NodeSchema<Conv> {
 public:
     Conv();
 

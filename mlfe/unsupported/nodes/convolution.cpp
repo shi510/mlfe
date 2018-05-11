@@ -2,7 +2,7 @@
 
 namespace mlfe {namespace node {
 
-Conv::Conv() : NodeIO<Conv>("Conv"){ }
+Conv::Conv() : NodeSchema<Conv>("Conv"){ }
 
 
 // * Convolution Node

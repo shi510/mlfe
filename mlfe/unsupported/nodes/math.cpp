@@ -9,7 +9,7 @@ namespace mlfe { namespace node {
 // 1. one input, one value and one output. (C_Tensor = A_Tensor [BinaryOpExpr] Constant_Value)
 // 2. two input and one output. (C_Tensor = A_Tensor [BinaryOpExpr] B_Tensor)
 #define DEFINE_BIANRY_OP_NODE(OpName)\
-OpName::OpName() : NodeIO<OpName>(#OpName) { }\
+OpName::OpName() : NodeSchema<OpName>(#OpName) { }\
 void OpName::InternalInit(Workspace *ws, OperatorContext *oc) {\
     runtime_assert(Inputs() == 1 || Inputs() == 2,\
         std::string("Inputs must be 1(a) or 2(a, b).") +\

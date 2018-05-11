@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-class Reshape final : public NodeIO<Reshape> {
+class Reshape final : public NodeSchema<Reshape> {
 public:
     Reshape();
 

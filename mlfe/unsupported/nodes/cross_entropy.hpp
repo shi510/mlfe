@@ -6,9 +6,9 @@
 
 namespace mlfe { namespace node {
 
-class SoftmaxCrossEntropy : public NodeIO<SoftmaxCrossEntropy>{
+class SoftmaxCrossEntropyWithLabel : public NodeSchema<SoftmaxCrossEntropyWithLabel>{
 public:
-    SoftmaxCrossEntropy();
+    SoftmaxCrossEntropyWithLabel();
 
 protected:
     void InternalInit(Workspace *ws, OperatorContext *oc) override;

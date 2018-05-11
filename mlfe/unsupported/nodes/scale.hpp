@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-class Scale final : public NodeIO<Scale> {
+class Scale final : public NodeSchema<Scale> {
 public:
     Scale();
 

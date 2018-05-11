@@ -2,7 +2,7 @@
 
 namespace mlfe {namespace node {
 
-Reshape::Reshape() : NodeIO<Reshape>("Reshape"){ }
+Reshape::Reshape() : NodeSchema<Reshape>("Reshape"){ }
 
 void Reshape::InternalInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);

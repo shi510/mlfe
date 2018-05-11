@@ -4,10 +4,10 @@
 
 namespace mlfe { namespace node {
 
-SoftmaxCrossEntropy::SoftmaxCrossEntropy()
-    : NodeIO<SoftmaxCrossEntropy>("SoftmaxXent") { }
+SoftmaxCrossEntropyWithLabel::SoftmaxCrossEntropyWithLabel()
+    : NodeSchema<SoftmaxCrossEntropyWithLabel>("SoftmaxXentWithLabel") { }
 
-void SoftmaxCrossEntropy::InternalInit(Workspace *ws, OperatorContext *oc) {
+void SoftmaxCrossEntropyWithLabel::InternalInit(Workspace *ws, OperatorContext *oc) {
     runtime_assert(Inputs() == 2,
         std::string("Inputs must be 2(x, label).") +
         std::string(" - Your input size : ") +
@@ -44,7 +44,7 @@ void SoftmaxCrossEntropy::InternalInit(Workspace *ws, OperatorContext *oc) {
     oc->outputs.push_back(loss);
 }
 
-void SoftmaxCrossEntropy::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
+void SoftmaxCrossEntropyWithLabel::InternalGradientInit(Workspace *ws, OperatorContext *oc) {
     Node *base = reinterpret_cast<Node *>(this);
     Tensor *x = ws->GetIfNotExistCreate<Tensor>(base->Input(0));
     Tensor *label = ws->GetIfNotExistCreate<Tensor>(base->Input(1));
@@ -69,5 +69,6 @@ void SoftmaxCrossEntropy::InternalGradientInit(Workspace *ws, OperatorContext *o
     oc->inputs.push_back(loss);
     oc->outputs.push_back(dx);
 }
+
 } // end namespace node
 } // end namespace mlfe

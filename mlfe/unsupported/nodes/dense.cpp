@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-Dense::Dense() : NodeIO<Dense>("Dense") { }
+Dense::Dense() : NodeSchema<Dense>("Dense") { }
 
 void Dense::InternalInit(Workspace *ws, OperatorContext *oc) {
     runtime_assert(Inputs() == 3,

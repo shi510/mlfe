@@ -4,7 +4,7 @@
 
 namespace mlfe { namespace node {
 
-class MaxPool final : public NodeIO<MaxPool> {
+class MaxPool final : public NodeSchema<MaxPool> {
 public:
     MaxPool();
 

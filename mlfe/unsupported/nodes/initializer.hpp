@@ -6,7 +6,7 @@
 
 namespace mlfe { namespace node {
 
-class ConstantInit final : public NodeIO<ConstantInit> {
+class ConstantInit final : public NodeSchema<ConstantInit> {
 public:
     ConstantInit();
 
@@ -16,7 +16,7 @@ protected:
     void InternalGradientInit(Workspace *ws, OperatorContext *oc) override;
 };
 
-class XavierInit final : public NodeIO<XavierInit> {
+class XavierInit final : public NodeSchema<XavierInit> {
 public:
     XavierInit();
 
