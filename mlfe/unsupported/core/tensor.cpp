@@ -4,17 +4,21 @@
 
 namespace mlfe {
 
-TensorShape::TensorShape() {}
+Shape::Shape() {}
 
-TensorShape::TensorShape(std::vector<int> dims) {
+Shape::Shape(std::initializer_list<int> dims) {
     _dims = dims;
 }
 
-const std::vector<int> &TensorShape::Dims() const {
+Shape::Shape(std::vector<int> dims) {
+    _dims = dims;
+}
+
+const std::vector<int> &Shape::Dims() const {
     return _dims;
 }
 
-void TensorShape::Clear() {
+void Shape::Clear() {
     _dims.clear();
 }
 
@@ -77,14 +81,14 @@ void TensorAllocator::Accel(Accelerator acc) {
 Tensor::Tensor() 
     : trainable(false), bias(false), _size(0), 
     _ta(std::make_shared<TensorAllocator>()),
-    _shape(std::make_shared<TensorShape>()){
+    _shape(std::make_shared<class Shape>()){
     
 }
 
 Tensor::Tensor(std::vector<int> shape) 
     : trainable(false), bias(false), _ta(std::make_shared<TensorAllocator>())
 {
-    _shape = std::make_shared<TensorShape>(shape);
+    _shape = std::make_shared<class Shape>(shape);
     _size = std::accumulate(_shape->Dims().begin(),
         _shape->Dims().end(), 1, std::multiplies<int>());
 }
@@ -94,7 +98,7 @@ Tensor::Tensor(
     void *ptr,
     Accelerator acc, DataType dt)
     : trainable(false), bias(false) {
-    _shape = std::make_shared<TensorShape>(shape);
+    _shape = std::make_shared<class Shape>(shape);
     _ta = std::make_shared<TensorAllocator>(acc, dt);
     _size = std::accumulate(_shape->Dims().begin(),
         _shape->Dims().end(), 1, std::multiplies<int>());
@@ -113,7 +117,7 @@ void Tensor::Clear() {
 }
 
 Tensor *Tensor::Reshape(std::vector<int> shape) {
-    _shape = std::make_shared<TensorShape>(shape);
+    _shape = std::make_shared<class Shape>(shape);
     _size = std::accumulate(_shape->Dims().begin(),
         _shape->Dims().end(), 1, std::multiplies<int>());
     return this;

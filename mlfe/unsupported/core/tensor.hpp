@@ -10,11 +10,13 @@
 
 namespace mlfe{
 
-class TensorShape final{
+class Shape final{
 public:
-    TensorShape();
+    Shape();
 
-    TensorShape(std::vector<int> dims);
+    Shape(std::initializer_list<int> dims);
+
+    Shape(std::vector<int> dims);
 
     const std::vector<int> &Dims() const;
 
@@ -115,7 +117,7 @@ public:
     }
     
 private:
-    std::shared_ptr<TensorShape> _shape;
+    std::shared_ptr<class Shape> _shape;
     std::shared_ptr<TensorAllocator> _ta;
     int _size;
     bool trainable;
