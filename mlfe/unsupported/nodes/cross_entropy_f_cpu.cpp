@@ -2,6 +2,7 @@
 #include "../../device_context/cpu_context.hpp"
 #include "../../math/blas.hpp"
 #include "../../math/functions.hpp"
+#include <cmath>
 
 namespace mlfe { namespace node {
 

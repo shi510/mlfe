@@ -67,7 +67,7 @@ protected:
     virtual void InternalInit(Workspace *ws, OperatorContext *oc) = 0;
 
 protected:
-    typedef struct InternalNode;
+    struct InternalNode;
     std::shared_ptr<InternalNode> _inode;
 };
 

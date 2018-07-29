@@ -38,7 +38,7 @@ protected:
     void AddNode(std::shared_ptr<node::Node> node);
 
 private:
-    typedef struct InternalGraph;
+    struct InternalGraph;
     std::shared_ptr<InternalGraph> _igraph;
 };
 
