@@ -1,5 +1,4 @@
 if(BUILD_APPS)
-    add_subdirectory(tensor_blob_example)
     add_subdirectory(simpledb_mnist)
     add_subdirectory(train_examples)
 endif()

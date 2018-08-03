@@ -1,19 +1,6 @@
 #ifndef __CONVOLUTION_OP_HPP__
 #define __CONVOLUTION_OP_HPP__
-#include "../core/node.hpp"
 
-namespace mlfe { namespace node {
-
-class Conv final : public NodeSchema<Conv> {
-public:
-    Conv();
-
-protected:
-    void InternalInit(Workspace *ws, OperatorContext *oc) override;
-
-    void InternalGradientInit(Workspace *ws, OperatorContext *oc) override;
-};
-
-} // end namespace node
+namespace mlfe{
 } // end namespace mlfe
 #endif // end ifndef __CONVOLUTION_OP_HPP__
