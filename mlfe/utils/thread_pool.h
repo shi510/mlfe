@@ -5,7 +5,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <queue>
-#include "assert.hpp"
+#include "assert.h"
 
 namespace mlfe{
 class ThreadPool{

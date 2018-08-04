@@ -1,4 +1,4 @@
-#include "scale.hpp"
+#include "dense.h"
 
 namespace mlfe{
 } // end namespace mlfe

@@ -1,6 +1,6 @@
 #include <Eigen/Dense>
-#include "blas.hpp"
-#include "../device_context/cpu_context.hpp"
+#include "blas.h"
+#include "../device_context/cpu_context.h"
 
 namespace mlfe{ namespace math{
 

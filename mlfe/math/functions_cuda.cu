@@ -1,7 +1,7 @@
-#include "functions_cuda.hpp"
-#include "functions.hpp"
+#include "functions_cuda.h"
+#include "functions.h"
 #include <cub\block\block_reduce.cuh>
-#include "../device_context/cuda_context.hpp"
+#include "../device_context/cuda_context.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 namespace mlfe { namespace math {

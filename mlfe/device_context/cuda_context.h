@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include <cublas_v2.h>
-#include "context.hpp"
+#include "context.h"
 
 constexpr int CUDA_CONTEXT_NUM_THREADS = 512;
 constexpr int CUDA_CONTEXT_MAXIMUM_NUM_BLOCKS = 2048;

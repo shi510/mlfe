@@ -3,9 +3,9 @@
 #include <memory>
 #include <algorithm>
 #include <numeric>
-#include "../operators/operator.hpp"
-#include "../device_context/cpu_context.hpp"
-#include "../math/blas.hpp"
+#include "../operators/operator.h"
+#include "../device_context/cpu_context.h"
+#include "../math/blas.h"
 
 namespace mlfe{
 

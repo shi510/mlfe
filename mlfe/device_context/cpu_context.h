@@ -1,7 +1,7 @@
 #ifndef __CPU_CONTEXT_HPP__
 #define __CPU_CONTEXT_HPP__
 #include <functional>
-#include "context.hpp"
+#include "context.h"
 
 namespace mlfe {
     

@@ -1,4 +1,4 @@
-#include "dense.hpp"
+#include "reshape.h"
 
 namespace mlfe{
 } // end namespace mlfe

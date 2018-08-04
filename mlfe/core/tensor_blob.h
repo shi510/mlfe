@@ -4,8 +4,8 @@
 #include <vector>
 #include <memory>
 #include <numeric>
-#include "../device_context/context.hpp"
-#include "../utils/type_holder.hpp"
+#include "../device_context/context.h"
+#include "../utils/type_holder.h"
 
 namespace mlfe{
 

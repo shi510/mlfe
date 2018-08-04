@@ -1,5 +1,5 @@
-file(GLOB util_srcs "*.cpp")
-file(GLOB util_hdrs "*.hpp")
+file(GLOB util_srcs "*.cc")
+file(GLOB util_hdrs "*.h")
 list(APPEND mlfe_source_files ${util_srcs})
 list(APPEND mlfe_header_files ${util_hdrs})
 add_subdirectory(db)

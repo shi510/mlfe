@@ -2,7 +2,7 @@
 #include <new>
 #include <functional>
 #include <cuda_runtime.h>
-#include "cuda_context.hpp"
+#include "cuda_context.h"
 
 namespace mlfe {
 

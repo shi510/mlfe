@@ -1,7 +1,7 @@
 #include <iostream>
-#include <mlfe/core/tensor_blob.hpp>
-#include <mlfe/device_context/cpu_context.hpp>
-#include <mlfe/utils/db/simple_db.hpp>
+#include <mlfe/core/tensor_blob.h>
+#include <mlfe/device_context/cpu_context.h>
+#include <mlfe/utils/db/simple_db.h>
 #include <mlfe/flatbuffers/tensor_blob_fb_generated.h>
 #include <map>
 #include <sstream>

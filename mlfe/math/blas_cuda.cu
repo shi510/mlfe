@@ -1,8 +1,8 @@
 #include <cublas_v2.h>
 #include <cuda_runtime.h>
 #include <cub/block/block_reduce.cuh>
-#include "blas.hpp"
-#include "../device_context/cuda_context.hpp"
+#include "blas.h"
+#include "../device_context/cuda_context.h"
 
 namespace mlfe{ namespace math{
 

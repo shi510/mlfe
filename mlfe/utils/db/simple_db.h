@@ -1,6 +1,6 @@
 #ifndef __SIMPLE_DB_HPP__
 #define __SIMPLE_DB_HPP__
-#include "data_base.hpp"
+#include "data_base.h"
 #include <map>
 #include <vector>
 

@@ -1,5 +1,5 @@
-file(GLOB utils_db_srcs "*.cpp")
-file(GLOB utils_db_hdrs "*.hpp")
+file(GLOB utils_db_srcs "*.cc")
+file(GLOB utils_db_hdrs "*.h")
 list(APPEND mlfe_source_files ${utils_db_srcs})
 list(APPEND mlfe_header_files ${utils_db_hdrs})
 set(mlfe_source_files ${mlfe_source_files} PARENT_SCOPE)

@@ -1,7 +1,7 @@
 #include <string>
 #include <new>
 #include <functional>
-#include "cpu_context.hpp"
+#include "cpu_context.h"
 
 namespace mlfe {
 

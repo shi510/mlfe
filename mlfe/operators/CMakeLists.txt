@@ -1,5 +1,5 @@
-file(GLOB node_srcs "*.cpp")
-file(GLOB node_hdrs "*.hpp")
+file(GLOB node_srcs "*.cc")
+file(GLOB node_hdrs "*.h")
 list(APPEND mlfe_source_files ${node_srcs})
 list(APPEND mlfe_header_files ${node_hdrs})
 if(NOT USE_CUDA)

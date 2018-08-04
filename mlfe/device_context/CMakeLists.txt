@@ -1,5 +1,5 @@
-file(GLOB context_srcs "*.cpp")
-file(GLOB context_hdrs "*.hpp")
+file(GLOB context_srcs "*.cc")
+file(GLOB context_hdrs "*.h")
 list(APPEND mlfe_source_files ${context_srcs})
 list(APPEND mlfe_header_files ${context_hdrs})
 if(NOT USE_CUDA)

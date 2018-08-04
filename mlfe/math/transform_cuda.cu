@@ -1,8 +1,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cub\block\block_reduce.cuh>
-#include "transform.hpp"
-#include "../device_context/cuda_context.hpp"
+#include "transform.h"
+#include "../device_context/cuda_context.h"
 
 namespace mlfe { namespace math {
 template <class DataType>

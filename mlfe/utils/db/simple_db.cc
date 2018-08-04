@@ -1,5 +1,5 @@
-#include "simple_db.hpp"
-#include "../assert.hpp"
+#include "simple_db.h"
+#include "../assert.h"
 #include <sstream>
 #include <vector>
 #include <iostream>

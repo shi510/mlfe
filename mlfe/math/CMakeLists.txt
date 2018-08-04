@@ -1,5 +1,5 @@
-file(GLOB math_srcs "*.cpp")
-file(GLOB math_hdrs "*.hpp")
+file(GLOB math_srcs "*.cc")
+file(GLOB math_hdrs "*.h")
 list(APPEND mlfe_source_files ${math_srcs})
 list(APPEND mlfe_header_files ${math_hdrs})
 if(USE_CUDA)

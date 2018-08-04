@@ -1,5 +1,5 @@
-#include "transform.hpp"
-#include "../device_context/cpu_context.hpp"
+#include "transform.h"
+#include "../device_context/cpu_context.h"
 
 namespace mlfe{ namespace math{
 

@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
-#include "functions.hpp"
-#include "../device_context/cpu_context.hpp"
+#include "functions.h"
+#include "../device_context/cpu_context.h"
 
 namespace mlfe { namespace math {
 
