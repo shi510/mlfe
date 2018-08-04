@@ -11,7 +11,6 @@ add_subdirectory(device_context)
 add_subdirectory(math)
 add_subdirectory(operators)
 add_subdirectory(utils)
-add_subdirectory(unsupported)
 
 include_directories(${mlfe_include_dirs})
 if(USE_CUDA)
