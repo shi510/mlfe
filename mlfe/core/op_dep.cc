@@ -27,7 +27,7 @@ std::string OpDep::Name() const{
     return odd->op_name;
 }
 
-std::string OpDep::UniqueName() const {
+std::string OpDep::UniqueName() const{
     std::stringstream ss;
     ss << "Name:" << odd->op_name;
     for (auto in : odd->inputs) {
