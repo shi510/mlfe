@@ -101,41 +101,4 @@ void CUDAContext::CopyFrom(
   }
 }
 
-REGIST_CONTEXT(Context_Cuda, CUDAContext)
-
-struct Cuda2CpuCopyFunctor : ContextSwitchCopier {
-    void copy(
-        const std::shared_ptr<Context> src,
-        std::shared_ptr<Context> dst) override {
-        src->CopyToHost(0, src->Size(), (unsigned char *)(dst->GetDevicePtr()));
-    }
-};
-
-REGIST_CONTEXT_SWITCH_COPY(Context_Copy_Cuda_Default, Cuda2CpuCopyFunctor)
-
-struct Cpu2CudaCopyFunctor : ContextSwitchCopier {
-    void copy(
-        const std::shared_ptr<Context> src,
-        std::shared_ptr<Context> dst) override {
-        dst->CopyToDevice(0, src->Size(), (unsigned char *)(src->GetDevicePtr()));
-    }
-};
-
-REGIST_CONTEXT_SWITCH_COPY(Context_Copy_Default_Cuda, Cpu2CudaCopyFunctor)
-
-struct Cuda2CudaCopyFunctor : ContextSwitchCopier {
-    void copy(
-        const std::shared_ptr<Context> src,
-        std::shared_ptr<Context> dst) override {
-        if (src->Size() != dst->Size()) {
-            throw std::string("Copy size is bigger than allocated device memory.");
-        }
-        if (cudaMemcpy(dst->GetDevicePtr(), src->GetDevicePtr(), src->Size(), cudaMemcpyDeviceToDevice) != cudaSuccess) {
-            throw std::string("CUDAContext::CopyTo() : device to host copy failed.");
-        }
-    }
-};
-
-REGIST_CONTEXT_SWITCH_COPY(Context_Copy_Cuda_Cuda, Cuda2CudaCopyFunctor)
-
 } /* namespace mlfe */

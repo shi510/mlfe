@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 #include <numeric>
-#include "../core/registry.hpp"
 #include "../device_context/context.hpp"
 #include "../utils/type_holder.hpp"
 
@@ -36,17 +35,6 @@ public:
         return *this;
     }
 
-    template <class OtherContext>
-    TensorBlob& operator=(const TensorBlob<OtherContext> &tb) {
-        dims = tb.Dim_();
-        size = tb.Size();
-        block_size = tb.BlockSize();
-        Resize(dims, block_size);
-        Context::Copy(tb.GetContext(), this->context);
-        type = tb.Type();
-        return *this;
-    }
-    
     void Reshape(const std::vector<int> new_dims){
         int new_size = 1;
         

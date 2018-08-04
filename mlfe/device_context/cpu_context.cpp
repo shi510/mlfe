@@ -86,16 +86,4 @@ void CPUContext::CopyFrom(
     }
 }
 
-REGIST_CONTEXT(Context_Default, CPUContext)
-
-struct Cpu2CpuCopyFunctor : ContextSwitchCopier {
-    void copy(
-        const std::shared_ptr<Context> src,
-        std::shared_ptr<Context> dst) override {
-        dst->CopyToDevice(0, src->Size(), (unsigned char *)(src->GetDevicePtr()));
-    }
-};
-
-REGIST_CONTEXT_SWITCH_COPY(Context_Copy_Default_Default, Cpu2CpuCopyFunctor)
-    
 } /* namespace mlfe */

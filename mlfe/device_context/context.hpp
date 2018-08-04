@@ -3,7 +3,6 @@
 #include <memory>
 #include <type_traits>
 #include <string>
-#include "../core/registry.hpp"
 #include "../unsupported/utils/types.hpp"
 
 namespace mlfe {
@@ -45,14 +44,7 @@ public:
         }
     }
 
-    static std::shared_ptr<Context> Create(Accelerator acc);
-
     void Allocate(const int size, const int block_size);
-
-    static void Copy(
-        const std::shared_ptr<Context> src, 
-        std::shared_ptr<Context> dst
-    );
 
     virtual void Clear() = 0;
     
@@ -139,46 +131,6 @@ protected:
     // member variables
     std::string acc_str;
 };/* class Context */
-
-struct ContextSwitchCopier {
-    virtual void copy(
-        const std::shared_ptr<Context> src, 
-        std::shared_ptr<Context> dst) = 0;
-};
-
-
-// TODO : remove ContextCopyRegistry.
-DECLARE_REGISTRY(
-    ContextSwitchCopyRegistry,
-    std::string,
-    std::shared_ptr<ContextSwitchCopier>
-)
-
-#define REGIST_CONTEXT_SWITCH_COPY(Key, ...)                  \
-namespace {   \
-static RegistererContextSwitchCopyRegistry (ContextSwitchCopyRegistry_##Key)(      \
-  #Key,                                                \
-  ContextSwitchCopyRegistry(),                                       \
-  RegistererContextSwitchCopyRegistry::DefaultCreator<__VA_ARGS__>   \
-);                                                     \
-} // end namespace
-
-
-// TODO : remove ContextRegistry.
-DECLARE_REGISTRY(
-    ContextRegistry,
-    std::string,
-    std::shared_ptr<Context>
-)
-
-#define REGIST_CONTEXT(Key, ...)                  \
-namespace {   \
-static RegistererContextRegistry (ContextRegistry_##Key)(      \
-  #Key,                                                \
-  ContextRegistry(),                                       \
-  RegistererContextRegistry::DefaultCreator<__VA_ARGS__>   \
-);                                                     \
-} // end namespace
 
 } /* namespace mlfe */
 #endif /*__CONTEXT_HPP__*/
