@@ -1,5 +1,4 @@
 #include "op_design.h"
-#include "tensor.h"
 #include <iostream>
 
 namespace mlfe{
@@ -141,43 +140,43 @@ using ODCB = ODC::Builder;
 
 ODCB &ODCB::Input(VecVarPair xs){
     for(int n = 0; n < xs.size(); ++n){
-        if(odc.inputs.count(xs[n].first) > 0){
+        if(odc.inputs.count(std::get<0>(xs[n])) > 0){
             throw std::string("OpDesignContext::Input - \
-                Variable's name already exists. -> ") + xs[n].first;
+                Variable's name already exists. -> ") + std::get<0>(xs[n]);
         }
-        odc.inputs.emplace(xs[n].first, xs[n].second);
+        odc.inputs.emplace(std::get<0>(xs[n]), std::get<1>(xs[n]));
     }
 
     return *this;
 }
 
 ODCB &ODCB::Input(ODC::VarPair x){
-    if(odc.inputs.count(x.first) > 0){
+    if(odc.inputs.count(std::get<0>(x)) > 0){
         throw std::string("OpDesignContext::Input - \
-            Variable's name already exists. -> ") + x.first;
+            Variable's name already exists. -> ") + std::get<0>(x);
     }
-    odc.inputs.emplace(x.first, x.second);
+    odc.inputs.emplace(std::get<0>(x), std::get<1>(x));
 
     return *this;
 }
 
 ODCB &ODCB::Output(VecVarPair ys){
     for(int n = 0; n < ys.size(); ++n){
-        if(odc.outputs.count(ys[n].first) > 0){
+        if(odc.outputs.count(std::get<0>(ys[n])) > 0){
             throw std::string("OpDesignContext::Output - \
-                Variable's name already exists. -> ") + ys[n].first;
+                Variable's name already exists. -> ") + std::get<0>(ys[n]);
         }
-        odc.outputs.emplace(ys[n].first, ys[n].second);
+        odc.outputs.emplace(std::get<0>(ys[n]), std::get<1>(ys[n]));
     }
     return *this;
 }
 
 ODCB &ODCB::Output(ODC::VarPair y){
-    if(odc.outputs.count(y.first) > 0){
+    if(odc.outputs.count(std::get<0>(y)) > 0){
         throw std::string("OpDesignContext::Output - \
-            Variable's name already exists. -> ") + y.first;
+            Variable's name already exists. -> ") + std::get<0>(y);
     }
-    odc.outputs.emplace(y.first, y.second);
+    odc.outputs.emplace(std::get<0>(y), std::get<1>(y));
     return *this;
 }
 

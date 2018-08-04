@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <utility>
 
 namespace mlfe{
 class OpDesignContext;
@@ -10,7 +11,7 @@ class Tensor;
 class Attribution;
 
 class OpDependency{
-using VarPair = std::pair<std::string, Tensor>;
+using VarPair = std::tuple<std::string, Tensor>;
 using VecVarPair = std::vector<VarPair>;
 
 public:

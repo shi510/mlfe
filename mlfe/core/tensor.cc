@@ -28,7 +28,7 @@ TDA::DependencyAdder(OpDependency dep)
 void TDA::ExtractDepFromInputs(){
     auto inputs = target_dep->Inputs();
     for(auto in : inputs){
-        auto in_deps = in.second.OpDependencies();
+        auto in_deps = std::get<1>(in).OpDependencies();
         auto unique_deps = RemoveDuplicatedDep(in_deps);
         all_deps.insert(
             all_deps.end(),

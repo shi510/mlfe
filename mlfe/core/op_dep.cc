@@ -27,14 +27,14 @@ std::string OpDep::Name() const{
     return odd->op_name;
 }
 
-std::string OpDep::UniqueName() const{
+std::string OpDep::UniqueName() const {
     std::stringstream ss;
     ss << "Name:" << odd->op_name;
-    for(auto in : odd->inputs){
-        ss << "/In:" << in.second.Name();
+    for (auto in : odd->inputs) {
+        ss << "/In:" << std::get<1>(in).Name();
     }
-    for(auto out : odd->outputs){
-        ss << "/Out:" << out.second.Name();
+    for (auto out : odd->outputs) {
+        ss << "/Out:" << std::get<1>(out).Name();
     }
     return ss.str();
 }

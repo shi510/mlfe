@@ -1,6 +1,7 @@
 #ifndef __OP_DESIGN_HPP__
 #define __OP_DESIGN_HPP__
 #include "attribute.h"
+#include "tensor.h"
 #include <vector>
 #include <functional>
 #include <map>
@@ -10,7 +11,6 @@
 namespace mlfe{
 class OpDesign;
 class OpDesignContext;
-class Tensor;
 
 class OpDesign{
 using ShapeInferFn = std::function<void(OpDesignContext *)>;
@@ -21,7 +21,7 @@ public:
 
     std::vector<PairStrStr> Input() const;
 
-    std::vector<PairStrStr>Output() const;
+    std::vector<PairStrStr> Output() const;
 
     std::vector<PairStrStr> Attr() const;
 
@@ -64,7 +64,7 @@ private:
 };
 
 class OpDesignContext{
-using VarPair = std::pair<std::string, Tensor>;
+using VarPair = std::tuple<std::string, Tensor>;
 public:
     Tensor Input(std::string name) const;
 
