@@ -1,6 +1,4 @@
 #include <iostream>
-#include <mlfe/core/tensor_blob.h>
-#include <mlfe/device_context/cpu_context.h>
 #include <mlfe/utils/db/simple_db.h>
 #include <mlfe/flatbuffers/tensor_blob_fb_generated.h>
 #include <map>
@@ -10,21 +8,39 @@ using namespace std;
 using namespace mlfe;
 using namespace flatbuffers;
 
-using TBC = TensorBlob<CPUContext>;
+using uint8 = unsigned char;
+using SerialTB = serializable::TensorBlob;
 
 auto InverseEndian = [](int32_t data) -> int32_t{
-    return (data >> 24 & 0x000000FF) | (data >> 8 & 0x0000FF00) | (data << 24 & 0xFF000000) | (data << 8 & 0x00FF0000);
+    return
+        (data >> 24 & 0x000000FF) |
+        (data >>  8 & 0x0000FF00) |
+        (data << 24 & 0xFF000000) |
+        (data <<  8 & 0x00FF0000);
 };
 
-flatbuffers::Offset<serializable::TensorBlob> MakeSerialiableTensor(
-                                                                    flatbuffers::FlatBufferBuilder &fbb,
-                                                                    string name,
-                                                                    const uint8_t *data_ptr,
-                                                                    vector<int> dim
-                                                                    );
+Offset<SerialTB> MakeSerialiableTensor(FlatBufferBuilder &fbb,
+                                       string name,
+                                       const uint8_t *data_ptr,
+                                       vector<int> dim
+                                       );
 
-void SaveMNIST(shared_ptr<DataBase> db, string data_file_name, string label_file_name, TBC &data, TBC &label);
-void VerifyDB(TBC &data, TBC &label, shared_ptr<DataBase> db);
+void SaveMNIST(shared_ptr<DataBase> db,
+               string data_file_name,
+               string label_file_name,
+               std::vector<uint8> &data,
+               std::vector<uint8> &label
+              );
+
+void VerifyDB(std::vector<uint8> &data,
+              std::vector<uint8> &label,
+              shared_ptr<DataBase> db
+             );
+
+void ReadMnistHeader(std::ifstream &data_file,
+                     std::ifstream &label_file,
+                     int &num_data, int &h, int &w
+                    );
 
 int main(int argc, char *args[]){
     if(argc < 2){
@@ -36,12 +52,14 @@ int main(int argc, char *args[]){
 #else
     const std::string slash="/";
 #endif
+
     cout<<"Your MNIST data folder : "<<args[1]<<endl;
+
     shared_ptr<DataBase> sdb = make_shared<simpledb::SimpleDB>();
-    TBC training_data, training_label;
-    TBC test_data, test_label;
+    std::vector<uint8> training_data, training_label;
+    std::vector<uint8> test_data, test_label;
     string path = args[1];
-    
+
     try{
         sdb->option.delete_previous = true;
         sdb->option.binary = true;
@@ -55,7 +73,7 @@ int main(int argc, char *args[]){
                   );
         sdb->Close();
         cout<<"training data done."<<endl;
-        
+
         sdb->Open("mnist_test.simpledb");
         SaveMNIST(
                   sdb,
@@ -71,14 +89,14 @@ int main(int argc, char *args[]){
         cout<<e<<std::endl;
         return 0;
     }
-    
+
     cout<<"Verifing DB...";
     try{
         sdb->option.delete_previous = false;
         sdb->Open("mnist_train.simpledb");
         VerifyDB(training_data, training_label, sdb);
         sdb->Close();
-        
+
         sdb->Open("mnist_test.simpledb");
         VerifyDB(test_data, test_label, sdb);
         sdb->Close();
@@ -91,8 +109,11 @@ int main(int argc, char *args[]){
     return 1;
 }
 
-flatbuffers::Offset<serializable::TensorBlob>
-MakeSerialiableTensor(flatbuffers::FlatBufferBuilder &fbb, string name, const uint8_t *data_ptr, vector<int> dim){
+Offset<SerialTB> MakeSerialiableTensor(FlatBufferBuilder &fbb,
+                                       string name,
+                                       const uint8_t *data_ptr,
+                                       vector<int> dim)
+{
     int size = 1;
     for(auto &i : dim){ size *= i; }
     auto name_fb = fbb.CreateString(name);
@@ -102,66 +123,40 @@ MakeSerialiableTensor(flatbuffers::FlatBufferBuilder &fbb, string name, const ui
     return tb_fb;
 }
 
-void SaveMNIST(
-               shared_ptr<DataBase> db,
+void SaveMNIST(shared_ptr<DataBase> db,
                string data_file_name,
                string label_file_name,
-               TBC &data,
-               TBC &label
-               ){
-    int magic_num;
+               std::vector<uint8> &data,
+               std::vector<uint8> &label
+               )
+{
     int num_data;
-    int num_label;
     int img_h;
     int img_w;
     int size;
     std::ifstream data_file, label_file;
     flatbuffers::FlatBufferBuilder fbb;
-    
+
     data_file.open(data_file_name, std::ios::binary);
     label_file.open(label_file_name, std::ios::binary);
-    if (!data_file.is_open()) {
+    if(!data_file.is_open()) {
         throw string("can not open file : ") + data_file_name;
     }
-    if (!label_file.is_open()) {
+    if(!label_file.is_open()) {
         throw string("can not open file : ") + label_file_name;
     }
-    data_file.read(reinterpret_cast<char *>(&magic_num), 4);
-    if(InverseEndian(magic_num) != 2051){
-        data_file.close();
-        label_file.close();
-        throw string("magic number dose not match.");
-    }
-    label_file.read(reinterpret_cast<char *>(&magic_num), 4);
-    if(InverseEndian(magic_num) != 2049){
-        data_file.close();
-        label_file.close();
-        throw string("magic number dose not match.");
-    }
-    data_file.read(reinterpret_cast<char *>(&num_data), 4);
-    data_file.read(reinterpret_cast<char *>(&img_h), 4);
-    data_file.read(reinterpret_cast<char *>(&img_w), 4);
-    num_data = InverseEndian(num_data);
-    img_h = InverseEndian(img_h);
-    img_w = InverseEndian(img_w);
-    label_file.read(reinterpret_cast<char *>(&num_label), 4);
-    num_label = InverseEndian(num_label);
-    if(num_data != num_label){
-        data_file.close();
-        label_file.close();
-        throw string("number of data and number of label size are not match.");
-    }
-    
+    ReadMnistHeader(data_file, label_file, num_data, img_h, img_w);
+
     size = img_h * img_w;
-    data.Resize<uint8_t>({num_data, img_h, img_w});
-    label.Resize<uint8_t>({num_label});
+    data.resize(num_data * size);
+    label.resize(num_data);
     for(int i = 0; i < num_data; ++i){
         std::vector<flatbuffers::Offset<serializable::TensorBlob>> tbs_std_vec;
         string tbs_str;
-        data_file.read(data.GetPtrMutable<char>() + i * size, size);
-        label_file.read(label.GetPtrMutable<char>() + i, 1);
-        auto tb_data = MakeSerialiableTensor(fbb, "data" + to_string(i + 1), data.GetPtrConst<uint8_t>() + i * size, {img_h, img_w});
-        auto tb_label = MakeSerialiableTensor(fbb, "label" + to_string(i + 1), label.GetPtrConst<uint8_t>() + i, {1});
+        data_file.read((char *)data.data() + i * size, size);
+        label_file.read((char *)label.data() + i, 1);
+        auto tb_data = MakeSerialiableTensor(fbb, "data" + to_string(i + 1), data.data() + i * size, {img_h, img_w});
+        auto tb_label = MakeSerialiableTensor(fbb, "label" + to_string(i + 1), label.data() + i, {1});
         tbs_std_vec.push_back(tb_data);
         tbs_std_vec.push_back(tb_label);
         auto tbs_fb_vec = fbb.CreateVector(tbs_std_vec.data(), tbs_std_vec.size());
@@ -175,30 +170,30 @@ void SaveMNIST(
     label_file.close();
 }
 
-void VerifyDB(TBC &data, TBC &label, shared_ptr<DataBase> db){
+void VerifyDB(std::vector<uint8> &data, std::vector<uint8> &label, shared_ptr<DataBase> db){
     flatbuffers::FlatBufferBuilder fbb;
     auto check_equal = [&data, &label](
                                        int cur_batch,
                                        const serializable::TensorBlob *data_tb_fb,
                                        const serializable::TensorBlob *label_tb_fb
                                        ){
-        int size = data.Dim(1) * data.Dim(2);
+        int size = 28 * 28;
         for(int i = 0; i < size; ++i){
-            const char a = data.GetPtrConst<char>()[cur_batch * size + i];
+            const char a = data.data()[cur_batch * size + i];
             const char b = data_tb_fb->data()->Get(i);
             if(a != b){
                 throw string("data not matches.");
             }
         }
         {
-            const char a = label.GetPtrConst<char>()[cur_batch];
+            const char a = label.data()[cur_batch];
             const char b = label_tb_fb->data()->Get(0);
             if(a != b){
                 throw string("label not matches.");
             }
         }
     };
-    
+
     int batch_count = 0;
     db->MoveToFirst();
     do{
@@ -208,8 +203,42 @@ void VerifyDB(TBC &data, TBC &label, shared_ptr<DataBase> db){
         check_equal(batch_count, tbs->tensors()->Get(0), tbs->tensors()->Get(1));
         ++batch_count;
     }while(db->MoveToNext());
-    
-    if(batch_count != data.Dim(0)){
+
+    if(batch_count != (data.size() / (28 * 28))){
         throw std::string("DB size does not match.");
+    }
+}
+
+void ReadMnistHeader(std::ifstream &data_file,
+                     std::ifstream &label_file,
+                     int &num_data, int &h, int &w)
+{
+    int magic_num;
+    int num_label;
+
+    data_file.read(reinterpret_cast<char *>(&magic_num), 4);
+    if(InverseEndian(magic_num) != 2051){
+        data_file.close();
+        label_file.close();
+        throw string("magic number dose not match.");
+    }
+    label_file.read(reinterpret_cast<char *>(&magic_num), 4);
+    if(InverseEndian(magic_num) != 2049){
+        data_file.close();
+        label_file.close();
+        throw string("magic number dose not match.");
+    }
+    data_file.read(reinterpret_cast<char *>(&num_data), 4);
+    data_file.read(reinterpret_cast<char *>(&h), 4);
+    data_file.read(reinterpret_cast<char *>(&w), 4);
+    num_data = InverseEndian(num_data);
+    h = InverseEndian(h);
+    w = InverseEndian(w);
+    label_file.read(reinterpret_cast<char *>(&num_label), 4);
+    num_label = InverseEndian(num_label);
+    if(num_data != num_label){
+        data_file.close();
+        label_file.close();
+        throw string("number of data and number of label size are not match.");
     }
 }

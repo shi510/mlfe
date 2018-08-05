@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include <cublas_v2.h>
+#include <curand.h>
 #include "context.h"
 
 constexpr int CUDA_CONTEXT_NUM_THREADS = 512;
@@ -26,45 +27,13 @@ public:
 
     ~CUDAContext() override;
 
-	void * GetDevicePtr() const override;
-
 	cublasHandle_t GetHandler() const;
 
-	void Clear() override;
-
-	int Size() const override;
-
-protected:
-	void Allocator(
-                  const unsigned int size,
-                  const unsigned int block_size
-                  ) override;
-
-    void Allocator(
-                  const unsigned int size,
-                  const unsigned int block_size,
-                  void *ptr
-    ) override;
-
-	void CopyTo(
-              const unsigned int offset,
-              const unsigned int size,
-              const unsigned int block_size,
-              void *to
-              ) const override;
-
-	void CopyFrom(
-                const unsigned int offset,
-                const unsigned int size,
-                const unsigned int block_size,
-                const void *from
-                ) override;
-
 private:
-	void *ptr_;
-	int size_;
 	static int static_shared_counter;
 	static cublasHandle_t handler;
+public:
+    static curandGenerator_t rng;
 };/* class CUDAContext */
 
 } /* namespace mlfe */
