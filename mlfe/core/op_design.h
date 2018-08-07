@@ -109,7 +109,8 @@ private:
 template <class AttrType>
 AttrType OpDesignContext::GetAttr(std::string attr_name) const{
     if (!attrs.Has(attr_name)){
-        throw std::string("OpDesignContext::GetAttr - No atrribute exists. -> ") + attr_name;
+        throw std::string("OpDesignContext::GetAttr - "
+            "No atrribute exists. -> ") + attr_name;
     }
     return attrs.GetAttr<AttrType>(attr_name);
 }

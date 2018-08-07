@@ -19,7 +19,8 @@ void Attributes::SetAttr(Attribution attr){
 
 void Attributes::Set(Attribution attr){
     if(Has(attr.Name())){
-        throw std::string("Attributes.Set : Attribute already registered. -> ") + attr.Name();
+        throw std::string("Attributes.Set : "
+            "Attribute already registered. -> ") + attr.Name();
     }
     attrs[attr.Name()] = attr.Attr();
 }

@@ -86,8 +86,8 @@ using OAR = OpAlgoRegistry;
 
 void OAR::Register(std::string name, OpAlgoSchema oac){
     if(registry.count(name) != 0){
-        std::cout << "OpAlgoRegistry::Register - \
-            Key already registered. ->" << name << std::endl;
+        std::cout << "OpAlgoRegistry::Register - "
+            "Key already registered. ->" << name << std::endl;
         std::exit(1);
     }
     registry[name] = oac;
@@ -108,8 +108,8 @@ std::vector<std::string> OAR::GetAllOpName() const{
 
 OAR::OpAlgoPtr OAR::GetOpAlgo(std::string op_name, OpAlgoContext *oac) const{
     if(registry.count(op_name) <= 0){
-        throw std::string("OpAlgoRegistry::GetOpAlgo - \
-            Not found for ") + op_name;
+        throw std::string("OpAlgoRegistry::GetOpAlgo - "
+            "Not found for ") + op_name;
     }
     return registry.find(op_name)->second.Creator()(oac);
 }

@@ -22,8 +22,8 @@ CUDADevice::Select(){
 
 template<>
 CUDADevice::Select(type::uint8::T *ptr, type::uint32::T size){
-    throw std::string("Device::Select<Device::CUDA>() - \
-        Feeding address by direct is not supported.");
+    throw std::string("Device::Select<Device::CUDA>() - "
+        "Feeding address by direct is not supported.");
 }
 
 template<>
@@ -40,8 +40,8 @@ template<>
 void CUDADevice::Allocate(type::uint32::T size){
     dd->size = size;
     if(cudaMalloc((void**)&dd->data, size) != cudaSuccess){
-        throw std::string("Device::Select<Device::CUDA>::Allocate() - \
-            device memory allocation failed.");
+        throw std::string("Device::Select<Device::CUDA>::Allocate() - "
+            "device memory allocation failed.");
     }
 }
 
@@ -55,8 +55,8 @@ Device::CopyInternal<Device::CUDA, Device::CPU>(const Device from, Device to){
     if(cudaMemcpy(to.Data(), from.Data(), from.Size(),
         cudaMemcpyDeviceToHost) != cudaSuccess){
         const std::string err =
-            "Device::CopyInternal<Device::CUDA, Device::CPU>() \
-             : Copy from cuda to cpu is failed.";
+            "Device::CopyInternal<Device::CUDA, Device::CPU>() "
+            ": Copy from cuda to cpu is failed.";
         throw err;
     }
 }
@@ -66,8 +66,8 @@ Device::CopyInternal<Device::CPU, Device::CUDA>(const Device from, Device to){
     if(cudaMemcpy(to.Data(), from.Data(), from.Size(),
         cudaMemcpyHostToDevice) != cudaSuccess){
         const std::string err =
-            "Device::CopyInternal<Device::CPU, Device::CUDA>() \
-             : Copy from cpu to cuda is failed.";
+            "Device::CopyInternal<Device::CPU, Device::CUDA>() "
+            ": Copy from cpu to cuda is failed.";
         throw err;
     }
 }
@@ -77,8 +77,8 @@ Device::CopyInternal<Device::CUDA, Device::CUDA>(const Device from, Device to){
     if(cudaMemcpy(to.Data(), from.Data(), from.Size(),
         cudaMemcpyDeviceToDevice) != cudaSuccess){
         const std::string err =
-            "Device::CopyInternal<Device::CUDA, Device::CUDA>() \
-             : Copy from cuda to cuda is failed.";
+            "Device::CopyInternal<Device::CUDA, Device::CUDA>() "
+            " : Copy from cuda to cuda is failed.";
         throw err;
     }
 }

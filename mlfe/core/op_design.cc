@@ -46,8 +46,8 @@ bool OD::VerifyContext(OpDesignContext *odc) const{
 }
 
 bool OD::VerifyIO(OpDesignContext *odc) const{
-    const std::string err_msg = "OpDesign::VerifyIO - \
-        Failed to find the variable. -> ";
+    const std::string err_msg = "OpDesign::VerifyIO - "
+        "Failed to find the variable. -> ";
     for(int n = 0; n < inputs.size(); ++n){
         if(odc->inputs.count(inputs[n].first) <= 0){
             throw err_msg + inputs[n].first;
@@ -62,8 +62,8 @@ bool OD::VerifyIO(OpDesignContext *odc) const{
 }
 
 bool OD::VerifyAttrs(OpDesignContext *odc) const{
-    const std::string err_msg = "OpDesign::VerifyAttrs - \
-        Failed to find the attribute. -> ";
+    const std::string err_msg = "OpDesign::VerifyAttrs - "
+        "Failed to find the attribute. -> ";
     for(int n = 0; n < attrs.size(); ++n){
         if(!odc->attrs.Has(attrs[n].first)){
             throw err_msg + attrs[n].first;
@@ -106,16 +106,16 @@ using ODC = OpDesignContext;
 
 Tensor ODC::Input(std::string name) const{
     if(inputs.count(name) <= 0){
-        throw std::string("OpDesignContext::Input - \
-            No variable's name. -> ") + name;
+        throw std::string("OpDesignContext::Input - "
+            "No variable's name. -> ") + name;
     }
     return inputs.find(name)->second;
 }
 
 Tensor ODC::Output(std::string name) const{
     if(outputs.count(name) <= 0){
-        throw std::string("OpDesignContext::Output - \
-            No variable's name. -> ") + name;
+        throw std::string("OpDesignContext::Output - "
+            "No variable's name. -> ") + name;
     }
     return outputs.find(name)->second;
 }
@@ -141,8 +141,8 @@ using ODCB = ODC::Builder;
 ODCB &ODCB::Input(VecVarPair xs){
     for(int n = 0; n < xs.size(); ++n){
         if(odc.inputs.count(std::get<0>(xs[n])) > 0){
-            throw std::string("OpDesignContext::Input - \
-                Variable's name already exists. -> ") + std::get<0>(xs[n]);
+            throw std::string("OpDesignContext::Input - "
+                "Variable's name already exists. -> ") + std::get<0>(xs[n]);
         }
         odc.inputs.emplace(std::get<0>(xs[n]), std::get<1>(xs[n]));
     }
@@ -152,8 +152,8 @@ ODCB &ODCB::Input(VecVarPair xs){
 
 ODCB &ODCB::Input(ODC::VarPair x){
     if(odc.inputs.count(std::get<0>(x)) > 0){
-        throw std::string("OpDesignContext::Input - \
-            Variable's name already exists. -> ") + std::get<0>(x);
+        throw std::string("OpDesignContext::Input - "
+            "Variable's name already exists. -> ") + std::get<0>(x);
     }
     odc.inputs.emplace(std::get<0>(x), std::get<1>(x));
 
@@ -163,8 +163,8 @@ ODCB &ODCB::Input(ODC::VarPair x){
 ODCB &ODCB::Output(VecVarPair ys){
     for(int n = 0; n < ys.size(); ++n){
         if(odc.outputs.count(std::get<0>(ys[n])) > 0){
-            throw std::string("OpDesignContext::Output - \
-                Variable's name already exists. -> ") + std::get<0>(ys[n]);
+            throw std::string("OpDesignContext::Output - "
+                "Variable's name already exists. -> ") + std::get<0>(ys[n]);
         }
         odc.outputs.emplace(std::get<0>(ys[n]), std::get<1>(ys[n]));
     }
@@ -173,8 +173,8 @@ ODCB &ODCB::Output(VecVarPair ys){
 
 ODCB &ODCB::Output(ODC::VarPair y){
     if(odc.outputs.count(std::get<0>(y)) > 0){
-        throw std::string("OpDesignContext::Output - \
-            Variable's name already exists. -> ") + std::get<0>(y);
+        throw std::string("OpDesignContext::Output - "
+            "Variable's name already exists. -> ") + std::get<0>(y);
     }
     odc.outputs.emplace(std::get<0>(y), std::get<1>(y));
     return *this;
@@ -196,8 +196,8 @@ OpDesignContext ODCB::Finish(){
 
 void OpDesignRegistry::Register(OpDesign oc){
     if(registry.count(oc.Name()) != 0){
-        std::cout << "OpDesignRegistry::Register - \
-            Key already registered. ->" << oc.Name() << std::endl;
+        std::cout << "OpDesignRegistry::Register - "
+            "Key already registered. ->" << oc.Name() << std::endl;
         std::exit(1);
     }
     registry[oc.Name()] = oc;
