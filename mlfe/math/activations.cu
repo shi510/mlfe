@@ -155,8 +155,7 @@ void xent_gradient_kernel(const int N,
 {
     CUDA_1D_KERNEL_LOOP(n, N * D){
         int idx = n / D;
-        DataType dy = lossdata[idx];
-        dXdata[idx] =(Pdata[idx] - labeldata[idx]) * dy;
+        dXdata[n] = (Pdata[n] - labeldata[n]) * lossdata[idx];
     }
 }
 

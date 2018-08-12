@@ -27,6 +27,8 @@ public:
 
     Tensor &operator=(InitDependencyAdder dep_adder);
 
+    void Initialize(Tensor init);
+
     std::vector<OpDependency> OpDependencies() const;
 
     OpDependency InitDependency() const;

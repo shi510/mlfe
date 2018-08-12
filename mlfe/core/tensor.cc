@@ -2,8 +2,6 @@
 #include "../utils/assert.h"
 #include "op_dep.h"
 #include "op_design.h"
-#include <iomanip>
-#include <sstream>
 
 namespace mlfe{
 
@@ -91,6 +89,15 @@ Tensor::~Tensor(){}
 
 std::string Variable::Name() const{
     return *_name + "_" + std::to_string(_id->Id());
+}
+
+// TODO : This code is a temporary solution for
+//         initialization of tensor values.
+//        I'll update this code to make awesome.
+void Tensor::Initialize(Tensor init){
+    *this = init;
+    internal_data->init_dep = internal_data->op_deps[0];
+    internal_data->op_deps.clear();
 }
 
 std::vector<OpDependency> Tensor::OpDependencies() const{

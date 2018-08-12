@@ -17,7 +17,9 @@ public:
     class Select;
 
     struct CUDA final : DeviceType{
+        static bool enable_cudnn;
         static const char *string;
+        static const char *string_cudnn;
     };
 
     struct CPU final : DeviceType{

@@ -112,7 +112,7 @@ void cross_entropy<float, CPUContext>(const int m,
             int idx = i * n + j;
             row_loss += log(max(prob_ptr[idx], 1e-20f)) * label_ptr[idx];
         }
-        loss_ptr[i] = -row_loss / float(n);
+        loss_ptr[i] = -row_loss;
     }
 }
 
@@ -131,7 +131,7 @@ void cross_entropy<double, CPUContext>(const int m,
             int idx = i * n + j;
             row_loss += log(max(prob_ptr[idx], 1e-20)) * label_ptr[idx];
         }
-        loss_ptr[i] = -row_loss / double(n);
+        loss_ptr[i] = -row_loss;
     }
 }
 
@@ -145,7 +145,7 @@ void cross_entropy_gradient<float, CPUContext>(const int m,
                                               )
 {
     for(int i = 0; i < m; ++i){
-        float loss = loss_ptr[i] / float(n);
+        float loss = loss_ptr[i];
         for(int j = 0; j < n; ++j) {
             int idx = i * n + j;
             dx_ptr[idx] = (prob_ptr[idx] - label_ptr[idx]) * loss;
@@ -162,7 +162,7 @@ void cross_entropy_gradient<double, CPUContext>(const int m, const int n,
                                                 )
 {
     for(int i = 0; i < m; ++i){
-      double loss = loss_ptr[i] / float(n);
+        double loss = loss_ptr[i];
         for(int j = 0; j < n; ++j) {
             int idx = i * n + j;
             dx_ptr[idx] = (prob_ptr[idx] - label_ptr[idx]) * loss;

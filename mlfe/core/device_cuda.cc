@@ -84,5 +84,7 @@ Device::CopyInternal<Device::CUDA, Device::CUDA>(const Device from, Device to){
 }
 
 const char *Device::CUDA::string = "Device.CUDA";
+const char *Device::CUDA::string_cudnn = "Device.CUDA(CUDNN)";
+bool Device::CUDA::enable_cudnn = false;
 
 } // end namespace mlfe;
