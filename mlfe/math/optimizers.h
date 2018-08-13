@@ -13,6 +13,17 @@ void gradient_descent_momentum(const int size,
                                T decay
                               );
 
+template <class T, class Dev>
+void adadelta(const int size,
+              T *w,
+              T *dw,
+              T *grad_hist,
+              T *acc_hist,
+              T lr,
+              T momentum,
+              T eps
+             );
+
 } // end namespace math
 } // end namespace mlfe
 #endif // end #ifndef __MATH_OPTIMIZAERS_H__

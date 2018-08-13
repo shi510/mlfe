@@ -20,5 +20,25 @@ void gradient_descent_momentum<float, CPUContext>(const int size,
     }
 }
 
+template <>
+void adadelta<float, CPUContext>(const int size,
+                                 float *w,
+                                 float *dw,
+                                 float *grad_hist,
+                                 float *acc_hist,
+                                 float lr,
+                                 float momentum,
+                                 float eps
+                                )
+{
+    for(int n = 0; n < size; ++n){
+        float g = dw[n];
+        float gh = momentum * grad_hist[n] + (1.f - momentum) * g * g;
+        grad_hist[n] = gh;
+        g = sqrt((acc_hist[n] + eps) / (gh + eps)) * g;
+        acc_hist[n] = momentum * acc_hist[n] + (1.f - momentum) * g * g;
+        w[n] -= lr * g;
+    }
+}
 } /* namespace math */
 } /* namespace mlfe */
