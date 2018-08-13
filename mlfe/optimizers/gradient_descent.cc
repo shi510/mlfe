@@ -11,9 +11,9 @@ AppliedOptimizer GradientDescent::Minimize(Tensor loss){
     UpdateRule ur(loss, std::get<0>(grad_pair));
     for(auto pair : std::get<1>(grad_pair)){
         auto dep = OpDependency::Builder("GradientDescent")
-            .Input({ "X", pair.first })
-            .Input({ "dX", pair.second })
-            .Output({ "Y", pair.first })
+            .Input(std::make_tuple("X", pair.first))
+            .Input(std::make_tuple("dX", pair.second))
+            .Output(std::make_tuple("Y", pair.first))
             .Attr({ "LearningRate", static_cast<float>(lr) })
             .Finish();
         ur.AddRule(dep);
@@ -39,9 +39,9 @@ AppliedOptimizer GradientDescentWithMomentum::Minimize(Tensor loss){
     UpdateRule ur(loss, std::get<0>(grad_pair));
     for(auto pair : std::get<1>(grad_pair)){
         auto dep = OpDependency::Builder("GradientDescentWithMomentum")
-            .Input({ "X", pair.first })
-            .Input({ "dX", pair.second })
-            .Output({ "Y", pair.first })
+            .Input(std::make_tuple("X", pair.first))
+            .Input(std::make_tuple("dX", pair.second))
+            .Output(std::make_tuple("Y", pair.first))
             .Attr({ "LearningRate", static_cast<float>(lr) })
             .Attr({ "MomentumRate", static_cast<float>(mr) })
             .Attr({ "WeightDecay", static_cast<float>(wd) })

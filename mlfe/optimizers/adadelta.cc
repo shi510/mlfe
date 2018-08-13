@@ -15,9 +15,9 @@ AppliedOptimizer AdaDelta::Minimize(Tensor loss){
     UpdateRule ur(loss, std::get<0>(grad_pair));
     for(auto pair : std::get<1>(grad_pair)){
         auto dep = OpDependency::Builder("AdaDelta")
-            .Input({ "X", pair.first })
-            .Input({ "dX", pair.second })
-            .Output({ "Y", pair.first })
+            .Input(std::make_tuple("X", pair.first))
+            .Input(std::make_tuple("dX", pair.second))
+            .Output(std::make_tuple("Y", pair.first))
             .Attr({ "LearningRate", static_cast<float>(lr) })
             .Attr({ "MomentumRate", static_cast<float>(mr) })
             .Attr({ "Epsilon", static_cast<float>(eps) })
@@ -33,6 +33,7 @@ REGIST_OP(AdaDelta)
     .Output("Y", type::float32::string)
     .Attr("LearningRate", type::float32::string)
     .Attr("MomentumRate", type::float32::string)
+    .Attr("Epsilon", type::float32::string)
     .Finish();
 
 } // end namespace optimizer

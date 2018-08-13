@@ -10,6 +10,7 @@ add_subdirectory(core)
 add_subdirectory(device_context)
 add_subdirectory(math)
 add_subdirectory(operators)
+add_subdirectory(optimizers)
 add_subdirectory(utils)
 
 include_directories(${mlfe_include_dirs})
