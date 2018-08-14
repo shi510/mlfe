@@ -24,6 +24,18 @@ void adadelta(const int size,
               T eps
              );
 
+template <class T, class Dev>
+void adam(const int size,
+          T *w,
+          T *dw,
+          T *m_hist,
+          T *v_hist,
+          T lr,
+          T beta1,
+          T beta2,
+          T eps
+        );
+
 } // end namespace math
 } // end namespace mlfe
 #endif // end #ifndef __MATH_OPTIMIZAERS_H__

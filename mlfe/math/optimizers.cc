@@ -40,5 +40,29 @@ void adadelta<float, CPUContext>(const int size,
         w[n] -= lr * g;
     }
 }
+
+template <>
+void adam<float, CPUContext>(const int size,
+                             float *w,
+                             float *dw,
+                             float *m_hist,
+                             float *v_hist,
+                             float lr,
+                             float beta1,
+                             float beta2,
+                             float eps
+                            )
+{
+    float correction = lr * sqrt(1.f - beta2) / (1.f - beta1);
+    for(int n = 0; n < size; ++n){
+        float g = dw[n];
+        float mh = beta1 * m_hist[n] + (1.f - beta1) * g;
+        float vh = beta2 * v_hist[n] + (1.f - beta2) * g * g;
+        m_hist[n] = mh;
+        v_hist[n] = vh;
+        w[n] -= correction * mh / (sqrt(vh) + eps);
+    }
+}
+
 } /* namespace math */
 } /* namespace mlfe */

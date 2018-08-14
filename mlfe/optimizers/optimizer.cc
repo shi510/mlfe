@@ -1,5 +1,5 @@
 #include "optimizer.h"
-#include <iostream>
+#include <algorithm>
 
 namespace mlfe{ namespace optimizer{
 using Opt = Optimizer;
