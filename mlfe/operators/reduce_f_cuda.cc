@@ -15,23 +15,18 @@ public:
         x = oac->GetVar("X");
         y = oac->GetVar("Y");
         size = x->Size();
-        reduce_buf = Device::Select<Device::CUDA>();
-        reduce_buf.Allocate(CUDA_CONTEXT_GET_BLOCKS(size) * Tp::size);
     }
 
     void Compute() override{
         auto x_ptr = x->Data<T>();
         auto y_ptr = y->Data<T>();
-        auto reduce_ptr = reduce_buf.Data<T>();
-        math::set<T, CUDAContext>(reduce_buf.Size(), T(0), reduce_ptr);
-        math::sum<T, CUDAContext>(size, x_ptr, reduce_ptr);
-        math::sum<T, CUDAContext>(CUDA_CONTEXT_GET_BLOCKS(size), reduce_ptr, y_ptr);
+        math::set<T, CUDAContext>(y->Size(), T(0), y_ptr);
+        math::sum<T, CUDAContext>(size, x_ptr, y_ptr);
         math::scal<T, CUDAContext>(1, T(1) / T(size), y_ptr, y_ptr);
     }
 private:
     TensorMemRef *x;
     TensorMemRef *y;
-    Device reduce_buf;
     int size;
 };
 
@@ -55,22 +50,13 @@ public:
         dx = oac->GetVar("dX");
         size = x->Size();
         scale = T(1) / T(size);
-        dy_d = Device::Select<Device::CPU>();
-        dx_d = Device::Select<Device::CPU>();
-        dy_d.Allocate(dy->Size() * Tp::size);
-        dx_d.Allocate(dx->Size() * Tp::size);
     }
 
     void Compute() override{
         auto x_ptr = x->Data<T>();
         auto dy_ptr = dy->Data<T>();
         auto dx_ptr = dx->Data<T>();
-        //Device::Copy<Device::CUDA, Device::CPU>(dy->GetDevice(), dy_d);
         math::reduce_mean_gradient<T, CUDAContext>(size, scale, dy_ptr, dx_ptr);
-         //for(int n = 0; n < size; ++n){
-         //    dx_d.Data<T>()[n] = dy_d.Data<T>()[0] * scale;
-         //}
-        //Device::Copy<Device::CPU, Device::CUDA>(dx_d, dx->GetDevice());
     }
 
 private:

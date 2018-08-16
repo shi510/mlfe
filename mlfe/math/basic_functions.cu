@@ -205,7 +205,7 @@ void SumKernel(const int N,
 
     DataType aggregate = BlockReduce(smem_storage).Sum(data);
     if(threadIdx.x == 0){
-        Y[blockIdx.x] = aggregate;
+        atomicAdd(Y, aggregate);
     }
 }
 
@@ -218,17 +218,6 @@ void sum<float, CUDAContext>(const int size,
     SumKernel<CUDA_CONTEXT_NUM_THREADS, float><<<
         CUDA_CONTEXT_GET_BLOCKS(size),
         CUDA_CONTEXT_NUM_THREADS >>>(size, x_ptr, y_ptr);
-}
-
-template <>
-void sum<double, CUDAContext>(const int size,
-                              const double *x_ptr,
-                              double *y_ptr
-                             )
-{
-    SumKernel<CUDA_CONTEXT_NUM_THREADS, double><<<
-        CUDA_CONTEXT_GET_BLOCKS(size),
-        CUDA_CONTEXT_NUM_THREADS>>>(size, x_ptr, y_ptr);
 }
 
 template <class DataType> __global__
