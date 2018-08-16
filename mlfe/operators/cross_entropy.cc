@@ -10,8 +10,8 @@ REGIST_OP(SigmoidCrossEntropy)
     .Input("Target", "float32")
     .Output("Loss", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &loss = odc->Output("Loss");
+        auto x = odc->Input("X");
+        auto loss = odc->Output("Loss");
         loss.Reshape({ x.Shape()[0] }, type::float32());
     })
     .Finish();
@@ -22,8 +22,8 @@ REGIST_OP_GRAD(SigmoidCrossEntropy)
     .Input("dY", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &dx = odc->Output("dX");
+        auto x = odc->Input("X");
+        auto dx = odc->Output("dX");
         dx.Reshape(x.Shape(), type::float32());
     })
     .Finish();
@@ -40,15 +40,15 @@ public:
         GradientHelper::GradientPairs pairs;
 
         auto dep = OpDependency::Builder("SigmoidCrossEntropyGradient")
-            .Input({ "X", x })
-            .Input({ "Target", t })
-            .Input({ Gradient("Y"), dy })
-            .Output({ Gradient("X"), dx })
+            .Input(std::make_tuple("X", x))
+            .Input(std::make_tuple("Target", t))
+            .Input(std::make_tuple(Gradient("Y"), dy))
+            .Output(std::make_tuple(Gradient("X"), dx))
             .Finish();
 
         dx = Tensor::DependencyAdder(dep);
 
-        return{ dx, pairs };
+        return std::make_tuple(dx, pairs);
     }
 };
 
@@ -59,8 +59,8 @@ REGIST_OP(SoftmaxCrossEntropyWithLabel)
     .Input("Target", "float32")
     .Output("Loss", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &loss = odc->Output("Loss");
+        auto x = odc->Input("X");
+        auto loss = odc->Output("Loss");
         loss.Reshape({ x.Shape()[0] }, type::float32());
     })
     .Finish();
@@ -71,8 +71,8 @@ REGIST_OP_GRAD(SoftmaxCrossEntropyWithLabel)
     .Input("dY", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &dx = odc->Output("dX");
+        auto x = odc->Input("X");
+        auto dx = odc->Output("dX");
         dx.Reshape(x.Shape(), type::float32());
     })
     .Finish();
@@ -89,15 +89,15 @@ public:
         GradientHelper::GradientPairs pairs;
 
         auto dep = OpDependency::Builder("SoftmaxCrossEntropyWithLabelGradient")
-            .Input({ "X", x })
-            .Input({ "Target", t })
-            .Input({ Gradient("Y"), dy })
-            .Output({ Gradient("X"), dx })
+            .Input(std::make_tuple("X", x))
+            .Input(std::make_tuple("Target", t))
+            .Input(std::make_tuple(Gradient("Y"), dy))
+            .Output(std::make_tuple(Gradient("X"), dx))
             .Finish();
 
         dx = Tensor::DependencyAdder(dep);
 
-        return{ dx, pairs };
+        return std::make_tuple(dx, pairs);
     }
 };
 
@@ -109,9 +109,9 @@ Tensor SigmoidCrossEntropy(Tensor x, Tensor y){
     Tensor loss;
 
     auto dep = OpDependency::Builder("SigmoidCrossEntropy")
-        .Input({ "X", x })
-        .Input({ "Target", y })
-        .Output({ "Loss", loss })
+        .Input(std::make_tuple("X", x))
+        .Input(std::make_tuple("Target", y))
+        .Output(std::make_tuple("Loss", loss))
         .Finish();
 
     loss = Tensor::DependencyAdder(dep);
@@ -123,9 +123,9 @@ Tensor SoftmaxCrossEntropy(Tensor x, Tensor y){
     Tensor loss;
 
     auto dep = OpDependency::Builder("SoftmaxCrossEntropyWithLabel")
-        .Input({ "X", x })
-        .Input({ "Target", y })
-        .Output({ "Loss", loss })
+        .Input(std::make_tuple("X", x))
+        .Input(std::make_tuple("Target", y))
+        .Output(std::make_tuple("Loss", loss))
         .Finish();
 
     loss = Tensor::DependencyAdder(dep);

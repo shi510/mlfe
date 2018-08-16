@@ -38,14 +38,14 @@ public:
         GradientHelper::GradientPairs pairs;
 
         auto dep = OpDependency::Builder("ReshapeGradient")
-            .Input({"X", x})
-            .Input({ Gradient("Y"), dy })
-            .Output({ Gradient("X"), dx })
+            .Input(std::make_tuple("X", x))
+            .Input(std::make_tuple(Gradient("Y"), dy))
+            .Output(std::make_tuple(Gradient("X"), dx))
             .Finish();
 
         dx = Tensor::DependencyAdder(dep);
 
-        return{ dx, pairs };
+        return std::make_tuple(dx, pairs);
     }
 };
 
@@ -55,8 +55,8 @@ Tensor Reshape(Tensor x, std::vector<type::int32::T> shape){
     Tensor y;
 
     auto dep = OpDependency::Builder("Reshape")
-        .Input({ "X", x })
-        .Output({ "Y", y })
+        .Input(std::make_tuple("X", x))
+        .Output(std::make_tuple("Y", y))
         .Attr({ "shape", shape })
         .Finish();
 
