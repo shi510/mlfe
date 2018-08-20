@@ -1,5 +1,7 @@
 build
-data/*
-!data/mnist/get_mnist.python
+data/mnist/*
+data/cifar/*
+!data/mnist/get_mnist.py
+!data/cifar/get_cifar.py
 mlfe/flatbuffers/*
 !mlfe/flatbuffers/*.fbs
