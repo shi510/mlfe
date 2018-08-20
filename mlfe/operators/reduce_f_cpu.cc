@@ -2,7 +2,7 @@
 #include "../core/tensor_mem_ref.h"
 #include "../device_context/cpu_context.h"
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cpu{
 
 template <class Dev, class Tp>
 class ReduceMean : public OpAlgo{
@@ -81,4 +81,5 @@ REGIST_OP_GRAD_ALGO(ReduceMean)
     })
     .Finish();
 
+} // end namespace algorithm_cpu
 } // end namespace mlfe

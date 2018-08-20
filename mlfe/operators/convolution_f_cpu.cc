@@ -7,7 +7,7 @@
 #include "../device_context/cpu_context.h"
 #include <unsupported/Eigen/CXX11/Tensor>
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cpu{
 
 template <class Dev, class Tp>
 class Convolution : public OpAlgo{
@@ -238,4 +238,5 @@ REGIST_OP_GRAD_ALGO(Convolution)
     })
     .Finish();
 
+} // end namespace algorithm_cpu
 } // end namespace mlfe

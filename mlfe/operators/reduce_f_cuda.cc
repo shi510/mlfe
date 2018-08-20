@@ -5,7 +5,7 @@
 #include "../math/activations.h"
 #include "../device_context/cuda_context.h"
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cuda{
 
 template <class Dev, class Tp>
 class ReduceMean : public OpAlgo{
@@ -79,4 +79,5 @@ REGIST_OP_GRAD_ALGO(ReduceMean)
     })
     .Finish();
 
+} // end namespace algorithm_cuda
 } // end namespace mlfe

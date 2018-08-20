@@ -5,7 +5,7 @@
 #include "../device_context/cpu_context.h"
 #include "../core/device.h"
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cpu{
 
 template <class Dev, class Tp>
 class Dense : public OpAlgo{
@@ -187,4 +187,5 @@ REGIST_OP_GRAD_ALGO(Dense)
     })
     .Finish();
 
+} // end namespace algorithm_cpu
 } // end namespace mlfe

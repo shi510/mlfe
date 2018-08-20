@@ -5,7 +5,7 @@
 #include "../device_context/cuda_context.h"
 #include "../core/device.h"
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cuda{
 
 template <class Dev, class Tp>
 class Dropout : public OpAlgo{
@@ -98,4 +98,5 @@ REGIST_OP_GRAD_ALGO(Dropout)
     })
     .Finish();
 
+} // end namespace algorithm_cuda
 } // end namespace mlfe

@@ -7,7 +7,7 @@
 #include <cudnn.h>
 #include <string>
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cudnn{
 
 template <class Dev, class Tp>
 class MaxPool : public OpAlgo{
@@ -209,4 +209,5 @@ REGIST_OP_GRAD_ALGO(MaxPool)
     })
     .Finish();
 
+} // end namespace algorithm_cudnn
 } // end namespace mlfe

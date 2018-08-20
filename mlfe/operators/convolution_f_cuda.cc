@@ -7,7 +7,7 @@
 #include "../device_context/cuda_context.h"
 #include <iostream>
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cuda{
 
 template <class Dev, class Tp>
 class Convolution : public OpAlgo{
@@ -236,4 +236,5 @@ REGIST_OP_GRAD_ALGO(Convolution)
     })
     .Finish();
 
+} // end namespace algorithm_cuda
 } // end namespace mlfe

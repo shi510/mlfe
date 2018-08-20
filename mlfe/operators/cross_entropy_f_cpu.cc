@@ -7,7 +7,7 @@
 #include <cmath>
 #include <algorithm>
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cpu{
 
 template <class Dev, class Tp>
 class SigmoidCrossEntropy : public OpAlgo{
@@ -325,5 +325,5 @@ REGIST_OP_GRAD_ALGO(SoftmaxCrossEntropyWithLabel)
     })
     .Finish();
 
-
+} // end namespace algorithm_cpu
 } // end namespace mlfe

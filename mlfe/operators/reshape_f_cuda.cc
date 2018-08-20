@@ -2,7 +2,7 @@
 #include "../core/device.h"
 #include "../core/tensor_mem_ref.h"
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cuda{
 
 template <class Dev, class Tp>
 class Reshape : public OpAlgo{
@@ -62,4 +62,5 @@ REGIST_OP_GRAD_ALGO(Reshape)
     })
     .Finish();
 
+} // end namespace algorithm_cuda
 } // end namespace mlfe

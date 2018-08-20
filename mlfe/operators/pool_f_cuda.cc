@@ -5,7 +5,7 @@
 #include "../math/transform.h"
 #include "../device_context/cuda_context.h"
 
-namespace mlfe{
+namespace mlfe{ namespace algorithm_cuda{
 
 template <class Dev, class Tp>
 class MaxPool : public OpAlgo{
@@ -131,4 +131,5 @@ REGIST_OP_GRAD_ALGO(MaxPool)
     })
     .Finish();
 
+} // end namespace algorithm_cuda
 } // end namespace mlfe
