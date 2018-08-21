@@ -9,8 +9,8 @@ REGIST_OP(ReLU)
     .Input("X", "float32")
     .Output("Y", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &y = odc->Output("Y");
+        auto x = odc->Input("X");
+        auto y = odc->Output("Y");
         if (x.Name() != y.Name()){
             y.Reshape(x.Shape(), x.Type());
         }
@@ -23,8 +23,8 @@ REGIST_OP_GRAD(ReLU)
     .Input("dY", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &dx = odc->Output("dX");
+        auto x = odc->Input("X");
+        auto dx = odc->Output("dX");
         dx.Reshape(x.Shape(), x.Type());
     })
     .Finish();
@@ -41,15 +41,15 @@ public:
         GradientHelper::GradientPairs pairs;
 
         auto dep = OpDependency::Builder("ReLUGradient")
-            .Input({ "X", x })
-            .Input({ "Y", y })
-            .Input({ Gradient("Y"), dy })
-            .Output({ Gradient("X"), dx })
+            .Input(std::make_tuple("X", x))
+            .Input(std::make_tuple("Y", y))
+            .Input(std::make_tuple(Gradient("Y"), dy))
+            .Output(std::make_tuple(Gradient("X"), dx))
             .Finish();
 
         dx = Tensor::DependencyAdder(dep);
 
-        return{ dx, pairs };
+        return std::make_tuple(dx, pairs);
     }
 };
 
@@ -59,8 +59,8 @@ REGIST_OP(Sigmoid)
     .Input("X", "float32")
     .Output("Y", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &y = odc->Output("Y");
+        auto x = odc->Input("X");
+        auto y = odc->Output("Y");
         if(x.Name() != y.Name()){
             y.Reshape(x.Shape(), x.Type());
         }
@@ -73,8 +73,8 @@ REGIST_OP_GRAD(Sigmoid)
     .Input("dY", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x = odc->Input("X");
-        auto &dx = odc->Output("dX");
+        auto x = odc->Input("X");
+        auto dx = odc->Output("dX");
         dx.Reshape(x.Shape(), x.Type());
     })
     .Finish();
@@ -91,15 +91,15 @@ public:
         GradientHelper::GradientPairs pairs;
 
         auto dep = OpDependency::Builder("SigmoidGradient")
-            .Input({ "X", x })
-            .Input({ "Y", y })
-            .Input({ Gradient("Y"), dy })
-            .Output({ Gradient("X"), dx })
+            .Input(std::make_tuple("X", x))
+            .Input(std::make_tuple("Y", y))
+            .Input(std::make_tuple(Gradient("Y"), dy))
+            .Output(std::make_tuple(Gradient("X"), dx))
             .Finish();
 
         dx = Tensor::DependencyAdder(dep);
 
-        return{ dx, pairs };
+        return std::make_tuple(dx, pairs);
     }
 };
 
@@ -109,8 +109,8 @@ Tensor ReLU(Tensor x){
     Tensor y;
 
     auto dep = OpDependency::Builder("ReLU")
-        .Input({ "X", x })
-        .Output({ "Y", y })
+        .Input(std::make_tuple("X", x))
+        .Output(std::make_tuple("Y", y))
         .Finish();
 
     y = Tensor::DependencyAdder(dep);
@@ -122,8 +122,8 @@ Tensor Sigmoid(Tensor x){
     Tensor y;
 
     auto dep = OpDependency::Builder("Sigmoid")
-        .Input({ "X", x })
-        .Output({ "Y", y })
+        .Input(std::make_tuple("X", x))
+        .Output(std::make_tuple("Y", y))
         .Finish();
 
     y = Tensor::DependencyAdder(dep);
