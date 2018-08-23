@@ -403,6 +403,28 @@ void AccuracyCuda<float>(const int batch,
     divide_by_val_kernel<float><<<1, 1>>>(batch, accuracy);
 }
 
+template <class T> __global__
+void bernoulli_dist_kernel(const int size,
+                           const T prob,
+                           T *bernoulli
+                          )
+{
+    CUDA_1D_KERNEL_LOOP(n, size){
+        bernoulli[n] = bernoulli[n] >= prob ? T(1) : T(0);
+    }
+}
+
+template <>
+void bernoulli_distribution<float, CUDAContext>(const int size,
+                                                const float prob,
+                                                float *bernoulli
+                                               )
+{
+    curandGenerateUniform(CUDAContext::rng, bernoulli, size);
+    bernoulli_dist_kernel<float><<<CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, prob, bernoulli);
+}
+
 #define DEFINE_BINARY_OP_KERNEL(OpName, Expr)      \
 template <typename T>                              \
 __global__ void OpName##_binary_op(const int size, \

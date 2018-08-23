@@ -86,6 +86,12 @@ void AccuracyCuda(const int batch,
                   T *accuracy
                  );
 
+template <class T, class Dev>
+void bernoulli_distribution(const int size,
+                            const T prob,
+                            T *bernoulli
+                           );
+
 #define DECLARE_CUDA_BINARY_OP(OpName)    \
 template <typename T>                     \
 void OpName##Cuda(const int size,         \
