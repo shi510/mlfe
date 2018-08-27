@@ -31,7 +31,7 @@ public:
             math::elementwise_mul<T, CUDAContext>(size, x_ptr, y_ptr, y_ptr);
         }
         else{
-            Device::Copy<Device::CUDA, Device::CUDA>(x->GetDevice(), y->GetDevice());
+            Device::Copy<Device::CUDA, Device::CUDA>(x->GetDeviceMemory(), y->GetDeviceMemory());
         }
     }
 private:

@@ -19,10 +19,10 @@ public:
         eps = oac->GetAttr<T>("Epsilon");
         size = x->Size();
 
-        grad_hist = Device::Select<Dev>();
+        grad_hist = oac->GetDevice().CreateDeviceMemory();
         grad_hist.Allocate(size * Tp::size);
 
-        acc_hist = Device::Select<Dev>();
+        acc_hist = oac->GetDevice().CreateDeviceMemory();
         acc_hist.Allocate(size * Tp::size);
 
         math::set<T, CUDAContext>(
@@ -60,8 +60,8 @@ private:
     TensorMemRef *x;
     TensorMemRef *dx;
     TensorMemRef *y;
-    Device grad_hist;
-    Device acc_hist;
+    DeviceMemory grad_hist;
+    DeviceMemory acc_hist;
     int size;
     T lr;
     T mr;

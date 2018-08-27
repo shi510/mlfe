@@ -63,7 +63,7 @@ public:
         mr = oac->GetAttr<T>("MomentumRate");
         wd = oac->GetAttr<T>("WeightDecay");
         size = x->Size();
-        mmt_hist = Device::Select<Dev>();
+        mmt_hist = oac->GetDevice().CreateDeviceMemory();
         mmt_hist.Allocate(size * Tp::size);
 
         math::set<T, CPUContext>(
@@ -94,7 +94,7 @@ private:
     TensorMemRef *x;
     TensorMemRef *dx;
     TensorMemRef *y;
-    Device mmt_hist;
+    DeviceMemory mmt_hist;
     int size;
     T lr;
     T mr;

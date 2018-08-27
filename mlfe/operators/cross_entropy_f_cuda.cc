@@ -113,16 +113,16 @@ public:
         n = x->Shape()[1];
         size = m * n;
 
-        prob = Device::Select<Dev>();
+        prob = oac->GetDevice().CreateDeviceMemory();
         prob.Allocate(m * n * Tp::size);
 
-        sm = Device::Select<Dev>();
+        sm = oac->GetDevice().CreateDeviceMemory();
         sm.Allocate(n * Tp::size);
 
-        rm = Device::Select<Dev>();
+        rm = oac->GetDevice().CreateDeviceMemory();
         rm.Allocate(m * Tp::size);
 
-        scal = Device::Select<Dev>();
+        scal = oac->GetDevice().CreateDeviceMemory();
         scal.Allocate(m * Tp::size);
 
         math::set<T, CUDAContext>(
@@ -147,7 +147,7 @@ public:
             rm_ptr
             );
 
-        Device::Copy<Device::CUDA, Device::CUDA>(x->GetDevice(), prob);
+        Device::Copy<Device::CUDA, Device::CUDA>(x->GetDeviceMemory(), prob);
 
         math::gemm<T, CUDAContext>(false, false,
             m, n, 1,
@@ -182,10 +182,10 @@ private:
     TensorMemRef *x;
     TensorMemRef *t;
     TensorMemRef *loss;
-    Device sm;
-    Device rm;
-    Device scal;
-    Device prob;
+    DeviceMemory sm;
+    DeviceMemory rm;
+    DeviceMemory scal;
+    DeviceMemory prob;
     int m, n;
     int size;
     CUDAContext ctx;
@@ -215,16 +215,16 @@ public:
         n = x->Shape()[1];
         size = m * n;
 
-        prob = Device::Select<Dev>();
+        prob = oac->GetDevice().CreateDeviceMemory();
         prob.Allocate(m * n * Tp::size);
 
-        sm = Device::Select<Dev>();
+        sm = oac->GetDevice().CreateDeviceMemory();
         sm.Allocate(n * Tp::size);
 
-        rm = Device::Select<Dev>();
+        rm = oac->GetDevice().CreateDeviceMemory();
         rm.Allocate(m * Tp::size);
 
-        scal = Device::Select<Dev>();
+        scal = oac->GetDevice().CreateDeviceMemory();
         scal.Allocate(m * Tp::size);
 
         math::set<T, CUDAContext>(
@@ -293,10 +293,10 @@ private:
     TensorMemRef *t;
     TensorMemRef *dy;
     TensorMemRef *dx;
-    Device sm;
-    Device rm;
-    Device scal;
-    Device prob;
+    DeviceMemory sm;
+    DeviceMemory rm;
+    DeviceMemory scal;
+    DeviceMemory prob;
     int m, n;
     int size;
     CUDAContext ctx;

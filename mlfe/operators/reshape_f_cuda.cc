@@ -15,7 +15,7 @@ public:
 
     // TODO : Do not use Copy.
     void Compute() override{
-        Device::Copy<Device::CUDA, Device::CUDA>(x->GetDevice(), y->GetDevice());
+        Device::Copy<Device::CUDA, Device::CUDA>(x->GetDeviceMemory(), y->GetDeviceMemory());
     }
 private:
     TensorMemRef *x;
@@ -43,7 +43,7 @@ public:
 
     // TODO : Do not use Copy.
     void Compute() override{
-        Device::Copy<Device::CUDA, Device::CUDA>(dy->GetDevice(), dx->GetDevice());
+        Device::Copy<Device::CUDA, Device::CUDA>(dy->GetDeviceMemory(), dx->GetDeviceMemory());
     }
 
 private:

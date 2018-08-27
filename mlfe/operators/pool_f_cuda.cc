@@ -110,7 +110,6 @@ private:
     TensorMemRef *y;
     TensorMemRef *dy;
     TensorMemRef *dx;
-    Device col_buf;
     int in_c, in_h, in_w;
     int out_h, out_w;
     std::vector<type::int32::T> filters_hw;

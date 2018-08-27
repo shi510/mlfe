@@ -63,7 +63,6 @@ private:
     TensorMemRef *x;
     TensorMemRef *dy;
     TensorMemRef *dx;
-    Device dy_d, dx_d;
     int size;
     T scale;
 };

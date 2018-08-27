@@ -4,45 +4,69 @@
 namespace mlfe{
 using CUDADevice = Device::Select<Device::CUDA>;
 
-template <>
-struct CUDADevice::DeviceData{
-    DeviceData(){}
+class CudaMemory : public DeviceMemory::Allocator{
+public:
+    CudaMemory();
 
-    DeviceData(type::uint8::T *ptr, type::uint32::T size)
-        : data(ptr), size(size){}
+    ~CudaMemory() override;
 
+    type::uint8::T *Data() const override;
+
+    void Allocate(type::uint32::T size) override;
+
+    void Allocate(type::uint8::T *ptr, type::uint32::T size) override;
+
+    type::uint32::T Size() const override;
+
+private:
+    struct DeviceData;
+    std::shared_ptr<DeviceData> dd;
+};
+
+struct CudaMemory::DeviceData{
+    DeviceData() : data(nullptr), size(0){}
     type::uint8::T *data;
     type::uint32::T size;
 };
 
-template<>
-CUDADevice::Select(){
+CudaMemory::CudaMemory(){
     dd = std::make_shared<DeviceData>();
 }
 
-template<>
-CUDADevice::Select(type::uint8::T *ptr, type::uint32::T size){
-    throw std::string("Device::Select<Device::CUDA>() - "
-        "Feeding address by direct is not supported.");
+CudaMemory::~CudaMemory(){
+    dd->size = 0;
+    if(dd->data != nullptr){
+        if(cudaFree(dd->data) != cudaSuccess){
+            throw std::string("Device::Select<Device::CUDA>::~Select() - "
+                "device memory free failed.");
+        }
+    }
 }
 
-template<>
-type::uint8::T *CUDADevice::Data() const{
+type::uint8::T *CudaMemory::Data() const{
     return dd->data;
 }
 
-template <>
-type::uint32::T CUDADevice::Size() const{
-    return dd->size;
-}
-
-template<>
-void CUDADevice::Allocate(type::uint32::T size){
+void CudaMemory::Allocate(type::uint32::T size){
     dd->size = size;
     if(cudaMalloc((void**)&dd->data, size) != cudaSuccess){
         throw std::string("Device::Select<Device::CUDA>::Allocate() - "
             "device memory allocation failed.");
     }
+}
+
+void CudaMemory::Allocate(type::uint8::T *ptr, type::uint32::T size){
+    throw std::string("Device::Select<Device::CUDA>() - "
+        "Feeding address by direct is not supported.");
+}
+
+type::uint32::T CudaMemory::Size() const{
+    return dd->size;
+}
+
+template<>
+DeviceMemory CUDADevice::CreateDeviceMemory() const{
+    return DeviceMemory(std::make_shared<CudaMemory>());
 }
 
 template <>
@@ -51,7 +75,10 @@ std::string CUDADevice::Name() const{
 }
 
 template <> void
-Device::CopyInternal<Device::CUDA, Device::CPU>(const Device from, Device to){
+Device::CopyInternal<Device::CUDA, Device::CPU>(const DeviceMemory from,
+                                                DeviceMemory to
+                                               )
+{
     if(cudaMemcpy(to.Data(), from.Data(), from.Size(),
         cudaMemcpyDeviceToHost) != cudaSuccess){
         const std::string err =
@@ -62,7 +89,10 @@ Device::CopyInternal<Device::CUDA, Device::CPU>(const Device from, Device to){
 }
 
 template <> void
-Device::CopyInternal<Device::CPU, Device::CUDA>(const Device from, Device to){
+Device::CopyInternal<Device::CPU, Device::CUDA>(const DeviceMemory from,
+                                                DeviceMemory to
+                                               )
+{
     if(cudaMemcpy(to.Data(), from.Data(), from.Size(),
         cudaMemcpyHostToDevice) != cudaSuccess){
         const std::string err =
@@ -73,7 +103,10 @@ Device::CopyInternal<Device::CPU, Device::CUDA>(const Device from, Device to){
 }
 
 template <> void
-Device::CopyInternal<Device::CUDA, Device::CUDA>(const Device from, Device to){
+Device::CopyInternal<Device::CUDA, Device::CUDA>(const DeviceMemory from,
+                                                 DeviceMemory to
+                                                )
+{
     if(cudaMemcpy(to.Data(), from.Data(), from.Size(),
         cudaMemcpyDeviceToDevice) != cudaSuccess){
         const std::string err =

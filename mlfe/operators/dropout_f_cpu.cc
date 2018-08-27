@@ -32,7 +32,7 @@ public:
             }
         }
         else{
-            Device::Copy<Device::CPU, Device::CPU>(x->GetDevice(), y->GetDevice());
+            Device::Copy<Device::CPU, Device::CPU>(x->GetDeviceMemory(), y->GetDeviceMemory());
         }
     }
 private:

@@ -35,7 +35,7 @@ public:
         in_h = x->Shape()[2];
         in_w = x->Shape()[3];
 
-        col_buf = Device::Select<Dev>();
+        col_buf = oac->GetDevice().CreateDeviceMemory();
         col_buf.Allocate(k * n * Tp::size);
     }
 
@@ -79,7 +79,7 @@ private:
     TensorMemRef *x;
     TensorMemRef *w;
     TensorMemRef *y;
-    Device col_buf;
+    DeviceMemory col_buf;
     int m, n, k, batch;
     int in_c, in_h, in_w;
     type::int32::T filters;
@@ -129,7 +129,7 @@ public:
         // Weight Size.
         k = x->Shape()[1] * filters_hw[1] * filters_hw[0];
 
-        col_buf = Device::Select<Dev>();
+        col_buf = oac->GetDevice().CreateDeviceMemory();
         col_buf.Allocate(k * n * Tp::size);
     }
 
@@ -212,7 +212,7 @@ private:
     TensorMemRef *dy;
     TensorMemRef *dw;
     TensorMemRef *dx;
-    Device col_buf;
+    DeviceMemory col_buf;
     int m, n, k, batch;
     int in_c, in_h, in_w;
     type::int32::T filters;

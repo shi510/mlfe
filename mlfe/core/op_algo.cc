@@ -65,7 +65,8 @@ OpAlgoSchema OASB::Finish(){
     return oas;
 }
 
-OpAlgoContext::OpAlgoContext(Workspace *ws, OpDesignContext *odc){
+OpAlgoContext::OpAlgoContext(Device dev, Workspace *ws, OpDesignContext *odc){
+    this->device = dev;
     this->ws = ws;
     auto vars = odc->AllVars();
     for(auto var_pair : vars){
@@ -80,6 +81,10 @@ TensorMemRef *OpAlgoContext::GetVar(std::string name){
     }
 
     return ws->find(vars[name].Name())->second.get();
+}
+
+Device OpAlgoContext::GetDevice(){
+    return device;
 }
 
 using OAR = OpAlgoRegistry;

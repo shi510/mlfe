@@ -66,14 +66,17 @@ using VarPtr = std::shared_ptr<TensorMemRef>;
 using MapVarPtr = std::map<std::string, Tensor>;
 using Workspace = std::map<std::string, VarPtr>;
 public:
-    OpAlgoContext(Workspace *ws, OpDesignContext *odc);
+    OpAlgoContext(Device dev, Workspace *ws, OpDesignContext *odc);
 
     TensorMemRef *GetVar(std::string name);
+
+    Device GetDevice();
 
     template <class T>
     T GetAttr(std::string name);
 
 private:
+    Device device;
     MapVarPtr vars;
     Workspace *ws;
     Attributes attrs;

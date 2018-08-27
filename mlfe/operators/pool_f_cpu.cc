@@ -148,7 +148,6 @@ private:
     TensorMemRef *y;
     TensorMemRef *dy;
     TensorMemRef *dx;
-    Device col_buf;
     int batch;
     int in_c, in_h, in_w;
     int out_h, out_w;

@@ -2,9 +2,9 @@
 
 namespace mlfe{
 
-TensorMemRef::TensorMemRef(const Tensor &t, Device device)
-    : ref(t), d(device){
-    d.Allocate(ref.Size() * ref.Type().size);
+TensorMemRef::TensorMemRef(const Tensor &t, DeviceMemory dev_mem)
+    : ref(t), dev_mem(dev_mem){
+    dev_mem.Allocate(ref.Size() * ref.Type().size);
 }
 
 size_t TensorMemRef::Size() const{
@@ -15,8 +15,8 @@ std::vector<int> TensorMemRef::Shape() const{
     return ref.Shape();
 }
 
-Device TensorMemRef::GetDevice() const{
-    return d;
+DeviceMemory TensorMemRef::GetDeviceMemory() const{
+    return dev_mem;
 }
 
 } // end namespace mlfe;

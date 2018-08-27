@@ -10,7 +10,7 @@ namespace mlfe{
 // TODO : Remove TensorMemRef class.
 class TensorMemRef{
 public:
-    TensorMemRef(const Tensor &t, Device device);
+    TensorMemRef(const Tensor &t, DeviceMemory mem);
 
     size_t Size() const;
 
@@ -19,16 +19,16 @@ public:
     template <class T>
     T *Data() const;
 
-    Device GetDevice() const;
+    DeviceMemory GetDeviceMemory() const;
 
 private:
     const Tensor ref;
-    Device d;
+    DeviceMemory dev_mem;
 };
 
 template <class T>
 T *TensorMemRef::Data() const{
-    return d.Data<T>();
+    return reinterpret_cast<T *>(dev_mem.Data());
 }
 
 } // end namespace mlfe

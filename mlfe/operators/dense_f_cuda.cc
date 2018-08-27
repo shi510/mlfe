@@ -21,7 +21,7 @@ public:
         n = w->Shape()[0];
         k = x->Shape()[1];
 
-        bm = Device::Select<Dev>();
+        bm = oac->GetDevice().CreateDeviceMemory();
         bm.Allocate(m * Tp::size);
 
         math::set<T, CUDAContext>(
@@ -68,7 +68,7 @@ private:
     TensorMemRef *w;
     TensorMemRef *b;
     TensorMemRef *y;
-    Device bm;
+    DeviceMemory bm;
     int m, n, k;
     CUDAContext cuda;
 };
@@ -103,7 +103,7 @@ public:
         n = w->Shape()[0];
         k = x->Shape()[1];
 
-        bm = Device::Select<Dev>();
+        bm = oac->GetDevice().CreateDeviceMemory();
         bm.Allocate(m * Tp::size);
 
         math::set<T, CUDAContext>(
@@ -166,7 +166,7 @@ private:
     TensorMemRef *dw;
     TensorMemRef *db;
     TensorMemRef *dx;
-    Device bm;
+    DeviceMemory bm;
     int m, n, k;
     CUDAContext cuda;
 };
