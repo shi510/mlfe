@@ -84,6 +84,4 @@ Device::CopyInternal<Device::CPU, Device::CPU>(const DeviceMemory from,
     }
 }
 
-const char *Device::CPU::string = "Device.CPU";
-
 } // end namespace mlfe;
