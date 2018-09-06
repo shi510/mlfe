@@ -20,7 +20,8 @@ int main(int argc, char *args[]){
 #endif
     std::string data_name(args[1]);
 
-    std::transform(data_name.begin(), data_name.end(), data_name.begin(), std::tolower);
+    std::transform(data_name.begin(), data_name.end(), data_name.begin(),
+                   [](unsigned char c){return std::tolower(c); });
 
     try{
         if(!data_name.compare("mnist")){

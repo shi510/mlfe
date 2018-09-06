@@ -1,3 +1,13 @@
+find_package(Threads)
+if(THREADS_FOUND)
+  if(${CMAKE_USE_WIN32_THREADS_INIT})
+    message(STATUS "Found Threads : " "win32 thread")
+  elseif(${CMAKE_USE_WIN32_THREADS_INIT})
+    message(STATUS "Found Threads : " "pthread")
+  endif()
+  list(APPEND mlfe_library_dependencies ${CMAKE_THREAD_LIBS_INIT})
+endif()
+
 find_package(Eigen3 QUIET)
 
 if(EIGEN3_FOUND)
