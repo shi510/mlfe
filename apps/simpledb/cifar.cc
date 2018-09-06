@@ -3,8 +3,8 @@
 #include <mlfe/utils/db/simple_db.h>
 #include <mlfe/flatbuffers/tensor_blob_fb_generated.h>
 #include <mlfe/utils/db/simpledb_reader.h>
-#include <opencv2/opencv.hpp>
 #include <numeric>
+#include <iostream>
 
 typedef mlfe::serializable::TensorBlob SerializableTensor;
 typedef flatbuffers::FlatBufferBuilder FBB;
