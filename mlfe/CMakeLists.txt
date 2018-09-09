@@ -13,6 +13,10 @@ add_subdirectory(operators)
 add_subdirectory(optimizers)
 add_subdirectory(utils)
 
+list(APPEND mlfe_header_files core.h)
+list(APPEND mlfe_header_files operators.h)
+list(APPEND mlfe_header_files optimizers.h)
+
 include_directories(${mlfe_include_dirs})
 if(USE_CUDA)
   cuda_add_library(cuda_objects STATIC ${mlfe_cuda_source_files})
