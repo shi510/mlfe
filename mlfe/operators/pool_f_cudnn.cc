@@ -24,8 +24,8 @@ public:
 
     MaxPool(OpAlgoContext *oac) : OpAlgo(oac){
         using IntVec = std::vector<type::int32::T>;
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        y = oac->get_output(1);
         filters_hw = oac->GetAttr<IntVec>("filters_hw");
         strides = oac->GetAttr<IntVec>("strides");
         pads = oac->GetAttr<IntVec>("pads");
@@ -120,10 +120,10 @@ public:
 
     MaxPoolGrad(OpAlgoContext *oac) : OpAlgo(oac){
         using IntVec = std::vector<type::int32::T>;
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        y = oac->get_input(2);
+        dy = oac->get_input(3);
+        dx = oac->get_output(0);
         filters_hw = oac->GetAttr<IntVec>("filters_hw");
         strides = oac->GetAttr<IntVec>("strides");
         pads = oac->GetAttr<IntVec>("pads");

@@ -1,16 +1,27 @@
 #include "evaluator.h"
+#include "graph.h"
 
 namespace mlfe{
 
 Evaluator::Evaluator(Device device) : d(device){}
 
 void Evaluator::Init(optimizer::AppliedOptimizer *ao){
-    auto target_name = ao->InputGrad().Name();
+    auto target_name = ao->Target().Name() + "ForOpt";
     if(target_algos.count(target_name) <= 0){
         std::vector<OpAlgoPtr> new_task;
-        AllocateAllVars(ao->InputGrad().OpDependencies());
-        auto model_algos = FindOpAlgo(ao->InputGrad().OpDependencies());
-        auto opt_algos = FindOpAlgo(ao->OpDependencies());
+        std::vector<OpDependency> deps;
+        auto v_list = visit_bfs(ao->Target());
+        std::reverse(v_list.begin(), v_list.end());
+        for(auto &t : v_list){
+            if(t.get_dep().Name() != "Unknown"){
+                deps.push_back(t.get_dep());
+            }
+        }
+        AllocateAllVars(deps);
+        AllocateAllVars(ao->get_bwd_op_deps());
+        auto model_algos = FindOpAlgo(deps);
+        auto model_grad_algos = FindOpAlgo(ao->get_bwd_op_deps());
+        auto opt_algos = FindOpAlgo(ao->get_update_op_deps());
 
         new_task.insert(
             new_task.end(),
@@ -19,11 +30,16 @@ void Evaluator::Init(optimizer::AppliedOptimizer *ao){
         );
         new_task.insert(
             new_task.end(),
+            model_grad_algos.begin(),
+            model_grad_algos.end()
+        );
+        new_task.insert(
+            new_task.end(),
             opt_algos.begin(),
             opt_algos.end()
         );
         target_algos[target_name] = new_task;
-        InitAllVariable(ao->Target().OpDependencies());
+        InitAllVariable(deps);
     }
 }
 
@@ -31,17 +47,23 @@ void Evaluator::Init(std::vector<Tensor> ts){
     for(auto t : ts){
         if(target_algos.count(t.Name()) <= 0){
             std::vector<OpAlgoPtr> new_task;
-            AllocateAllVars(t.OpDependencies());
-            AllocateAllVars({ t.InitDependency() });
-            auto model_algos = FindOpAlgo(t.OpDependencies());
+            std::vector<OpDependency> deps;
+            auto v_list = visit_bfs(t);
+            std::reverse(v_list.begin(), v_list.end());
+            for(auto &t : v_list){
+                if(t.get_dep().Name() != "Unknown"){
+                    deps.push_back(t.get_dep());
+                }
+            }
+            AllocateAllVars(deps);
+            auto model_algos = FindOpAlgo(deps);
             new_task.insert(
                 new_task.end(),
                 model_algos.begin(),
                 model_algos.end()
             );
             target_algos[t.Name()] = new_task;
-            InitAllVariable(t.OpDependencies());
-            InitAllVariable({ t.InitDependency() });
+            InitAllVariable(deps);
         }
     }
 }
@@ -49,18 +71,16 @@ void Evaluator::Init(std::vector<Tensor> ts){
 void Evaluator::AllocateAllVars(std::vector<OpDependency> deps){
     for(auto op_dep : deps){
         for(auto in : op_dep.Inputs()){
-            auto var = std::get<1>(in);
-            if(tensor_refs.count(var.Name()) <= 0){
-                auto ref = std::make_shared<TensorMemRef>(var, d.CreateDeviceMemory());
-                tensor_refs[var.Name()] = ref;
+            if(tensor_refs.count(in.Name()) <= 0){
+                auto ref = std::make_shared<TensorMemRef>(in, d.CreateDeviceMemory());
+                tensor_refs[in.Name()] = ref;
             }
         }
 
         for(auto out : op_dep.Outputs()){
-            auto var = std::get<1>(out);
-            if(tensor_refs.count(var.Name()) <= 0){
-                auto ref = std::make_shared<TensorMemRef>(var, d.CreateDeviceMemory());
-                tensor_refs[var.Name()] = ref;
+            if(tensor_refs.count(out.Name()) <= 0){
+                auto ref = std::make_shared<TensorMemRef>(out, d.CreateDeviceMemory());
+                tensor_refs[out.Name()] = ref;
             }
         }
     }
@@ -77,11 +97,11 @@ Evaluator::FindOpAlgo(std::vector<OpDependency> deps){
             std::stringstream ss;
             ss << "Name:" << dep.Name();
             for(auto in : dep.Inputs()){
-                ss << "/In:" << std::get<1>(in).Type().type;
+                ss << "/In:" << in.Type().type;
             }
 
             for(auto out : dep.Outputs()){
-                ss << "/Out:" << std::get<1>(out).Type().type;
+                ss << "/Out:" << out.Type().type;
             }
             if(d.Name() != Device::CPU::string){
                 auto try_cudnn = ss.str() + "/Device:" + Device::CUDA::string_cudnn;
@@ -110,17 +130,17 @@ void Evaluator::InitAllVariable(std::vector<OpDependency> deps){
 
     for(auto dep : deps){
         for(auto in : dep.Inputs()){
-            auto init_dep = std::get<1>(in).InitDependency();
+            auto init_dep = in.InitDependency();
             if(init_dep.Name() != "Unknown" &&
                 already_init.count(init_dep.UniqueName()) <= 0){
                 OpAlgoContext oac(d, &tensor_refs, init_dep.Context());
                 std::stringstream ss;
                 ss << "Name:" << init_dep.Name();
                 for(auto in : init_dep.Inputs()){
-                    ss << "/In:" << std::get<1>(in).Type().type;
+                    ss << "/In:" << in.Type().type;
                 }
                 for(auto out : init_dep.Outputs()){
-                    ss << "/Out:" << std::get<1>(out).Type().type;
+                    ss << "/Out:" << out.Type().type;
                 }
                 if(d.Name() == Device::CUDA::string_cudnn ||
                     d.Name() == Device::CUDA::string){
@@ -130,7 +150,7 @@ void Evaluator::InitAllVariable(std::vector<OpDependency> deps){
                     ss << "/Device:" << Device::CPU::string;
                 }
                 oar->GetOpAlgo(ss.str(), &oac)->Compute();
-                already_init[init_dep.UniqueName()] = std::get<1>(in);
+                already_init[init_dep.UniqueName()] = in;
             }
         }
     }

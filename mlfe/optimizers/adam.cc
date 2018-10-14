@@ -12,19 +12,21 @@ Adam::Adam(
     ) : lr(learning_rate), b1(beta1), b2(beta2), eps(epsilon){}
 
 AppliedOptimizer Adam::Minimize(Tensor loss){
-    auto grad_pair = LetGradientFlowBack(loss);
-    UpdateRule ur(loss, std::get<0>(grad_pair));
-    for(auto pair : std::get<1>(grad_pair)){
-        auto dep = OpDependency::Builder("Adam")
-            .Input(std::make_tuple("X", pair.first))
-            .Input(std::make_tuple("dX", pair.second))
-            .Output(std::make_tuple("Y", pair.first))
-            .Attr({ "LearningRate", static_cast<float>(lr) })
-            .Attr({ "Beta1", static_cast<float>(b1) })
-            .Attr({ "Beta2", static_cast<float>(b2) })
-            .Attr({ "Epsilon", static_cast<float>(eps) })
-            .Finish();
-        ur.AddRule(dep);
+    auto grad_pair = compute_gradient(loss);
+    UpdateRule ur(loss, bwd_op_deps);
+    for(auto pair : grad_pair){
+        if(pair.first.get_trainable() == true){
+            auto dep = OpDependency::Builder("Adam")
+                .Input(pair.first)
+                .Input(pair.second)
+                .Output(pair.first)
+                .Attr({"LearningRate", static_cast<float>(lr)})
+                .Attr({"Beta1", static_cast<float>(b1)})
+                .Attr({"Beta2", static_cast<float>(b2)})
+                .Attr({"Epsilon", static_cast<float>(eps)})
+                .Finish();
+            ur.AddRule(dep);
+        }
     }
     return ApplyGradientUpdateRule(ur);
 }

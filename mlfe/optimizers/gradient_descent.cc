@@ -7,16 +7,18 @@ GradientDescent::GradientDescent(double learning_rate)
     : lr(learning_rate){}
 
 AppliedOptimizer GradientDescent::Minimize(Tensor loss){
-    auto grad_pair = LetGradientFlowBack(loss);
-    UpdateRule ur(loss, std::get<0>(grad_pair));
-    for(auto pair : std::get<1>(grad_pair)){
-        auto dep = OpDependency::Builder("GradientDescent")
-            .Input(std::make_tuple("X", pair.first))
-            .Input(std::make_tuple("dX", pair.second))
-            .Output(std::make_tuple("Y", pair.first))
-            .Attr({ "LearningRate", static_cast<float>(lr) })
-            .Finish();
-        ur.AddRule(dep);
+    auto grad_pair = compute_gradient(loss);
+    UpdateRule ur(loss, bwd_op_deps);
+    for(auto pair : grad_pair){
+        if(pair.first.get_trainable() == true){
+            auto dep = OpDependency::Builder("GradientDescent")
+                .Input(pair.first)
+                .Input(pair.second)
+                .Output(pair.first)
+                .Attr({"LearningRate", static_cast<float>(lr)})
+                .Finish();
+            ur.AddRule(dep);
+        }
     }
     return ApplyGradientUpdateRule(ur);
 }
@@ -35,18 +37,20 @@ GradientDescentWithMomentum::GradientDescentWithMomentum(
     ) : lr(learning_rate), mr(momentum_rate), wd(weight_decay){}
 
 AppliedOptimizer GradientDescentWithMomentum::Minimize(Tensor loss){
-    auto grad_pair = LetGradientFlowBack(loss);
-    UpdateRule ur(loss, std::get<0>(grad_pair));
-    for(auto pair : std::get<1>(grad_pair)){
-        auto dep = OpDependency::Builder("GradientDescentWithMomentum")
-            .Input(std::make_tuple("X", pair.first))
-            .Input(std::make_tuple("dX", pair.second))
-            .Output(std::make_tuple("Y", pair.first))
-            .Attr({ "LearningRate", static_cast<float>(lr) })
-            .Attr({ "MomentumRate", static_cast<float>(mr) })
-            .Attr({ "WeightDecay", static_cast<float>(wd) })
-            .Finish();
-        ur.AddRule(dep);
+    auto grad_pair = compute_gradient(loss);
+    UpdateRule ur(loss, bwd_op_deps);
+    for(auto pair : grad_pair){
+        if(pair.first.get_trainable() == true){
+            auto dep = OpDependency::Builder("GradientDescentWithMomentum")
+                .Input(pair.first)
+                .Input(pair.second)
+                .Output(pair.first)
+                .Attr({"LearningRate", static_cast<float>(lr)})
+                .Attr({"MomentumRate", static_cast<float>(mr)})
+                .Attr({"WeightDecay", static_cast<float>(wd)})
+                .Finish();
+            ur.AddRule(dep);
+        }
     }
     return ApplyGradientUpdateRule(ur);
 }

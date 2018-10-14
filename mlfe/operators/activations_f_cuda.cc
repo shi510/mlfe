@@ -10,8 +10,8 @@ class ReLU : public OpAlgo{
 using T = typename Tp::T;
 public:
     ReLU(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
         size = x->Size();
     }
 
@@ -45,9 +45,9 @@ class ReLUGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     ReLUGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        dy = oac->get_input(2);
+        dx = oac->get_output(0);
         size = x->Size();
     }
 
@@ -88,8 +88,8 @@ class Sigmoid : public OpAlgo{
 using T = typename Tp::T;
 public:
     Sigmoid(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
         size = x->Size();
     }
 
@@ -123,9 +123,9 @@ class SigmoidGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     SigmoidGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        dy = oac->get_input(2);
+        dx = oac->get_output(0);
         size = x->Size();
     }
 

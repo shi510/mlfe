@@ -1,6 +1,8 @@
 #ifndef __GRADIENT_HELPER_HPP__
 #define __GRADIENT_HELPER_HPP__
 #include "op_design.h"
+#include "graph.h"
+#include "op_dep.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -10,16 +12,18 @@ namespace mlfe{
 
 class GradientHelper{
 public:
-    using GradientPairs = std::vector<std::pair<Tensor, Tensor>>;
-    using HelperOut = std::tuple<Tensor, GradientPairs>;
+    using TensorUmap = std::unordered_map<Tensor, Tensor>;
 
     GradientHelper(const OpDesignContext *odc);
 
-    virtual HelperOut Get(Tensor dy) = 0;
+    virtual TensorUmap compute_gradient(Tensor var,
+                                        Tensor dy
+                                       ) = 0;
+
+    OpDependency get_opdep() const;
 
 protected:
-    std::string Gradient(std::string var_name);
-
+    OpDependency dep;
     const OpDesignContext *odc;
 };
 

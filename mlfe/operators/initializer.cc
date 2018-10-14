@@ -29,7 +29,7 @@ Tensor Constant(type::float64::T val, std::vector<int> shape){
 
     x.Reshape(shape);
     auto dep = OpDependency::Builder("Constant")
-        .Input(std::make_tuple("X", x))
+        .Input(x)
         .Attr({ "value", static_cast<type::float32::T>(val) })
         .Finish();
 
@@ -43,7 +43,7 @@ Tensor Normal(type::float64::T std, std::vector<int> shape){
 
     x.Reshape(shape);
     auto dep = OpDependency::Builder("Normal")
-        .Input(std::make_tuple("X", x))
+        .Input(x)
         .Attr({ "std", static_cast<type::float32::T>(std) })
         .Attr({ "clip", static_cast<bool>(false) })
         .Finish();
@@ -58,7 +58,7 @@ Tensor TruncatedNormal(type::float64::T std, std::vector<int> shape){
 
     x.Reshape(shape);
     auto dep = OpDependency::Builder("Normal")
-        .Input(std::make_tuple("X", x))
+        .Input(x)
         .Attr({ "std", static_cast<type::float32::T>(std) })
         .Attr({ "clip", static_cast<bool>(true) })
         .Finish();
@@ -73,7 +73,7 @@ Tensor Xavier(type::int32::T a, type::int32::T b, std::vector<int> shape){
 
     x.Reshape(shape);
     auto dep = OpDependency::Builder("Xavier")
-        .Input(std::make_tuple("X", x))
+        .Input(x)
         .Attr({ "a", static_cast<type::int32::T>(a) })
         .Attr({ "b", static_cast<type::int32::T>(b) })
         .Finish();

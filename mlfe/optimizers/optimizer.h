@@ -9,22 +9,28 @@ namespace mlfe{ namespace optimizer{
 class AppliedOptimizer;
 
 class Optimizer{
+using TensorPairs = std::vector<std::pair<Tensor, Tensor>>;
+using OpDeps = std::vector<OpDependency>;
 public:
     class UpdateRule;
 
     virtual AppliedOptimizer Minimize(Tensor loss) = 0;
 
+    TensorPairs compute_gradient(const Tensor root);
+
+    OpDeps get_op_deps() const;
+
 protected:
-    GradientHelper::HelperOut LetGradientFlowBack(Tensor loss);
 
     AppliedOptimizer ApplyGradientUpdateRule(UpdateRule ur);
 
-private:
-    friend class AppliedOptimizer;
+    OpDeps bwd_op_deps;
 };
 
 class Optimizer::UpdateRule{
 public:
+    UpdateRule(Tensor target, OpDeps bwd_deps);
+
     UpdateRule(Tensor target, Tensor dx);
 
     void AddRule(OpDependency od);
@@ -32,17 +38,17 @@ public:
 private:
     friend class AppliedOptimizer;
     Tensor opt_target;
-    Tensor opt_dx;
-    std::vector<OpDependency> deps;
+    std::vector<OpDependency> _bwd_op_deps;
+    std::vector<OpDependency> _update_op_deps;
 };
 
 class AppliedOptimizer{
 public:
     Tensor Target() const;
 
-    Tensor InputGrad() const;
+    std::vector<OpDependency> get_bwd_op_deps() const;
 
-    std::vector<OpDependency> OpDependencies() const;
+    std::vector<OpDependency> get_update_op_deps() const;
 
 protected:
     AppliedOptimizer() = default;

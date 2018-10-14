@@ -11,10 +11,10 @@ REGIST_OP(Dense)
     .Output("Y", "float32")
     .Attr("output", "int32")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto w = odc->Input("W");
-        auto b = odc->Input("B");
-        auto y = odc->Output("Y");
+        auto x = odc->Input(0);
+        auto w = odc->Input(1);
+        auto b = odc->Input(2);
+        auto y = odc->Output(0);
         auto n = odc->GetAttr<type::int32::T>("output");
         w.Reshape({ n, x.Shape()[1] }, type::float32());
         b.Reshape({ n }, type::float32());
@@ -32,12 +32,12 @@ REGIST_OP_GRAD(Dense)
     .Output("dB", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto w = odc->Input("W");
-        auto b = odc->Input("B");
-        auto dw = odc->Output("dW");
-        auto db = odc->Output("dB");
-        auto dx = odc->Output("dX");
+        auto x = odc->Input(0);
+        auto w = odc->Input(1);
+        auto b = odc->Input(2);
+        auto dw = odc->Output(0);
+        auto db = odc->Output(1);
+        auto dx = odc->Output(2);
         dw.Reshape(w.Shape(), type::float32());
         db.Reshape(b.Shape(), type::float32());
         dx.Reshape(x.Shape(), type::float32());
@@ -49,30 +49,25 @@ public:
     DenseGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    GradientHelper::HelperOut Get(Tensor dy) override{
-        Tensor x = odc->Input("X");
-        Tensor w = odc->Input("W");
-        Tensor b = odc->Input("B");
-        Tensor y = odc->Output("Y");
+    TensorUmap compute_gradient(Tensor y, 
+                                Tensor dy
+                               ) override{
+        TensorUmap gpair;
+        Tensor x = y.get_children()[0];
+        Tensor w = y.get_children()[1];
+        Tensor b = y.get_children()[2];
         Tensor dw, db, dx;
-        GradientHelper::GradientPairs pairs;
 
-        auto dep = OpDependency::Builder("DenseGradient")
-            .Input(std::make_tuple("X", x))
-            .Input(std::make_tuple("W", w))
-            .Input(std::make_tuple("B", b))
-            .Input(std::make_tuple("Y", y))
-            .Input(std::make_tuple(Gradient("Y"), dy))
-            .Output(std::make_tuple(Gradient("W"), dw))
-            .Output(std::make_tuple(Gradient("B"), db))
-            .Output(std::make_tuple(Gradient("X"), dx))
+        dep = OpDependency::Builder("DenseGradient")
+            .Input(x).Input(w).Input(b).Input(y).Input(dy)
+            .Output(dw).Output(db).Output(dx)
             .Finish();
 
-        dx = Tensor::DependencyAdder(dep);
-        pairs.push_back({ w, dw });
-        pairs.push_back({ b, db });
+        gpair[x] = dx;
+        gpair[w] = dw;
+        gpair[b] = db;
 
-        return std::make_tuple(dx, pairs);
+        return gpair;
     }
 };
 
@@ -83,15 +78,20 @@ Tensor Dense(Tensor x, type::int32::T num_out, Tensor init_w, Tensor init_b){
 
     w.Initialize(init_w);
     b.Initialize(init_b);
+    w.set_trainable(true);
+    b.set_trainable(true);
+
     auto dep = OpDependency::Builder("Dense")
-        .Input(std::make_tuple("X", x))
-        .Input(std::make_tuple("W", w))
-        .Input(std::make_tuple("B", b))
-        .Output(std::make_tuple("Y", y))
+        .Input(x).Input(w).Input(b)
+        .Output(y)
         .Attr({ "output", num_out })
         .Finish();
 
     y = Tensor::DependencyAdder(dep);
+
+    y.add_child(x);
+    y.add_child(w);
+    y.add_child(b);
 
     return y;
 }

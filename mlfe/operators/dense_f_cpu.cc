@@ -12,10 +12,10 @@ class Dense : public OpAlgo{
 using T = typename Tp::T;
 public:
     Dense(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        w = oac->GetVar("W");
-        b = oac->GetVar("B");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        w = oac->get_input(1);
+        b = oac->get_input(2);
+        y = oac->get_output(0);
 
         m = x->Shape()[0];
         n = w->Shape()[0];
@@ -90,14 +90,14 @@ class DenseGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     DenseGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        w = oac->GetVar("W");
-        b = oac->GetVar("B");
-        y = oac->GetVar("Y");
-        dy = oac->GetVar("dY");
-        dw = oac->GetVar("dW");
-        db = oac->GetVar("dB");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        w = oac->get_input(1);
+        b = oac->get_input(2);
+        y = oac->get_input(3);
+        dy = oac->get_input(4);
+        dw = oac->get_output(0);
+        db = oac->get_output(1);
+        dx = oac->get_output(2);
 
         m = x->Shape()[0];
         n = w->Shape()[0];

@@ -18,9 +18,9 @@ using T_MAP = Eigen::TensorMap<T4R>;
 using ArrI4 = Eigen::array<int, 4>;
 public:
     Convolution(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        w = oac->GetVar("W");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        w = oac->get_input(1);
+        y = oac->get_output(0);
         filters = oac->GetAttr<type::int32::T>("filters");
         filters_hw = oac->GetAttr<IntVec>("filters_hw");
         strides = oac->GetAttr<IntVec>("strides");
@@ -109,12 +109,12 @@ using T = typename Tp::T;
 using IntVec = std::vector<type::int32::T>;
 public:
     ConvolutionGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        w = oac->GetVar("W");
-        y = oac->GetVar("Y");
-        dy = oac->GetVar("dY");
-        dw = oac->GetVar("dW");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        w = oac->get_input(1);
+        y = oac->get_input(2);
+        dy = oac->get_input(3);
+        dw = oac->get_output(0);
+        dx = oac->get_output(1);
         filters = oac->GetAttr<type::int32::T>("filters");
         filters_hw = oac->GetAttr<IntVec>("filters_hw");
         strides = oac->GetAttr<IntVec>("strides");

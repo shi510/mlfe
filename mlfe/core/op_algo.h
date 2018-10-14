@@ -63,12 +63,18 @@ private:
 
 class OpAlgoContext{
 using VarPtr = std::shared_ptr<TensorMemRef>;
-using MapVarPtr = std::map<std::string, Tensor>;
+using Tensors = std::vector<Tensor>;
 using Workspace = std::map<std::string, VarPtr>;
 public:
     OpAlgoContext(Device dev, Workspace *ws, OpDesignContext *odc);
 
-    TensorMemRef *GetVar(std::string name);
+    int num_inputs() const;
+
+    int num_outputs() const;
+
+    TensorMemRef *get_input(int idx) const;
+
+    TensorMemRef *get_output(int idx) const;
 
     Device GetDevice();
 
@@ -77,9 +83,10 @@ public:
 
 private:
     Device device;
-    MapVarPtr vars;
     Workspace *ws;
     Attributes attrs;
+    Tensors _inputs;
+    Tensors _outputs;
 };
 
 class OpAlgoRegistry{

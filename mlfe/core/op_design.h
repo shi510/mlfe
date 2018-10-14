@@ -27,15 +27,7 @@ public:
 
     ShapeInferFn ShapeInference() const;
 
-    void MakeContext(OpDesignContext *odc) const;
-
     class Builder;
-protected:
-    bool VerifyContext(OpDesignContext *odc) const;
-
-    bool VerifyIO(OpDesignContext *odc) const;
-
-    bool VerifyAttrs(OpDesignContext *odc) const;
 
 private:
     std::string name;
@@ -64,37 +56,41 @@ private:
 };
 
 class OpDesignContext{
-using VarPair = std::tuple<std::string, Tensor>;
 public:
-    Tensor Input(std::string name) const;
+    OpDesign GetOpDesign() const;
 
-    Tensor Output(std::string name) const;
+    Tensor Input(int idx) const;
+
+    Tensor Output(int idx) const;
 
     template <class AttrType>
     AttrType GetAttr(std::string attr_name) const;
 
-    std::vector<VarPair> AllVars() const;
-
     Attributes AllAttrs() const;
+
+    int NumInput() const;
+
+    int NumOutput() const;
 
     class Builder;
 private:
-    friend class OpDesign;
-    std::unordered_map<std::string, Tensor> inputs;
-    std::unordered_map<std::string, Tensor> outputs;
+    OpDesign od;
+    std::vector<Tensor> inputs;
+    std::vector<Tensor> outputs;
     Attributes attrs;
 };
 
 class OpDesignContext::Builder{
-using VecVarPair = std::vector<VarPair>;
 public:
-    Builder &Input(VecVarPair xs);
+    Builder(OpDesign od);
 
-    Builder &Input(VarPair x);
+    Builder &Input(Tensor x);
 
-    Builder &Output(VecVarPair ys);
+    Builder &Input(std::vector<Tensor> xs);
 
-    Builder &Output(VarPair y);
+    Builder &Output(Tensor y);
+
+    Builder &Output(std::vector<Tensor> ys);
 
     Builder &Attr(Attributes attrs);
 

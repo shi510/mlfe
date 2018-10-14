@@ -68,23 +68,39 @@ OpAlgoSchema OASB::Finish(){
 OpAlgoContext::OpAlgoContext(Device dev, Workspace *ws, OpDesignContext *odc){
     this->device = dev;
     this->ws = ws;
-    auto vars = odc->AllVars();
-    for(auto var_pair : vars){
-        this->vars[std::get<0>(var_pair)] = std::get<1>(var_pair);
-    }
     attrs = odc->AllAttrs();
-}
-
-TensorMemRef *OpAlgoContext::GetVar(std::string name){
-    if(vars.count(name) <= 0){
-        throw std::string("OpAlgoContext::GetVar - Not found for ") + name;
+    for(int n = 0; n < odc->NumInput(); ++n){
+        _inputs.push_back(odc->Input(n));
     }
-
-    return ws->find(vars[name].Name())->second.get();
+    for(int n = 0; n < odc->NumOutput(); ++n){
+        _outputs.push_back(odc->Output(n));
+    }
 }
 
 Device OpAlgoContext::GetDevice(){
     return device;
+}
+
+int OpAlgoContext::num_inputs() const{
+    return _inputs.size();
+}
+
+int OpAlgoContext::num_outputs() const{
+    return _outputs.size();
+}
+
+TensorMemRef *OpAlgoContext::get_input(int idx) const{
+    if(_inputs.size() <= idx){
+        throw std::string("OpAlgoContext::get_input - index too large.");
+    }
+    return ws->find(_inputs[idx].Name())->second.get();
+}
+
+TensorMemRef *OpAlgoContext::get_output(int idx) const{
+    if(_outputs.size() <= idx){
+        throw std::string("OpAlgoContext::get_output - index too large.");
+    }
+    return ws->find(_outputs[idx].Name())->second.get();
 }
 
 using OAR = OpAlgoRegistry;

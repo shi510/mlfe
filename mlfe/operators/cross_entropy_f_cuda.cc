@@ -12,9 +12,9 @@ class SigmoidCrossEntropy : public OpAlgo{
 using T = typename Tp::T;
 public:
     SigmoidCrossEntropy(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        t = oac->GetVar("Target");
-        loss = oac->GetVar("Loss");
+        x = oac->get_input(0);
+        t = oac->get_input(1);
+        loss = oac->get_output(0);
 
         m = x->Shape()[0];
         n = x->Shape()[1];
@@ -57,10 +57,10 @@ class SigmoidCrossEntropyGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     SigmoidCrossEntropyGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        t = oac->GetVar("Target");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        t = oac->get_input(1);
+        dy = oac->get_input(2);
+        dx = oac->get_output(0);
         m = x->Shape()[0];
         n = x->Shape()[1];
     }
@@ -105,9 +105,9 @@ class SoftmaxCrossEntropyWithLabel : public OpAlgo{
 using T = typename Tp::T;
 public:
     SoftmaxCrossEntropyWithLabel(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        t = oac->GetVar("Target");
-        loss = oac->GetVar("Loss");
+        x = oac->get_input(0);
+        t = oac->get_input(1);
+        loss = oac->get_output(0);
 
         m = x->Shape()[0];
         n = x->Shape()[1];
@@ -207,10 +207,10 @@ class SoftmaxCrossEntropyWithLabelGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     SoftmaxCrossEntropyWithLabelGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        t = oac->GetVar("Target");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        t = oac->get_input(1);
+        dy = oac->get_input(2);
+        dx = oac->get_output(0);
         m = x->Shape()[0];
         n = x->Shape()[1];
         size = m * n;

@@ -20,9 +20,9 @@ REGIST_OP(Convolution)
     .Attr("pads", "int32s")
     .ShapeInference([](OpDesignContext * odc){
         using IntVec = std::vector<type::int32::T>;
-        auto x = odc->Input("X");
-        auto w = odc->Input("W");
-        auto y = odc->Output("Y");
+        auto x = odc->Input(0);
+        auto w = odc->Input(1);
+        auto y = odc->Output(0);
         auto filters = odc->GetAttr<type::int32::T>("filters");
         auto filters_hw = odc->GetAttr<IntVec>("filters_hw");
         auto strides = odc->GetAttr<IntVec>("strides");
@@ -50,10 +50,10 @@ REGIST_OP_GRAD(Convolution)
     .Output("dW", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto w = odc->Input("W");
-        auto dw = odc->Output("dW");
-        auto dx = odc->Output("dX");
+        auto x = odc->Input(0);
+        auto w = odc->Input(1);
+        auto dw = odc->Output(0);
+        auto dx = odc->Output(1);
         dw.Reshape(w.Shape(), type::float32());
         dx.Reshape(x.Shape(), type::float32());
     })
@@ -64,31 +64,28 @@ public:
     ConvolutionGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    GradientHelper::HelperOut Get(Tensor dy) override{
+    TensorUmap compute_gradient(Tensor y, 
+                                Tensor dy
+                               ) override{
         using IntVec = std::vector<type::int32::T>;
-        Tensor x = odc->Input("X");
-        Tensor w = odc->Input("W");
-        Tensor y = odc->Output("Y");
+        TensorUmap gpair;
+        Tensor x = y.get_children()[0];
+        Tensor w = y.get_children()[1];
         Tensor dw, dx;
-        GradientHelper::GradientPairs pairs;
 
-        auto dep = OpDependency::Builder("ConvolutionGradient")
-            .Input(std::make_tuple("X", x))
-            .Input(std::make_tuple("W", w))
-            .Input(std::make_tuple("Y", y))
-            .Input(std::make_tuple(Gradient("Y"), dy))
-            .Output(std::make_tuple(Gradient("W"), dw))
-            .Output(std::make_tuple(Gradient("X"), dx))
-            .Attr({ "filters", odc->GetAttr<type::int32::T>("filters") })
-            .Attr({ "filters_hw", odc->GetAttr<IntVec>("filters_hw") })
-            .Attr({ "strides", odc->GetAttr<IntVec>("strides") })
-            .Attr({ "pads", odc->GetAttr<IntVec>("pads") })
+        dep = OpDependency::Builder("ConvolutionGradient")
+            .Input(x).Input(w).Input(y).Input(dy)
+            .Output(dw).Output(dx)
+            .Attr({"filters", odc->GetAttr<type::int32::T>("filters")})
+            .Attr({"filters_hw", odc->GetAttr<IntVec>("filters_hw")})
+            .Attr({"strides", odc->GetAttr<IntVec>("strides")})
+            .Attr({"pads", odc->GetAttr<IntVec>("pads")})
             .Finish();
 
-        dx = Tensor::DependencyAdder(dep);
-        pairs.push_back({ w, dw });
+        gpair[x] = dx;
+        gpair[w] = dw;
 
-        return std::make_tuple(dx, pairs);
+        return gpair;
     }
 };
 
@@ -105,9 +102,8 @@ Tensor Conv(Tensor x,
     Tensor y;
 
     auto dep = OpDependency::Builder("Convolution")
-        .Input(std::make_tuple("X", x))
-        .Input(std::make_tuple("W", w))
-        .Output(std::make_tuple("Y", y))
+        .Input(x).Input(w)
+        .Output(y)
         .Attr({ "filters", filters })
         .Attr({ "filters_hw", filters_hw })
         .Attr({ "strides", strides })
@@ -115,6 +111,9 @@ Tensor Conv(Tensor x,
         .Finish();
 
     y = Tensor::DependencyAdder(dep);
+
+    y.add_child(x);
+    y.add_child(w);
 
     return y;
 }

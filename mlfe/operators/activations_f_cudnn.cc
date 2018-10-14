@@ -15,8 +15,8 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         std::vector<int> shape(4);
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x->Shape().size(); ++n){
             shape[n] = x->Shape()[n];
@@ -76,10 +76,10 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         std::vector<int> shape(4);
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        y = oac->get_input(1);
+        dy = oac->get_input(2);
+        dx = oac->get_output(0);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x->Shape().size(); ++n){
             shape[n] = x->Shape()[n];
@@ -152,8 +152,8 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         std::vector<int> shape(4);
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x->Shape().size(); ++n){
             shape[n] = x->Shape()[n];
@@ -216,10 +216,10 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         std::vector<int> shape(4);
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        y = oac->get_input(1);
+        dy = oac->get_input(2);
+        dx = oac->get_output(0);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x->Shape().size(); ++n){
             shape[n] = x->Shape()[n];

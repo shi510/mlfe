@@ -24,53 +24,6 @@ OD::ShapeInferFn OD::ShapeInference() const{
     return shape_fn;
 }
 
-void OD::MakeContext(OpDesignContext *odc) const{
-    try{
-        VerifyContext(odc);
-    }
-    catch(std::string &e){
-        throw e;
-    }
-    shape_fn(odc);
-}
-
-bool OD::VerifyContext(OpDesignContext *odc) const{
-    try{
-        VerifyIO(odc);
-        VerifyAttrs(odc);
-    }
-    catch(std::string &e){
-        throw e;
-    }
-    return true;
-}
-
-bool OD::VerifyIO(OpDesignContext *odc) const{
-    const std::string err_msg = "OpDesign::VerifyIO - "
-        "Failed to find the variable. -> ";
-    for(int n = 0; n < inputs.size(); ++n){
-        if(odc->inputs.count(inputs[n].first) <= 0){
-            throw err_msg + inputs[n].first;
-        }
-    }
-    for(int n = 0; n < outputs.size(); ++n){
-        if(odc->outputs.count(outputs[n].first) <= 0){
-            throw err_msg + outputs[n].first;
-        }
-    }
-    return true;
-}
-
-bool OD::VerifyAttrs(OpDesignContext *odc) const{
-    const std::string err_msg = "OpDesign::VerifyAttrs - "
-        "Failed to find the attribute. -> ";
-    for(int n = 0; n < attrs.size(); ++n){
-        if(!odc->attrs.Has(attrs[n].first)){
-            throw err_msg + attrs[n].first;
-        }
-    }
-}
-
 using OB = OD::Builder;
 
 OB::Builder(std::string name){
@@ -104,79 +57,61 @@ OpDesign OB::Finish() const{
 
 using ODC = OpDesignContext;
 
-Tensor ODC::Input(std::string name) const{
-    if(inputs.count(name) <= 0){
+OpDesign ODC::GetOpDesign() const{
+    return od;
+}
+
+Tensor ODC::Input(int idx) const{
+    if(inputs.size() < idx){
         throw std::string("OpDesignContext::Input - "
-            "No variable's name. -> ") + name;
+            "too large index");
     }
-    return inputs.find(name)->second;
+    return inputs[idx];
 }
 
-Tensor ODC::Output(std::string name) const{
-    if(outputs.count(name) <= 0){
+Tensor ODC::Output(int idx) const{
+    if(outputs.size() < idx){
         throw std::string("OpDesignContext::Output - "
-            "No variable's name. -> ") + name;
+            "too large index.");
     }
-    return outputs.find(name)->second;
-}
-
-std::vector<ODC::VarPair> ODC::AllVars() const{
-    std::vector<VarPair> vars;
-    for(auto var : inputs){
-        vars.push_back(var);
-    }
-
-    for(auto var : outputs){
-        vars.push_back(var);
-    }
-    return vars;
+    return outputs[idx];
 }
 
 Attributes ODC::AllAttrs() const{
     return attrs;
 }
 
+int ODC::NumInput() const{
+    return inputs.size();
+}
+
+int ODC::NumOutput() const{
+    return outputs.size();
+}
+
 using ODCB = ODC::Builder;
 
-ODCB &ODCB::Input(VecVarPair xs){
-    for(int n = 0; n < xs.size(); ++n){
-        if(odc.inputs.count(std::get<0>(xs[n])) > 0){
-            throw std::string("OpDesignContext::Input - "
-                "Variable's name already exists. -> ") + std::get<0>(xs[n]);
-        }
-        odc.inputs.emplace(std::get<0>(xs[n]), std::get<1>(xs[n]));
-    }
+ODCB::Builder(OpDesign od){
+    odc.od = od;
+}
 
+ODCB &ODCB::Input(std::vector<Tensor> xs){
+    odc.inputs.insert(odc.inputs.end(), xs.begin(), xs.end());
     return *this;
 }
 
-ODCB &ODCB::Input(ODC::VarPair x){
-    if(odc.inputs.count(std::get<0>(x)) > 0){
-        throw std::string("OpDesignContext::Input - "
-            "Variable's name already exists. -> ") + std::get<0>(x);
-    }
-    odc.inputs.emplace(std::get<0>(x), std::get<1>(x));
-
+ODCB &ODCB::Input(Tensor x){
+    odc.outputs.push_back(x);
     return *this;
 }
 
-ODCB &ODCB::Output(VecVarPair ys){
-    for(int n = 0; n < ys.size(); ++n){
-        if(odc.outputs.count(std::get<0>(ys[n])) > 0){
-            throw std::string("OpDesignContext::Output - "
-                "Variable's name already exists. -> ") + std::get<0>(ys[n]);
-        }
-        odc.outputs.emplace(std::get<0>(ys[n]), std::get<1>(ys[n]));
-    }
+ODCB &ODCB::Output(std::vector<Tensor> ys){
+    odc.outputs.insert(odc.outputs.end(), ys.begin(), ys.end());
     return *this;
 }
 
-ODCB &ODCB::Output(ODC::VarPair y){
-    if(odc.outputs.count(std::get<0>(y)) > 0){
-        throw std::string("OpDesignContext::Output - "
-            "Variable's name already exists. -> ") + std::get<0>(y);
-    }
-    odc.outputs.emplace(std::get<0>(y), std::get<1>(y));
+ODCB &ODCB::Output(Tensor y){
+    odc.outputs.push_back(y);
     return *this;
 }
 
@@ -191,6 +126,7 @@ ODCB &ODCB::Attr(Attribution attr){
 }
 
 OpDesignContext ODCB::Finish(){
+    odc.od.ShapeInference()(&odc);
     return odc;
 }
 
@@ -228,4 +164,5 @@ OpDesignRegistry *OpDesignRegistry::Get(){
 OpDesignRegisterer::OpDesignRegisterer(OpDesign os){
     OpDesignRegistry::Get()->Register(os);
 }
+
 } // end namespace mlfe;

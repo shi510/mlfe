@@ -5,10 +5,10 @@
 namespace mlfe{
 using GH = GradientHelper;
 
-GH::GradientHelper(const OpDesignContext *odc) : odc(odc){}
+GH::GradientHelper(const OpDesignContext *odc) : odc(odc), dep(OpDependency::Builder("Unknown").Finish()){}
 
-std::string GH::Gradient(std::string var_name){
-    return "d" + var_name;
+OpDependency GH::get_opdep() const{
+    return dep;
 }
 
 using GHR = GradientHelperRegistry;

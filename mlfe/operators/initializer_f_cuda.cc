@@ -13,7 +13,7 @@ class Constant : public OpAlgo{
 using T = typename Tp::T;
 public:
     Constant(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
+        x = oac->get_input(0);
         value = oac->GetAttr<type::float32::T>("value");
         size = x->Size();
     }
@@ -42,7 +42,7 @@ class Normal : public OpAlgo{
 using T = typename Tp::T;
 public:
     Normal(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
+        x = oac->get_input(0);
         std = oac->GetAttr<type::float32::T>("std");
         clip = oac->GetAttr<bool>("clip");
         size = x->Size();
@@ -77,7 +77,7 @@ class Xavier : public OpAlgo{
 using T = typename Tp::T;
 public:
     Xavier(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
+        x = oac->get_input(0);
         a = oac->GetAttr<type::int32::T>("a");
         b = oac->GetAttr<type::int32::T>("b");
         size = x->Size();

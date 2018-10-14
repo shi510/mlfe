@@ -4,6 +4,7 @@
 #include "op_dep.h"
 #include "device.h"
 #include "tensor.h"
+#include "graph.h"
 #include "tensor_mem_ref.h"
 #include "../optimizers/optimizer.h"
 #include <vector>
@@ -78,7 +79,7 @@ void Evaluator::Run(optimizer::AppliedOptimizer ao,
                    )
 {
     Init(&ao);
-    auto &runner = target_algos[ao.InputGrad().Name()];
+    auto &runner = target_algos[ao.Target().Name() + "ForOpt"];
     for(auto feed : feed_input){
         auto ref = tensor_refs[std::get<0>(feed).Name()];
         auto from = reinterpret_cast<type::uint8::T *>(std::get<1>(feed).data());

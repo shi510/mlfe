@@ -12,8 +12,8 @@ class ReduceMean : public OpAlgo{
 using T = typename Tp::T;
 public:
     ReduceMean(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
         size = x->Size();
     }
 
@@ -45,9 +45,9 @@ class ReduceMeanGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     ReduceMeanGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        x = oac->get_input(0);
+        dy = oac->get_input(1);
+        dx = oac->get_output(0);
         size = x->Size();
         scale = T(1) / T(size);
     }

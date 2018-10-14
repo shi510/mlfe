@@ -11,9 +11,9 @@ REGIST_OP(Dropout)
     .Attr("dropout_ratio", "float32")
     .Attr("is_training_step", "bool")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto y = odc->Output("Y");
-        auto mask = odc->Output("Mask");
+        auto x = odc->Input(0);
+        auto y = odc->Output(0);
+        auto mask = odc->Output(1);
         y.Reshape(x.Shape(), type::float32());
         mask.Reshape(x.Shape(), type::float32());
     })
@@ -27,8 +27,8 @@ REGIST_OP_GRAD(Dropout)
     .Output("dX", "float32")
     .Attr("dropout_ratio", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto dx = odc->Output("dX");
+        auto x = odc->Input(0);
+        auto dx = odc->Output(0);
         dx.Reshape(x.Shape(), type::float32());
     })
     .Finish();
@@ -38,25 +38,23 @@ public:
     DropoutGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    GradientHelper::HelperOut Get(Tensor dy) override{
-        Tensor x = odc->Input("X");
-        Tensor y = odc->Output("Y");
-        Tensor mask = odc->Output("Mask");
+    TensorUmap compute_gradient(Tensor y, 
+                                Tensor dy
+                               ) override{
+        TensorUmap gpair;
+        Tensor x = odc->Input(0);
+        Tensor mask = odc->Output(1);
         Tensor dx;
-        GradientHelper::GradientPairs pairs;
 
-        auto dep = OpDependency::Builder("DropoutGradient")
-            .Input(std::make_tuple("X", x ))
-            .Input(std::make_tuple("Y", y))
-            .Input(std::make_tuple("Mask", mask))
-            .Input(std::make_tuple(Gradient("Y"), dy))
-            .Output(std::make_tuple(Gradient("X"), dx))
-            .Attr({ "dropout_ratio", odc->GetAttr<float>("dropout_ratio") })
+        dep = OpDependency::Builder("DenseGradient")
+            .Input(x).Input(y).Input(mask).Input(dy)
+            .Output(dx)
+            .Attr({"dropout_ratio", odc->GetAttr<float>("dropout_ratio")})
             .Finish();
 
-        dx = Tensor::DependencyAdder(dep);
+        gpair[x] = dx;
 
-        return std::make_tuple(dx, pairs);
+        return gpair;
     }
 };
 
@@ -66,14 +64,15 @@ Tensor Dropout(Tensor x, type::float64::T probability, bool is_training){
     Tensor y, dropout_mask;
 
     auto dep = OpDependency::Builder("Dropout")
-        .Input(std::make_tuple("X", x))
-        .Output(std::make_tuple("Y", y))
-        .Output(std::make_tuple("Mask", dropout_mask))
+        .Input(x)
+        .Output(y)
+        .Output(dropout_mask)
         .Attr({ "dropout_ratio", float(probability) })
         .Attr({ "is_training_step", is_training })
         .Finish();
 
     y = Tensor::DependencyAdder(dep);
+    y.add_child(x);
 
     return y;
 }

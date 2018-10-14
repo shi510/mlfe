@@ -12,9 +12,9 @@ class Dropout : public OpAlgo{
 using T = typename Tp::T;
 public:
     Dropout(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
-        mask = oac->GetVar("Mask");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
+        mask = oac->get_output(1);
         drop_ratio = oac->GetAttr<T>("dropout_ratio");
         training = oac->GetAttr<bool>("is_training_step");
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
@@ -59,9 +59,9 @@ class DropoutGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     DropoutGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
-        mask = oac->GetVar("Mask");
+        mask = oac->get_input(2);
+        dy = oac->get_input(3);
+        dx = oac->get_output(0);
         drop_ratio = oac->GetAttr<T>("dropout_ratio");
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
         size = dy->Size();

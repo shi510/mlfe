@@ -11,8 +11,7 @@ class Tensor;
 class Attribution;
 
 class OpDependency{
-using VarPair = std::tuple<std::string, Tensor>;
-using VecVarPair = std::vector<VarPair>;
+using Tensors = std::vector<Tensor>;
 
 public:
     OpDependency(OpDesignContext *odc);
@@ -21,9 +20,9 @@ public:
 
     std::string UniqueName() const;
 
-    VecVarPair Inputs() const;
+    Tensors Inputs() const;
 
-    VecVarPair Outputs() const;
+    Tensors Outputs() const;
 
     OpDesignContext *Context() const;
 
@@ -40,9 +39,9 @@ class OpDependency::Builder{
 public:
     Builder(std::string op_name);
 
-    Builder &Input(VarPair pair);
+    Builder &Input(Tensor x);
 
-    Builder &Output(VarPair pair);
+    Builder &Output(Tensor y);
 
     Builder &Attr(Attribution attr);
 

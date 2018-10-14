@@ -9,8 +9,8 @@ REGIST_OP(Reshape)
     .Output("Y", "float32")
     .Attr("shape", "int32s")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto y = odc->Output("Y");
+        auto x = odc->Input(0);
+        auto y = odc->Output(0);
         auto shape = odc->GetAttr<std::vector<type::int32::T>>("shape");
         y.Reshape(shape, type::float32());
     })
@@ -21,8 +21,8 @@ REGIST_OP_GRAD(Reshape)
     .Input("dY", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto dx = odc->Output("dX");
+        auto x = odc->Input(0);
+        auto dx = odc->Output(0);
         dx.Reshape(x.Shape(), type::float32());
     })
     .Finish();
@@ -32,20 +32,22 @@ public:
     ReshapeGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    GradientHelper::HelperOut Get(Tensor dy) override{
-        Tensor x = odc->Input("X");
+    TensorUmap compute_gradient(Tensor y, 
+                                Tensor dy
+                               ) override{
+        TensorUmap gpair;
+        Tensor x = odc->Input(0);
         Tensor dx;
-        GradientHelper::GradientPairs pairs;
 
-        auto dep = OpDependency::Builder("ReshapeGradient")
-            .Input(std::make_tuple("X", x))
-            .Input(std::make_tuple(Gradient("Y"), dy))
-            .Output(std::make_tuple(Gradient("X"), dx))
+        dep = OpDependency::Builder("ReshapeGradient")
+            .Input(x)
+            .Input(dy)
+            .Output(dx)
             .Finish();
 
-        dx = Tensor::DependencyAdder(dep);
+        gpair[x] = dx;
 
-        return std::make_tuple(dx, pairs);
+        return gpair;
     }
 };
 
@@ -55,12 +57,13 @@ Tensor Reshape(Tensor x, std::vector<type::int32::T> shape){
     Tensor y;
 
     auto dep = OpDependency::Builder("Reshape")
-        .Input(std::make_tuple("X", x))
-        .Output(std::make_tuple("Y", y))
+        .Input(x)
+        .Output(y)
         .Attr({ "shape", shape })
         .Finish();
 
     y = Tensor::DependencyAdder(dep);
+    y.add_child(x);
 
     return y;
 }

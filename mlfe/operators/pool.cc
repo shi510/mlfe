@@ -15,9 +15,9 @@ REGIST_OP(MaxPool)
     .Attr("pads", "int32s")
     .ShapeInference([](OpDesignContext * odc){
         using IntVec = std::vector<type::int32::T>;
-        auto x = odc->Input("X");
-        auto idx = odc->Output("IDX");
-        auto y = odc->Output("Y");
+        auto x = odc->Input(0);
+        auto idx = odc->Output(0);
+        auto y = odc->Output(1);
         auto filters_hw = odc->GetAttr<IntVec>("filters_hw");
         auto strides = odc->GetAttr<IntVec>("strides");
         auto pads = odc->GetAttr<IntVec>("pads");
@@ -36,8 +36,8 @@ REGIST_OP_GRAD(MaxPool)
     .Input("dY", "float32")
     .Output("dX", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input("X");
-        auto dx = odc->Output("dX");
+        auto x = odc->Input(0);
+        auto dx = odc->Output(0);
         dx.Reshape(x.Shape(), type::float32());
     })
     .Finish();
@@ -47,28 +47,26 @@ public:
     MaxPoolGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    GradientHelper::HelperOut Get(Tensor dy) override{
+    TensorUmap compute_gradient(Tensor y, 
+                                Tensor dy
+                               ) override{
         using IntVec = std::vector<type::int32::T>;
-        Tensor x = odc->Input("X");
-        Tensor idx = odc->Output("IDX");
-        Tensor y = odc->Output("Y");
+        TensorUmap gpair;
+        Tensor x = odc->Input(0);
+        Tensor idx = odc->Output(0);
         Tensor dx;
-        GradientHelper::GradientPairs pairs;
 
-        auto dep = OpDependency::Builder("MaxPoolGradient")
-            .Input(std::make_tuple("X", x))
-            .Input(std::make_tuple("IDX", idx))
-            .Input(std::make_tuple("Y", y))
-            .Input(std::make_tuple(Gradient("Y"), dy))
-            .Output(std::make_tuple(Gradient("X"), dx))
-            .Attr({ "filters_hw", odc->GetAttr<IntVec>("filters_hw") })
-            .Attr({ "strides", odc->GetAttr<IntVec>("strides") })
-            .Attr({ "pads", odc->GetAttr<IntVec>("pads") })
+        dep = OpDependency::Builder("MaxPoolGradient")
+            .Input(x).Input(idx).Input(y).Input(dy)
+            .Output(dx)
+            .Attr({"filters_hw", odc->GetAttr<IntVec>("filters_hw")})
+            .Attr({"strides", odc->GetAttr<IntVec>("strides")})
+            .Attr({"pads", odc->GetAttr<IntVec>("pads")})
             .Finish();
 
-        dx = Tensor::DependencyAdder(dep);
+        gpair[x] = dx;
 
-        return std::make_tuple(dx, pairs);
+        return gpair;
     }
 };
 
@@ -82,9 +80,9 @@ Tensor MaxPool(Tensor x,
     Tensor idx, y;
 
     auto dep = OpDependency::Builder("MaxPool")
-        .Input(std::make_tuple("X", x))
-        .Output(std::make_tuple("IDX", idx))
-        .Output(std::make_tuple("Y", y))
+        .Input(x)
+        .Output(idx)
+        .Output(y)
         .Attr({ "filters_hw", filters_hw })
         .Attr({ "strides", strides })
         .Attr({ "pads", pads })
@@ -92,7 +90,10 @@ Tensor MaxPool(Tensor x,
 
     y = Tensor::DependencyAdder(dep);
 
+    y.add_child(x);
+
     return y;
 }
+
 } // end namespace functional
 } // end namespace mlfe

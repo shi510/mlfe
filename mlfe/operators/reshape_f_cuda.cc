@@ -9,8 +9,8 @@ class Reshape : public OpAlgo{
 using T = typename Tp::T;
 public:
     Reshape(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
     }
 
     // TODO : Do not use Copy.
@@ -37,8 +37,8 @@ class ReshapeGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     ReshapeGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
+        dy = oac->get_input(1);
+        dx = oac->get_output(0);
     }
 
     // TODO : Do not use Copy.

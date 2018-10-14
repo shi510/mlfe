@@ -10,9 +10,9 @@ class AdaDelta : public OpAlgo{
 using T = typename Tp::T;
 public:
     AdaDelta(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        dx = oac->GetVar("dX");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        dx = oac->get_input(1);
+        y = oac->get_output(0);
         lr = oac->GetAttr<T>("LearningRate");
         mr = oac->GetAttr<T>("MomentumRate");
         eps = oac->GetAttr<T>("Epsilon");

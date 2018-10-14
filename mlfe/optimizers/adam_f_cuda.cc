@@ -11,9 +11,9 @@ class Adam : public OpAlgo{
 using T = typename Tp::T;
 public:
     Adam(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        dx = oac->GetVar("dX");
-        y = oac->GetVar("Y");
+        x = oac->get_input(0);
+        dx = oac->get_input(1);
+        y = oac->get_output(0);
         lr = oac->GetAttr<T>("LearningRate");
         beta1 = oac->GetAttr<T>("Beta1");
         beta2 = oac->GetAttr<T>("Beta2");

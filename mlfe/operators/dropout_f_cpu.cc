@@ -11,9 +11,9 @@ class Dropout : public OpAlgo{
 using T = typename Tp::T;
 public:
     Dropout(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->GetVar("X");
-        y = oac->GetVar("Y");
-        mask = oac->GetVar("Mask");
+        x = oac->get_input(0);
+        y = oac->get_output(0);
+        mask = oac->get_output(1);
         drop_ratio = oac->GetAttr<T>("dropout_ratio");
         training = oac->GetAttr<bool>("is_training_step");
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
@@ -47,9 +47,8 @@ private:
 
 REGIST_OP_ALGO(Dropout)
     .Input("X", type::float32::string)
-    .Input("W", type::float32::string)
-    .Input("B", type::float32::string)
     .Output("Y", type::float32::string)
+    .Output("Mask", type::float32::string)
     .Device(Device::CPU::string)
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
         using T = Dropout<Device::CPU, type::float32>;
@@ -62,9 +61,9 @@ class DropoutGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     DropoutGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        dy = oac->GetVar("dY");
-        dx = oac->GetVar("dX");
-        mask = oac->GetVar("Mask");
+        mask = oac->get_input(2);
+        dy = oac->get_input(3);
+        dx = oac->get_output(0);
         drop_ratio = oac->GetAttr<T>("dropout_ratio");
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
         size = dy->Size();
@@ -92,6 +91,7 @@ private:
 REGIST_OP_GRAD_ALGO(Dropout)
     .Input("X", type::float32::string)
     .Input("Y", type::float32::string)
+    .Input("Mask", type::float32::string)
     .Input("dY", type::float32::string)
     .Output("dX", type::float32::string)
     .Device(Device::CPU::string)
