@@ -55,12 +55,6 @@ OASB &OASB::CreatorFn(OAS::OpAlgoCreator fn){
 
 OpAlgoSchema OASB::Finish(){
     oas.name = "Name:" + oas.name;
-    for(auto in : oas.inputs){
-        oas.name += "/In:" + in.second;
-    }
-    for(auto out : oas.outputs){
-        oas.name += "/Out:" + out.second;
-    }
     oas.name += "/Device:" + oas.device;
     return oas;
 }

@@ -1,6 +1,5 @@
 #include "optimizer.h"
 #include "../core/graph.h"
-#include "../core/autodiff.h"
 #include "../operators/initializer.h"
 #include "../operators/basic_arithmetics.h"
 #include <algorithm>

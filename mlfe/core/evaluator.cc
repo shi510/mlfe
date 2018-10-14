@@ -96,13 +96,6 @@ Evaluator::FindOpAlgo(std::vector<OpDependency> deps){
             OpAlgoContext oac(d, &tensor_refs, dep.Context());
             std::stringstream ss;
             ss << "Name:" << dep.Name();
-            for(auto in : dep.Inputs()){
-                ss << "/In:" << in.Type().type;
-            }
-
-            for(auto out : dep.Outputs()){
-                ss << "/Out:" << out.Type().type;
-            }
             if(d.Name() != Device::CPU::string){
                 auto try_cudnn = ss.str() + "/Device:" + Device::CUDA::string_cudnn;
                 if(Device::CUDA::enable_cudnn){
@@ -136,12 +129,6 @@ void Evaluator::InitAllVariable(std::vector<OpDependency> deps){
                 OpAlgoContext oac(d, &tensor_refs, init_dep.Context());
                 std::stringstream ss;
                 ss << "Name:" << init_dep.Name();
-                for(auto in : init_dep.Inputs()){
-                    ss << "/In:" << in.Type().type;
-                }
-                for(auto out : init_dep.Outputs()){
-                    ss << "/Out:" << out.Type().type;
-                }
                 if(d.Name() == Device::CUDA::string_cudnn ||
                     d.Name() == Device::CUDA::string){
                     ss << "/Device:" << Device::CUDA::string;
