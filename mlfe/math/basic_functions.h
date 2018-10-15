@@ -4,6 +4,12 @@
 namespace mlfe{ namespace math{
 
 template <class T, class Dev>
+void squared_difference(const int size,
+                        const T *x1_ptr,
+                        const T *x2_ptr,
+                        T *y_ptr);
+
+template <class T, class Dev>
 void rowwise_max(const int m,
                  const int n,
                  const T *a_ptr,

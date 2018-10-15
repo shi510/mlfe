@@ -5,6 +5,26 @@
 namespace mlfe{ namespace math{
 
 template <>
+void squared_difference<float, CPUContext>(const int size,
+                                           const float *x1_ptr,
+                                           const float *x2_ptr,
+                                           float *y_ptr){
+    for(int n = 0; n < size; ++n){
+        y_ptr[n] = std::pow(x1_ptr[n] - x2_ptr[n], 2);
+    }
+}
+
+template <>
+void squared_difference<double, CPUContext>(const int size,
+                                            const double *x1_ptr,
+                                            const double *x2_ptr,
+                                            double *y_ptr){
+    for(int n = 0; n < size; ++n){
+        y_ptr[n] = std::pow(x1_ptr[n] - x2_ptr[n], 2);
+    }
+}
+
+template <>
 void rowwise_max<float, CPUContext>(const int m,
                                     const int n,
                                     const float *a_ptr,

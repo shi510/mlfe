@@ -5,6 +5,35 @@
 
 namespace mlfe{ namespace math{
 
+
+template <class T> __global__
+void squared_difference_kernel(const int size,
+                               const T *x1_ptr,
+                               const T *x2_ptr,
+                               T *y_ptr){
+    CUDA_1D_KERNEL_LOOP(n, size){
+        y_ptr[n] = std::pow(x1_ptr[n] - x2_ptr[n], 2);
+    }
+}
+
+template <>
+void squared_difference<float, CUDAContext>(const int size,
+                                            const float *x1_ptr,
+                                            const float *x2_ptr,
+                                            float *y_ptr){
+    squared_difference_kernel<<<CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, x1_ptr, x2_ptr, y_ptr);
+}
+
+template <>
+void squared_difference<double, CUDAContext>(const int size,
+                                             const double *x1_ptr,
+                                             const double *x2_ptr,
+                                             double *y_ptr){
+    squared_difference_kernel<<<CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, x1_ptr, x2_ptr, y_ptr);
+}
+
 template <class DataType> __global__
 void rowwise_max_kernel(const int rows,
                         const int cols,
