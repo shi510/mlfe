@@ -11,9 +11,9 @@ REGIST_OP(ElementwiseAdd)
     .Input("X2", "float32")
     .Output("Y", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x1 = odc->Input(0);
-        auto &x2 = odc->Input(1);
-        auto &y = odc->Output(0);
+        auto x1 = odc->Input(0);
+        auto x2 = odc->Input(1);
+        auto y = odc->Output(0);
         if(x1.Size() != x2.Size()){
             throw std::string("ElementwiseAdd : "
                 "the Shape of A and B is not same.");
@@ -29,9 +29,9 @@ REGIST_OP_GRAD(ElementwiseAdd)
     .Output("dX1", "float32")
     .Output("dX2", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &dy = odc->Input(1);
-        auto &dx1 = odc->Output(0);
-        auto &dx2 = odc->Output(1);
+        auto dy = odc->Input(1);
+        auto dx1 = odc->Output(0);
+        auto dx2 = odc->Output(1);
         dx1.Reshape(dy.Shape(), type::float32());
         dx2.Reshape(dy.Shape(), type::float32());
     })
@@ -70,9 +70,9 @@ REGIST_OP(ElementwiseMul)
     .Input("X2", "float32")
     .Output("Y", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x1 = odc->Input(0);
-        auto &x2 = odc->Input(1);
-        auto &y = odc->Output(0);
+        auto x1 = odc->Input(0);
+        auto x2 = odc->Input(1);
+        auto y = odc->Output(0);
         if(x1.Size() != x2.Size()){
             throw std::string("ElementwiseMul : "
                 "the Shape of A and B is not same.");
@@ -88,9 +88,9 @@ REGIST_OP_GRAD(ElementwiseMul)
     .Output("dX1", "float32")
     .Output("dX2", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &dy = odc->Input(2);
-        auto &dx1 = odc->Output(0);
-        auto &dx2 = odc->Output(1);
+        auto dy = odc->Input(2);
+        auto dx1 = odc->Output(0);
+        auto dx2 = odc->Output(1);
         dx1.Reshape(dy.Shape(), type::float32());
         dx2.Reshape(dy.Shape(), type::float32());
     })
@@ -128,8 +128,8 @@ REGIST_OP(AddN)
     .Input("Xs", "float32s")
     .Output("Y", "float32")
     .ShapeInference([](OpDesignContext * odc){
-        auto &x1 = odc->Input(0);
-        auto &c = odc->Output(0);
+        auto x1 = odc->Input(0);
+        auto c = odc->Output(0);
         int num = odc->NumInput();
         for(int n = 1; n < num; ++n){
             if(x1.Size() != odc->Input(n).Size()){
@@ -145,7 +145,7 @@ REGIST_OP_GRAD(AddN)
     .Input("dY", "float32")
     .Output("dXs", "float32s")
     .ShapeInference([](OpDesignContext * odc){
-        auto &dy = odc->Input(0);
+        auto dy = odc->Input(0);
         for(int n = 0; n < odc->NumOutput(); ++n){
             Tensor d = odc->Output(n);
             d.Reshape(dy.Shape(), type::float32());
@@ -285,7 +285,7 @@ Tensor add_n(std::vector<Tensor> xs){
 
 #define DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(OpName, Expr) \
 template <>                                               \
-Tensor operator##Expr<Tensor>(Tensor a, Tensor b){        \
+Tensor operator Expr<Tensor>(Tensor a, Tensor b){        \
     return functional::OpName(a, b);                      \
 }
 
@@ -295,5 +295,3 @@ DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(Mul, *)
 DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(Div, /)
 
 } // end namespace mlfe
-
-

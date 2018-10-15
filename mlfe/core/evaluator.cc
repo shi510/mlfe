@@ -1,5 +1,6 @@
 #include "evaluator.h"
 #include "graph.h"
+#include <algorithm>
 
 namespace mlfe{
 
