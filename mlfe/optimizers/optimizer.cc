@@ -29,7 +29,7 @@ Optimizer::TensorPairs Optimizer::compute_gradient(const Tensor root){
             auto helper = GradientHelperRegistry::Get();
             auto op_grad = helper->GetHelper(op_name, var.get_dep().Context());
             //add all partial gradients and propagate down.
-            auto dy = functional::Add(dy_collector[var]);
+            auto dy = functional::add_n(dy_collector[var]);
             auto input_grad = op_grad->compute_gradient(var, dy);
             for(auto &it : input_grad){
                 dy_collector[it.first].push_back(it.second);
