@@ -120,7 +120,7 @@ void col2im<float, CUDAContext>(float* data_col,
     ) {
     int height_col = (height + 2 * pad - ksize) / stride + 1;
     int width_col = (width + 2 * pad - ksize) / stride + 1;
-    const int num_kernel = channels * height_col * width_col;
+    const int num_kernel = channels * height * width;
     col2im_kernel<float><<<CUDA_CONTEXT_GET_BLOCKS(num_kernel),
         CUDA_CONTEXT_NUM_THREADS>>>(
             num_kernel, data_col, 
