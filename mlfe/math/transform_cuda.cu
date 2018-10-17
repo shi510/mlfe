@@ -65,6 +65,7 @@ void im2col<float, CUDAContext>(const int channel,
             );
 }
 
+//referenced from https://github.com/OpenHero/im2col/blob/master/src/col2im.cu
 template <typename DataType>
 __global__ void col2im_kernel(const int n, const DataType* data_col,
     const int height, const int width,
@@ -88,20 +89,12 @@ __global__ void col2im_kernel(const int n, const DataType* data_col,
         int w_col_end = min(w / stride_w + 1, width_col);
         int h_col_start = (h < dpatch_h) ? 0 : (h - dpatch_h) / stride_h + 1;
         int h_col_end = min(h / stride_h + 1, height_col);
-
-        for (int h_col = h_col_start; h_col < h_col_end; ++h_col) {
-            for (int w_col = w_col_start; w_col < w_col_end; ++w_col) {
-                int h_k = (h - h_col * stride_h);
-                int w_k = (w - w_col * stride_w);
-                if (h_k % dilation_h == 0 && w_k % dilation_w == 0) {
-                    h_k /= dilation_h;
-                    w_k /= dilation_w;
-                    int data_col_index =
-                        (((c * patch_h + h_k) * patch_w + w_k) * height_col + h_col) *
-                        width_col +
-                        w_col;
-                    val += data_col[data_col_index];
-                }
+        int offset = (c * dpatch_h * dpatch_w + h * dpatch_h + w) * height_col * width_col;
+        int coeff_h_col = (1 - stride_h * dpatch_h * height_col) * width_col;
+        int coeff_w_col = (1 - stride_w * height_col * width_col);
+        for(int h_col = h_col_start; h_col < h_col_end; ++h_col) {
+            for(int w_col = w_col_start; w_col < w_col_end; ++w_col) {
+                val += data_col[offset + h_col * coeff_h_col + w_col * coeff_w_col];
             }
         }
         data_im[index] = val;
