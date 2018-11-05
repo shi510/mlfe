@@ -1,5 +1,5 @@
 #include "dropout.h"
-#include "../core/op_dep.h"
+#include "../core/op_algo.h"
 #include "../core/gradient_helper.h"
 
 namespace mlfe{ namespace functional{
@@ -42,15 +42,16 @@ public:
                                 Tensor dy
                                ) override{
         TensorUmap gpair;
-        Tensor x = odc->Input(0);
-        Tensor mask = odc->Output(1);
-        Tensor dx;
-
-        dep = OpDependency::Builder("DenseGradient")
-            .Input(x).Input(y).Input(mask).Input(dy)
-            .Output(dx)
-            .Attr({"dropout_ratio", odc->GetAttr<float>("dropout_ratio")})
-            .Finish();
+        Tensor x = y.get_children()[0];
+        Tensor prob = y.get_children()[1];
+        Tensor mask = y.get_children()[2];
+        Tensor dx = functional::variable(x.Shape());
+        OpAlgoContext ctx("DenseGradient");
+        dx.add_child(x);
+        dx.add_child(prob);
+        dx.add_child(mask);
+        dx.add_child(dy);
+        Tensor::AssignOpFunctor(dx, ctx);
 
         gpair[x] = dx;
 
@@ -60,19 +61,14 @@ public:
 
 REGIST_GRADIENT_HELPER(Dropout, DropoutGradient)
 
-Tensor Dropout(Tensor x, type::float64::T probability, bool is_training){
-    Tensor y, dropout_mask;
-
-    auto dep = OpDependency::Builder("Dropout")
-        .Input(x)
-        .Output(y)
-        .Output(dropout_mask)
-        .Attr({ "dropout_ratio", float(probability) })
-        .Attr({ "is_training_step", is_training })
-        .Finish();
-
-    y = Tensor::DependencyAdder(dep);
+Tensor Dropout(Tensor x, Tensor prob){
+    Tensor y = functional::variable(x.Shape());
+    Tensor dropout_mask = functional::variable(x.Shape());
+    OpAlgoContext ctx("Dropout");
     y.add_child(x);
+    y.add_child(prob);
+    y.add_child(dropout_mask);
+    Tensor::AssignOpFunctor(y, ctx);
 
     return y;
 }

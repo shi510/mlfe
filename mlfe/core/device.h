@@ -2,129 +2,78 @@
 #define __DEVICE_HPP__
 #include "../utils/types.h"
 #include <memory>
+#include <vector>
 
 namespace mlfe{
 
-class DeviceMemory;
+struct device{
+    virtual std::string get_device_name() const = 0;
 
-class Device final{
-private:
-    struct DeviceType{};
-public:
-    template <class Dev>
-    class Select;
-
-    struct CUDA final : DeviceType{
-        static bool enable_cudnn;
-        static const char *string;
-        static const char *string_cudnn;
-    };
-
-    struct CPU final : DeviceType{
-        static const char *string;
-    };
-
-    template <class Dev>
-    Device(Select<Dev> s);
-
-    Device() = default;
-
-    DeviceMemory CreateDeviceMemory() const;
-
-    std::string Name() const;
-
-    template <class From, class To>
-    static void Copy(const DeviceMemory from, DeviceMemory to);
-
-private:
-    template <class From, class To>
-    static void CopyInternal(const DeviceMemory from, DeviceMemory to);
-
-    class SelectedDevice;
-    std::shared_ptr<SelectedDevice> sd;
+    virtual std::string get_accelerator_name() const = 0;
 };
 
-class Device::SelectedDevice{
+using device_ptr = std::shared_ptr<device>;
+
+device_ptr get_enabled_device();
+
+// allocate device memory, not host memory.
+class memory{
 public:
-    virtual DeviceMemory CreateDeviceMemory() const = 0;
+    template <typename T>
+    const T *device_data();
 
-    virtual std::string Name() const = 0;
-};
+    template <typename T>
+    T *mutable_device_data();
 
-template <class Dev>
-class Device::Select final : public Device::SelectedDevice{
-public:
-    DeviceMemory CreateDeviceMemory() const override;
+    template <typename T>
+    const T *host_data();
 
-    std::string Name() const override;
-};
+    template <typename T>
+    T *mutable_host_data();
 
-class DeviceMemory{
-public:
-    DeviceMemory();
+    virtual type::uint32::T size() const = 0;
 
-    type::uint8::T *Data() const;
+    virtual void allocate(type::uint32::T size) = 0;
 
-    template <class T>
-    T *Data() const;
-
-    void Allocate(type::uint32::T size);
-
-    void Allocate(type::uint8::T *ptr, type::uint32::T size);
-
-    type::uint32::T Size() const;
-
-    class Allocator;
+    virtual ~memory();
 
 protected:
-    DeviceMemory(std::shared_ptr<Allocator> alloc);
+    virtual const void *_device_data() = 0;
+
+    virtual void *_mutable_device_data() = 0;
+
+    virtual const void *_host_data() = 0;
+
+    virtual void *_mutable_host_data() = 0;
 
 private:
-    friend class Device::Select<Device::CPU>;
-    friend class Device::Select<Device::CUDA>;
-
-    std::shared_ptr<Allocator> alloc;
 };
 
-class DeviceMemory::Allocator{
-public:
-    virtual ~Allocator();
-
-    virtual type::uint8::T *Data() const = 0;
-
-    virtual void Allocate(type::uint32::T size) = 0;
-
-    virtual void Allocate(type::uint8::T *ptr, type::uint32::T size) = 0;
-
-    virtual type::uint32::T Size() const = 0;
-};
-
-template <class Dev>
-Device::Device(Select<Dev> s){
-    sd = std::make_shared<Select<Dev>>(s);
+template <typename T>
+const T *memory::device_data(){
+    return static_cast<const T *>(_device_data());
 }
 
-template <class From, class To>
-void Device::Copy(const DeviceMemory from, DeviceMemory to){
-    CopyInternal<From, To>(from, to);
+template <typename T>
+T *memory::mutable_device_data(){
+    return static_cast<T *>(_mutable_device_data());
 }
 
-template <class T>
-T *DeviceMemory::Data() const{
-    return reinterpret_cast<T *>(alloc->Data());
+template <typename T>
+const T *memory::host_data(){
+    return static_cast<const T *>(_host_data());
 }
 
-template <> void
-Device::CopyInternal<Device::CPU, Device::CPU>(const DeviceMemory from, DeviceMemory to);
+template <typename T>
+T *memory::mutable_host_data(){
+    return static_cast<T *>(_mutable_host_data());
+}
 
-template <> void
-Device::CopyInternal<Device::CPU, Device::CUDA>(const DeviceMemory from, DeviceMemory to);
+using memory_ptr = std::shared_ptr<memory>;
 
-template <> void
-Device::CopyInternal<Device::CUDA, Device::CPU>(const DeviceMemory from, DeviceMemory to);
+memory_ptr create_memory(type::uint32::T byte_size);
 
-template <> void
-Device::CopyInternal<Device::CUDA, Device::CUDA>(const DeviceMemory from, DeviceMemory to);
+void copy(memory_ptr from, memory_ptr to);
 
 } // end namespace mlfe
 #endif // end ifndef __DEVICE_HPP__

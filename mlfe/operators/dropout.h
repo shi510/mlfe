@@ -2,7 +2,8 @@
 #define __DROPOUT_OP_HPP__
 #include "../core/tensor.h"
 
-namespace mlfe{ namespace functional{
+namespace mlfe{
+namespace functional{
 
 Tensor Dropout(Tensor x, type::float64::T probability, bool is_training);
 

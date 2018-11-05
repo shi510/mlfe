@@ -1,7 +1,7 @@
 #include "math.h"
-#include "../core/graph.h"
-#include "../core/op_dep.h"
+#include "../core/op_algo.h"
 #include "../core/gradient_helper.h"
+#include "../operators/basic_arithmetics.h"
 
 namespace mlfe{
 namespace functional{
@@ -58,12 +58,8 @@ public:
         TensorUmap gpair;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
-        Tensor dx1, dx2;
-
-        dep = OpDependency::Builder("SquaredDifferenceGradient")
-            .Input(x1).Input(x2).Input(dy)
-            .Output(dx1).Output(dx2)
-            .Finish();
+        Tensor dx1 = functional::variable(x1.Shape());
+        Tensor dx2 = functional::variable(x2.Shape());
 
         gpair[x1] = dx1;
         gpair[x2] = dx2;
@@ -74,19 +70,16 @@ public:
 
 REGIST_GRADIENT_HELPER(SquaredDifference, SquaredDifferenceGradient)
 
+// x1_gradinet =  2 * (x1 - x2)
+// x2_gradient = -2 * (x1 - x2)
+// TODO : elementwise substraction and broadcasted multiplication.
 Tensor squared_difference(Tensor x1, Tensor x2){
-    Tensor y;
-
-    auto dep = OpDependency::Builder("SquaredDifference")
-        .Input(x1).Input(x2)
-        .Output(y)
-        .Finish();
-
-    y = Tensor::DependencyAdder(dep);
-
+    throw std::string("this op is not supported.");
+    Tensor y = functional::variable(x1.Shape());
+    OpAlgoContext ctx("SquaredDifference");
     y.add_child(x1);
     y.add_child(x2);
-
+    Tensor::AssignOpFunctor(y, ctx);
     return y;
 }
 

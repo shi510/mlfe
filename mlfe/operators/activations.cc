@@ -1,5 +1,6 @@
 #include "activations.h"
 #include "../core/op_dep.h"
+#include "../core/op_algo.h"
 #include "../core/tensor.h"
 #include "../core/gradient_helper.h"
 
@@ -38,18 +39,14 @@ public:
                                 Tensor dy
                                ) override{
         TensorUmap gpair;
-        Tensor x = odc->Input(0);
-        Tensor dx;
-
-        dep = OpDependency::Builder("ReLUGradient")
-            .Input(x)
-            .Input(y)
-            .Input(dy)
-            .Output(dx)
-            .Finish();
-
+        Tensor x = y.get_children()[0];
+        Tensor dx = variable(x.Shape());
+        OpAlgoContext cxt("ReLUGradient");
+        dx.add_child(x);
+        dx.add_child(y);
+        dx.add_child(dy);
+        Tensor::AssignOpFunctor(dx, cxt);
         gpair[x] = dx;
-
         return gpair;
     }
 };
@@ -89,48 +86,34 @@ public:
                                 Tensor dy
                                ) override{
         TensorUmap gpair;
-        Tensor x = odc->Input(0);
-        Tensor dx;
-
-        dep = OpDependency::Builder("SigmoidGradient")
-            .Input(x)
-            .Input(y)
-            .Input(dy)
-            .Output(dx)
-            .Finish();
-
+        Tensor x = y.get_children()[0];
+        Tensor dx = variable(x.Shape());
+        OpAlgoContext cxt("SigmoidGradient");
+        dx.add_child(x);
+        dx.add_child(y);
+        dx.add_child(dy);
+        Tensor::AssignOpFunctor(dx, cxt);
         gpair[x] = dx;
-
         return gpair;
     }
 };
 
 REGIST_GRADIENT_HELPER(Sigmoid, SigmoidGradient)
 
-Tensor ReLU(Tensor x){
-    Tensor y;
-
-    auto dep = OpDependency::Builder("ReLU")
-        .Input(x)
-        .Output(y)
-        .Finish();
-
-    y = Tensor::DependencyAdder(dep);
+Tensor relu(Tensor x){
+    Tensor y = functional::variable(x.Shape());
+    OpAlgoContext cxt("ReLU");
     y.add_child(x);
+    Tensor::AssignOpFunctor(y, cxt);
 
     return y;
 }
 
-Tensor Sigmoid(Tensor x){
-    Tensor y;
-
-    auto dep = OpDependency::Builder("Sigmoid")
-        .Input(x)
-        .Output(y)
-        .Finish();
-
-    y = Tensor::DependencyAdder(dep);
+Tensor sigmoid(Tensor x){
+    Tensor y = functional::variable(x.Shape());
+    OpAlgoContext cxt("ReLU");
     y.add_child(x);
+    Tensor::AssignOpFunctor(y, cxt);
 
     return y;
 }

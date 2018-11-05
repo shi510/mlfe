@@ -1,31 +1,34 @@
 #include "../core/op_algo.h"
 #include "../core/device.h"
-#include "../core/tensor_mem_ref.h"
 #include "../math/basic_functions.h"
 #include "../device_context/cuda_context.h"
+#include "../math/blas.h"
 
 namespace mlfe{
 namespace algorithm_cuda{
 
-template <class Dev, class Tp>
+template <class Tp>
 class ElementwiseAdd : public OpAlgo{
 using T = typename Tp::T;
 public:
-    ElementwiseAdd(OpAlgoContext *oac) : OpAlgo(oac){
-        x1 = oac->get_input(0);
-        x2 = oac->get_input(1);
+    ElementwiseAdd(OpAlgoContext *oac) : OpAlgo(oac, "ElementwiseAdd"){
         y = oac->get_output(0);
-        size = y->Size();
+        x1 = y.get_children()[0];
+        x2 = y.get_children()[1];
+        size = y.Size();
     }
 
     void Compute() override{
-        math::AddCuda<T>(size, x1->Data<T>(), x2->Data<T>(), y->Data<T>());
+        auto x1_ptr = x1.device_data<T>();
+        auto x2_ptr = x2.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        math::AddCuda<T>(size, x1_ptr, x2_ptr, y_ptr);
     }
 
 private:
-    TensorMemRef *x1;
-    TensorMemRef *x2;
-    TensorMemRef *y;
+    Tensor x1;
+    Tensor x2;
+    Tensor y;
     int size;
 };
 
@@ -33,206 +36,136 @@ REGIST_OP_ALGO(ElementwiseAdd)
     .Input("X1", "float32")
     .Input("X2", "float32")
     .Output("Y", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = ElementwiseAdd<Device::CUDA, type::float32>;
+        using T = ElementwiseAdd<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
-class ElementwiseAddGrad : public OpAlgo{
-using T = typename Tp::T;
-public:
-    ElementwiseAddGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x1 = oac->get_input(0);
-        x2 = oac->get_input(1);
-        dy = oac->get_input(2);
-        dx1 = oac->get_output(0);
-        dx2 = oac->get_output(1);
-        size = dy->Size();
-    }
-
-    void Compute() override{
-        auto copy_fn = Device::Copy<Device::CUDA, Device::CUDA>;
-        copy_fn(dy->GetDeviceMemory(), dx1->GetDeviceMemory());
-        copy_fn(dy->GetDeviceMemory(), dx2->GetDeviceMemory());
-    }
-
-private:
-    TensorMemRef *x1;
-    TensorMemRef *x2;
-    TensorMemRef *dy;
-    TensorMemRef *dx1;
-    TensorMemRef *dx2;
-    int size;
-};
-
-REGIST_OP_GRAD_ALGO(ElementwiseAdd)
-    .Input("dY", type::float32::string)
-    .Output("dXs", "float32s")
-    .Device(Device::CUDA::string)
-    .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = ElementwiseAddGrad<Device::CUDA, type::float32>;
-        return std::make_shared<T>(oac);
-    })
-    .Finish();
-
-
-template <class Dev, class Tp>
+template <class Tp>
 class ElementwiseMul : public OpAlgo{
 using T = typename Tp::T;
 public:
-    ElementwiseMul(OpAlgoContext *oac) : OpAlgo(oac){
-        x1 = oac->get_input(0);
-        x2 = oac->get_input(1);
+    ElementwiseMul(OpAlgoContext *oac) : OpAlgo(oac, "ElementwiseMul"){
         y = oac->get_output(0);
-        size = y->Size();
+        x1 = y.get_children()[0];
+        x2 = y.get_children()[1];
+        size = y.Size();
     }
 
     void Compute() override{
-        math::MulCuda<T>(size, x1->Data<T>(), x2->Data<T>(), y->Data<T>());
+        auto x1_ptr = x1.device_data<T>();
+        auto x2_ptr = x2.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        math::MulCuda<T>(y.Size(), x1_ptr, x2_ptr, y_ptr);
     }
+
 private:
-    TensorMemRef *x1;
-    TensorMemRef *x2;
-    TensorMemRef *y;
+    Tensor x1;
+    Tensor x2;
+    Tensor y;
     int size;
 };
 
 REGIST_OP_ALGO(ElementwiseMul)
     .Input("Xs", "float32s")
     .Output("Y", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = ElementwiseMul<Device::CUDA, type::float32>;
+        using T = ElementwiseMul<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
-class ElementwiseMulGrad : public OpAlgo{
-using T = typename Tp::T;
-public:
-    ElementwiseMulGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x1 = oac->get_input(0);
-        x2 = oac->get_input(1);
-        dy = oac->get_input(2);
-        dx1 = oac->get_output(0);
-        dx2 = oac->get_output(1);
-        size = dy->Size();
-    }
-
-    void Compute() override{
-        auto copy_fn = Device::Copy<Device::CUDA, Device::CUDA>;
-        copy_fn(x2->GetDeviceMemory(), dx1->GetDeviceMemory());
-        copy_fn(x1->GetDeviceMemory(), dx2->GetDeviceMemory());
-        math::MulCuda<T>(size, dy->Data<T>(), dx1->Data<T>(), dx1->Data<T>());
-        math::MulCuda<T>(size, dy->Data<T>(), dx2->Data<T>(), dx2->Data<T>());
-    }
-
-private:
-    TensorMemRef *x1;
-    TensorMemRef *x2;
-    TensorMemRef *dy;
-    TensorMemRef *dx1;
-    TensorMemRef *dx2;
-    int size;
-};
-
-REGIST_OP_GRAD_ALGO(ElementwiseMul)
-    .Input("Xs", "float32s")
-    .Input("Y", "float32")
-    .Input("dY", "float32")
-    .Output("dXs", "float32s")
-    .Device(Device::CUDA::string)
-    .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = ElementwiseMulGrad<Device::CUDA, type::float32>;
-        return std::make_shared<T>(oac);
-    })
-    .Finish();
-
-template <class Dev, class Tp>
+template <class Tp>
 class AddN : public OpAlgo{
 using T = typename Tp::T;
 public:
-    AddN(OpAlgoContext *oac) : OpAlgo(oac){
-        _num_inputs = oac->num_inputs();
-        for(int n = 0; n < _num_inputs; ++n){
-            xs.push_back(oac->get_input(n));
-        }
+    AddN(OpAlgoContext *oac) : OpAlgo(oac, "AddN"){
         y = oac->get_output(0);
-        size = xs[0]->Size();
-
+        size = y.Size();
+        num_inputs = y.get_children().size();
+        for(int n = 0; n < num_inputs; ++n){
+            xs.push_back(y.get_children()[n]);
+        }
     }
 
     void Compute() override{
-        auto y_ptr = y->Data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
         math::set<T, CUDAContext>(size, 0, y_ptr);
-        for(int n = 0; n < _num_inputs; ++n){
-            math::axpy<T, CUDAContext>(size, 1.f, xs[n]->Data<T>(), y_ptr);
+        for(int n = 0; n < num_inputs; ++n){
+            auto x_ptr = xs[n].device_data<T>();
+            math::axpy<T, CUDAContext>(size, 1.f, x_ptr, y_ptr);
         }
     }
+
 private:
-    std::vector<TensorMemRef *> xs;
-    TensorMemRef *y;
+    Tensor y;
+    std::vector<Tensor> xs;
     int size;
-    int _num_inputs;
+    int num_inputs;
 };
 
 REGIST_OP_ALGO(AddN)
     .Input("Xs", "float32s")
     .Input("dy", "float32")
     .Output("Y", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = AddN<Device::CUDA, type::float32>;
+        using T = AddN<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
-class AddNGrad : public OpAlgo{
+template <class Tp>
+class MatrixVectorAdd : public OpAlgo{
 using T = typename Tp::T;
 public:
-    AddNGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        _num_inputs = oac->num_inputs();
-        _num_outputs = oac->num_outputs();
-        for(int n = 0; n < _num_inputs - 1; ++n){
-            xs.push_back(oac->get_input(n));
-        }
-        for(int n = 0; n < _num_outputs; ++n){
-            dxs.push_back(oac->get_output(n));
-        }
-        y = oac->get_input(_num_inputs - 2);
-        dy = oac->get_input(_num_inputs - 1);
-        size = dxs[0]->Size();
+    MatrixVectorAdd(OpAlgoContext *oac) : OpAlgo(oac, "MatrixVectorAdd"){
+        y = oac->get_output(0);
+        mat = y.get_children()[0];
+        vec = y.get_children()[1];
+        m = mat.Shape()[0];
+        n = mat.Shape()[1];
+        multiplier = create_memory(m * Tp::size);
+        math::set<T, CUDAContext>(m, T(1), 
+                                  multiplier->mutable_device_data<T>());
     }
 
     void Compute() override{
-        auto dy_ptr = dy->Data<T>();
-        for(int n = 0; n < _num_outputs; ++n){
-            math::DivCuda<T>(size, y->Data<T>(), xs[n]->Data<T>(), dxs[n]->Data<T>());
-            math::MulCuda<T>(size, dy_ptr, dxs[n]->Data<T>(), dxs[n]->Data<T>());
-        }
+        auto mat_ptr = mat.device_data<T>();
+        auto vec_ptr = vec.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        auto mul_ptr = multiplier->device_data<T>();
+
+        copy(mat.get_memory(), y.get_memory());
+
+        math::gemm<T, CUDAContext>(
+            false, false,
+            m, n, 1,
+            T(1), mul_ptr, 1,
+            vec_ptr, n,
+            T(1), y_ptr, n, &cxt
+            );
     }
 
 private:
-    std::vector<TensorMemRef *> xs;
-    std::vector<TensorMemRef *> dxs;
-    TensorMemRef *y;
-    TensorMemRef *dy;
-    int size;
-    int _num_inputs;
-    int _num_outputs;
+    Tensor mat;
+    Tensor vec;
+    Tensor y;
+    memory_ptr multiplier;
+    CUDAContext cxt;
+    int m, n;
 };
 
-REGIST_OP_GRAD_ALGO(AddN)
-    .Input("dY", "float32")
-    .Output("dXs", "float32s")
-    .Device(Device::CUDA::string)
-    .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = AddNGrad<Device::CUDA, type::float32>;
+REGIST_OP_ALGO(MatrixVectorAdd)
+    .Input("Mat", "float32")
+    .Input("Vec", "float32")
+    .Output("Y", type::float32::string)
+    .Device("CUDA")
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
+        using T = MatrixVectorAdd<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();

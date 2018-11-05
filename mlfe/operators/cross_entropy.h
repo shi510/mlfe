@@ -3,11 +3,12 @@
 
 #include "../core/tensor.h"
 
-namespace mlfe{ namespace functional{
+namespace mlfe{
+namespace functional{
 
-Tensor SigmoidCrossEntropy(Tensor x, Tensor y);
+Tensor softmax_cross_entropy(Tensor logit, Tensor label);
 
-Tensor SoftmaxCrossEntropy(Tensor x, Tensor y);
+Tensor sigmoid_cross_entropy(Tensor logit, Tensor label);
 
 } // end namespace functional
 } // end namespace mlfe

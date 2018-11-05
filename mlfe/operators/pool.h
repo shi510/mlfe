@@ -3,12 +3,13 @@
 #include "../core/tensor.h"
 #include <vector>
 
-namespace mlfe{namespace functional{
+namespace mlfe{
+namespace functional{
 
-Tensor MaxPool(Tensor x,
-               std::vector<type::int32::T> filters_hw,
-               std::vector<type::int32::T> strides,
-               std::vector<type::int32::T> pads
+Tensor pool_max(Tensor x,
+                std::vector<int> kernel, 
+                std::vector<int> stride, 
+                std::vector<int> padding
                );
 
 } // end namespace functional

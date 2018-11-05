@@ -36,6 +36,10 @@ template <class T,
 >
 Tensor Div(Tensor a, T b);
 
+Tensor add(Tensor x1, Tensor x2);
+
+Tensor mul(Tensor x1, Tensor x2);
+
 Tensor add_n(std::vector<Tensor> xs);
 
 } // end namespace functional

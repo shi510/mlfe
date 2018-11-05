@@ -3,38 +3,36 @@
 #include "../math/basic_functions.h"
 #include "../math/optimizers.h"
 
-namespace mlfe{ namespace optimizer{
+namespace mlfe{
+namespace algorithm_cpu{
 
-template <class Dev, class Tp>
+template <class Tp>
 class GradientDescent : public OpAlgo{
 using T = typename Tp::T;
 public:
     GradientDescent(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        dx = oac->get_input(1);
-        y = oac->get_output(0);
-        lr = oac->GetAttr<T>("LearningRate");
-        size = x->Size();
+        x = oac->get_output(0);
+        x_grad = x.grad();
+        lr = oac->get_attr<T>("LearningRate");
+        size = x.Size();
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto dx_ptr = dx->Data<T>();
-        auto y_ptr = y->Data<T>();
+        auto x_ptr = x.mutable_device_data<T>();
+        auto dx_ptr = x_grad.device_data<T>();
 
         // X = X - LearningRate*dX
         math::axpy<T, CPUContext>(
             size,
             -lr,
             dx_ptr,
-            y_ptr
-        );
+            x_ptr
+            );
     }
 
 private:
-    TensorMemRef *x;
-    TensorMemRef *dx;
-    TensorMemRef *y;
+    Tensor x;
+    Tensor x_grad;
     int size;
     T lr;
 };
@@ -43,43 +41,40 @@ REGIST_OP_ALGO(GradientDescent)
     .Input("X", type::float32::string)
     .Input("dX", type::float32::string)
     .Output("Y", type::float32::string)
-    .Device(Device::CPU::string)
+    .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = GradientDescent<Device::CPU, type::float32>;
+        using T = GradientDescent<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
 
-template <class Dev, class Tp>
+template <class Tp>
 class GradientDescentWithMomentum : public OpAlgo{
 using T = typename Tp::T;
 public:
     GradientDescentWithMomentum(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        dx = oac->get_input(1);
-        y = oac->get_output(0);
-        lr = oac->GetAttr<T>("LearningRate");
-        mr = oac->GetAttr<T>("MomentumRate");
-        wd = oac->GetAttr<T>("WeightDecay");
-        size = x->Size();
-        mmt_hist = oac->GetDevice().CreateDeviceMemory();
-        mmt_hist.Allocate(size * Tp::size);
+        x = oac->get_output(0);
+        x_grad = x.grad();
+        lr = oac->get_attr<T>("LearningRate");
+        mr = oac->get_attr<T>("MomentumRate");
+        wd = oac->get_attr<T>("WeightDecay");
+        size = x.Size();
+        mmt_hist = create_memory(size * Tp::size);
 
         math::set<T, CPUContext>(
             size,
             static_cast<T>(0),
-            mmt_hist.Data<T>()
+            mmt_hist->mutable_device_data<T>()
             );
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto dx_ptr = dx->Data<T>();
-        auto y_ptr = y->Data<T>();
-        auto mmt_hist_ptr = mmt_hist.Data<T>();
+        auto x_ptr = x.mutable_device_data<T>();
+        auto dx_ptr = x_grad.device_data<T>();
+        auto mmt_hist_ptr = mmt_hist->mutable_device_data<T>();
 
-        math::gradient_descent_momentum<T, CPUContext>(
+        math::gradient_descent_momentum<float, CPUContext>(
             size,
             x_ptr,
             dx_ptr,
@@ -91,10 +86,9 @@ public:
     }
 
 private:
-    TensorMemRef *x;
-    TensorMemRef *dx;
-    TensorMemRef *y;
-    DeviceMemory mmt_hist;
+    Tensor x;
+    Tensor x_grad;
+    memory_ptr mmt_hist;
     int size;
     T lr;
     T mr;
@@ -105,12 +99,12 @@ REGIST_OP_ALGO(GradientDescentWithMomentum)
     .Input("X", type::float32::string)
     .Input("dX", type::float32::string)
     .Output("Y", type::float32::string)
-    .Device(Device::CPU::string)
+    .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = GradientDescentWithMomentum<Device::CPU, type::float32>;
+        using T = GradientDescentWithMomentum<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-} // end namespace optimizer
+} // end namespace algorithm_cpu
 } // end namespace mlfe

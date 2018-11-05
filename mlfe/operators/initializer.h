@@ -3,15 +3,14 @@
 #include "../core/tensor.h"
 #include <vector>
 
-namespace mlfe{ namespace functional{
+namespace mlfe{
+namespace functional{
 
-Tensor Constant(type::float64::T val, std::vector<int> shape = {});
+Tensor constant(type::float64::T val, std::vector<int> shape);
 
-Tensor Normal(type::float64::T std, std::vector<int> shape = {});
+Tensor normal(type::float64::T std, std::vector<int> shape);
 
-Tensor TruncatedNormal(type::float64::T std, std::vector<int> shape = {});
-
-Tensor Xavier(type::int32::T a, type::int32::T b, std::vector<int> shape = {});
+Tensor truncated_normal(type::float64::T std, std::vector<int> shape);
 
 } // end namespace functional
 } // end namespace mlfe

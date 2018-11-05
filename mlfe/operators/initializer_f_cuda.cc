@@ -1,5 +1,4 @@
 #include "../core/op_algo.h"
-#include "../core/tensor_mem_ref.h"
 #include "../math/blas.h"
 #include "../math/basic_functions.h"
 #include "../device_context/cuda_context.h"
@@ -7,110 +6,74 @@
 #include <curand.h>
 
 namespace mlfe{
+namespace algorithm_cuda{
 
-template <class Dev, class Tp>
+template <class Tp>
 class Constant : public OpAlgo{
 using T = typename Tp::T;
 public:
-    Constant(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        value = oac->GetAttr<type::float32::T>("value");
-        size = x->Size();
+    Constant(OpAlgoContext *oac) : OpAlgo(oac, "Constant"){
+        y = oac->get_output(0);
+        value = oac->get_attr<type::float32::T>("value");
+        size = y.Size();
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        math::set<T, CUDAContext>(size, value, x_ptr);
+        math::set<T, CUDAContext>(size,
+                                  value, 
+                                  y.mutable_device_data<T>()
+                                 );
     }
+
 private:
-    TensorMemRef *x;
+    Tensor y;
     int size;
     type::float32::T value;
 };
 
 REGIST_OP_ALGO(Constant)
-    .Input("X", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Output("Y", type::float32::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = Constant<Device::CUDA, type::float32>;
+        using T = Constant<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
+template <class Tp>
 class Normal : public OpAlgo{
 using T = typename Tp::T;
 public:
     Normal(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        std = oac->GetAttr<type::float32::T>("std");
-        clip = oac->GetAttr<bool>("clip");
-        size = x->Size();
+        y = oac->get_output(0);
+        std = oac->get_attr<type::float32::T>("std");
+        clip = oac->get_attr<bool>("clip");
+        size = y.Size();
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        curandGenerateNormal(CUDAContext::rng, x_ptr, size, 0, std);
+        auto y_ptr = y.mutable_device_data<T>();
+        curandGenerateNormal(CUDAContext::rng, y_ptr, size, 0, std);
         if(clip){
-            math::clip_min_max<T, CUDAContext>(size, x_ptr, -std, std);
+            math::clip_min_max<T, CUDAContext>(size, y_ptr, -std, std);
         }
     }
 
 private:
-    TensorMemRef *x;
+    Tensor y;
     type::float32::T std;
     bool clip;
     int size;
 };
 
 REGIST_OP_ALGO(Normal)
-    .Input("X", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Input("Y", type::float32::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = Normal<Device::CUDA, type::float32>;
+        using T = Normal<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
-class Xavier : public OpAlgo{
-using T = typename Tp::T;
-public:
-    Xavier(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        a = oac->GetAttr<type::int32::T>("a");
-        b = oac->GetAttr<type::int32::T>("b");
-        size = x->Size();
-        var = static_cast<T>(2) / static_cast<T>(a);
-        trunc_val = std::sqrt(
-            static_cast<T>(6) / static_cast<T>(a + b)
-        );
-    }
-
-    void Compute() override{
-        auto x_ptr = x->Data<T>();
-        curandGenerateUniform(CUDAContext::rng, x_ptr, size);
-        math::shift_a_b<T, CUDAContext>(size, x_ptr, -var, var);
-        //math::UniformCurand<T>(&CUDAContext::rng, size, x_ptr, -var, var);
-        math::clip_min_max<T, CUDAContext>(size, x_ptr, -trunc_val, trunc_val);
-    }
-
-private:
-    TensorMemRef *x;
-    int size;
-    type::int32::T a;
-    type::int32::T b;
-    T var;
-    T trunc_val;
-};
-
-REGIST_OP_ALGO(Xavier)
-    .Input("X", type::float32::string)
-    .Device(Device::CUDA::string)
-    .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = Xavier<Device::CUDA, type::float32>;
-        return std::make_shared<T>(oac);
-    })
-    .Finish();
-
+} // end namespace algorithm_cuda
 } // end namespace mlfe

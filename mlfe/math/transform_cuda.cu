@@ -226,7 +226,7 @@ __global__ void maxpool_gradient_kernel(
 template <>
 void MaxPoolGradient<float, CUDAContext>(
     const int size,
-    const float *dy, int *mask,
+    const float *dy, const int *mask,
     const int c, const int h, const int w, 
     const int ph, const int pw, const int kernel_h, const int kernel_w,
     const int stride_h, const int stride_w, const int pad_h, const int pad_w,

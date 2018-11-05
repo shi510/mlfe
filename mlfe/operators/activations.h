@@ -4,9 +4,9 @@
 
 namespace mlfe{ namespace functional{
 
-Tensor ReLU(Tensor x);
+Tensor relu(Tensor x);
 
-Tensor Sigmoid(Tensor x);
+Tensor sigmoid(Tensor x);
 
 } // end namespace functional
 } // end namespace mlfe

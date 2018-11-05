@@ -1,68 +1,82 @@
 #include "gradient_descent.h"
-#include "../core/op_design.h"
+#include "../core/tensor.h"
+#include "../core/device.h"
+#include "../math/optimizers.h"
+#include "../math/basic_functions.h"
+#if defined(OPTION_USE_CUDNN) || defined(OPTION_USE_CUDA)
+#include "../device_context/cuda_context.h"
+#else
+#include "../device_context/cpu_context.h"
+#endif
+#include <unordered_map>
 
-namespace mlfe{ namespace optimizer{
+namespace mlfe{
+namespace opt{
 
-GradientDescent::GradientDescent(double learning_rate)
-    : lr(learning_rate){}
+class gradient_descent : public optimizer{
+public:
+    gradient_descent(double lr, double momentum);
 
-AppliedOptimizer GradientDescent::Minimize(Tensor loss){
-    auto grad_pair = compute_gradient(loss);
-    UpdateRule ur(loss, bwd_op_deps);
-    for(auto pair : grad_pair){
-        if(pair.first.get_trainable() == true){
-            auto dep = OpDependency::Builder("GradientDescent")
-                .Input(pair.first)
-                .Input(pair.second)
-                .Output(pair.first)
-                .Attr({"LearningRate", static_cast<float>(lr)})
-                .Finish();
-            ur.AddRule(dep);
-        }
+    void apply(Tensor var, Tensor var_grad) override;
+
+private:
+    double _lr;
+    double _mm;
+    std::unordered_map<Tensor, memory_ptr> _var_hist;
+};
+
+gradient_descent::gradient_descent(double lr, double momentum)
+    : _lr(lr), _mm(momentum){}
+
+void gradient_descent::apply(Tensor var, Tensor var_grad){
+#if defined(OPTION_USE_CUDNN) || defined(OPTION_USE_CUDA)
+    if(_var_hist.find(var_grad) == _var_hist.end()){
+        auto mem = create_memory(var_grad.Size() * sizeof(float));
+        math::set<float, CUDAContext>(
+            var_grad.Size(),
+            static_cast<float>(0),
+            mem->mutable_device_data<float>()
+            );
+        _var_hist[var_grad] = mem;
     }
-    return ApplyGradientUpdateRule(ur);
-}
-
-REGIST_OP(GradientDescent)
-    .Input("X", type::float32::string)
-    .Input("dX", type::float32::string)
-    .Output("Y", type::float32::string)
-    .Attr("LearningRate", type::float32::string)
-    .Finish();
-
-GradientDescentWithMomentum::GradientDescentWithMomentum(
-    double learning_rate,
-    double momentum_rate,
-    double weight_decay
-    ) : lr(learning_rate), mr(momentum_rate), wd(weight_decay){}
-
-AppliedOptimizer GradientDescentWithMomentum::Minimize(Tensor loss){
-    auto grad_pair = compute_gradient(loss);
-    UpdateRule ur(loss, bwd_op_deps);
-    for(auto pair : grad_pair){
-        if(pair.first.get_trainable() == true){
-            auto dep = OpDependency::Builder("GradientDescentWithMomentum")
-                .Input(pair.first)
-                .Input(pair.second)
-                .Output(pair.first)
-                .Attr({"LearningRate", static_cast<float>(lr)})
-                .Attr({"MomentumRate", static_cast<float>(mr)})
-                .Attr({"WeightDecay", static_cast<float>(wd)})
-                .Finish();
-            ur.AddRule(dep);
-        }
+    math::gradient_descent_momentum<float, CUDAContext>(
+        var.Size(),
+        var.mutable_device_data<float>(),
+        var_grad.mutable_device_data<float>(),
+        _var_hist[var_grad]->mutable_device_data<float>(),
+        static_cast<float>(_lr),
+        static_cast<float>(_mm),
+        static_cast<float>(0)
+        );
+#else
+    if(_var_hist.find(var_grad) == _var_hist.end()){
+        auto mem = create_memory(var_grad.Size() * sizeof(float));
+        math::set<float, CPUContext>(
+            var_grad.Size(),
+            static_cast<float>(0),
+            mem->mutable_device_data<float>()
+            );
+        _var_hist[var_grad] = mem;
     }
-    return ApplyGradientUpdateRule(ur);
+    math::gradient_descent_momentum<float, CPUContext>(
+        var.Size(),
+        var.mutable_device_data<float>(),
+        var_grad.device_data<float>(),
+        _var_hist[var_grad]->mutable_device_data<float>(),
+        static_cast<float>(_lr),
+        static_cast<float>(_mm),
+        static_cast<float>(0)
+        );
+#endif
 }
-
-REGIST_OP(GradientDescentWithMomentum)
-    .Input("X", type::float32::string)
-    .Input("dX", type::float32::string)
-    .Output("Y", type::float32::string)
-    .Attr("LearningRate", type::float32::string)
-    .Attr("MomentumRate", type::float32::string)
-    .Attr("WeightDecay", type::float32::string)
-    .Finish();
 
 } // end namespace optimizer
+
+namespace functional{
+
+opt::optimizer_ptr create_gradient_descent(double lr, double momentum){
+    return std::make_shared<opt::gradient_descent>(lr, momentum);
+}
+
+} // end namespace functional
 } // end namespace mlfe

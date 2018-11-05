@@ -3,46 +3,42 @@
 #include "../math/basic_functions.h"
 #include "../math/optimizers.h"
 
-namespace mlfe{ namespace optimizer{
+namespace mlfe{
+namespace algorithm_cpu{
 
-template <class Dev, class Tp>
+template <class Tp>
 class Adam : public OpAlgo{
 using T = typename Tp::T;
 public:
     Adam(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        dx = oac->get_input(1);
-        y = oac->get_output(0);
-        lr = oac->GetAttr<T>("LearningRate");
-        beta1 = oac->GetAttr<T>("Beta1");
-        beta2 = oac->GetAttr<T>("Beta2");
-        eps = oac->GetAttr<T>("Epsilon");
-        size = x->Size();
+        x = oac->get_output(0);
+        dx = x.grad();
+        lr = oac->get_attr<T>("LearningRate");
+        beta1 = oac->get_attr<T>("Beta1");
+        beta2 = oac->get_attr<T>("Beta2");
+        eps = oac->get_attr<T>("Epsilon");
+        size = x.Size();
 
-        m_hist = oac->GetDevice().CreateDeviceMemory();
-        m_hist.Allocate(size * Tp::size);
-
-        v_hist = oac->GetDevice().CreateDeviceMemory();
-        v_hist.Allocate(size * Tp::size);
+        m_hist = create_memory(size * Tp::size);
+        v_hist = create_memory(size * Tp::size);
 
         math::set<T, CPUContext>(
             size,
             static_cast<T>(0),
-            m_hist.Data<T>()
+            m_hist->mutable_device_data<T>()
             );
         math::set<T, CPUContext>(
             size,
             static_cast<T>(0),
-            v_hist.Data<T>()
+            v_hist->mutable_device_data<T>()
             );
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto dx_ptr = dx->Data<T>();
-        auto y_ptr = y->Data<T>();
-        auto m_hist_ptr = m_hist.Data<T>();
-        auto v_hist_ptr = v_hist.Data<T>();
+        auto x_ptr = x.mutable_device_data<T>();
+        auto dx_ptr = dx.device_data<T>();
+        auto m_hist_ptr = m_hist->mutable_device_data<T>();
+        auto v_hist_ptr = v_hist->mutable_device_data<T>();
 
         math::adam<T, CPUContext>(
             size,
@@ -58,11 +54,11 @@ public:
     }
 
 private:
-    TensorMemRef *x;
-    TensorMemRef *dx;
-    TensorMemRef *y;
-    DeviceMemory m_hist;
-    DeviceMemory v_hist;
+    Tensor x;
+    Tensor dx;
+    Tensor y;
+    memory_ptr m_hist;
+    memory_ptr v_hist;
     int size;
     T lr;
     T beta1;
@@ -74,12 +70,12 @@ REGIST_OP_ALGO(Adam)
     .Input("X", type::float32::string)
     .Input("dX", type::float32::string)
     .Output("Y", type::float32::string)
-    .Device(Device::CPU::string)
+    .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = Adam<Device::CPU, type::float32>;
+        using T = Adam<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-} // end namespace optimizer
+} // end namespace algorithm_cpu
 } // end namespace mlfe

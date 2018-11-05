@@ -1,23 +1,23 @@
 #include "../core/op_algo.h"
-#include "../core/tensor_mem_ref.h"
 #include "../math/activations.h"
 #include "../device_context/cpu_context.h"
 
-namespace mlfe{ namespace algorithm_cpu{
+namespace mlfe{
+namespace algorithm_cpu{
 
-template <class Dev, class Tp>
+template <class Tp>
 class ReLU : public OpAlgo{
 using T = typename Tp::T;
 public:
-    ReLU(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
+    ReLU(OpAlgoContext *oac) : OpAlgo(oac, "ReLU"){
         y = oac->get_output(0);
-        size = x->Size();
+        x = y.get_children()[0];
+        size = x.Size();
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto y_ptr = y->Data<T>();
+        auto x_ptr = x.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
         math::relu<T, CPUContext>(
             size,
             x_ptr,
@@ -25,36 +25,36 @@ public:
             );
     }
 private:
-    TensorMemRef *x;
-    TensorMemRef *y;
+    Tensor x;
+    Tensor y;
     int size;
 };
 
 REGIST_OP_ALGO(ReLU)
     .Input("X", type::float32::string)
     .Output("Y", type::float32::string)
-    .Device(Device::CPU::string)
+    .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = ReLU<Device::CPU, type::float32>;
+        using T = ReLU<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
+template <class Tp>
 class ReLUGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     ReLUGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        dy = oac->get_input(2);
         dx = oac->get_output(0);
-        size = x->Size();
+        x = dx.get_children()[0];
+        dy = dx.get_children()[2];
+        size = x.Size();
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto dy_ptr = dy->Data<T>();
-        auto dx_ptr = dx->Data<T>();
+        auto x_ptr = x.device_data<T>();
+        auto dy_ptr = dy.device_data<T>();
+        auto dx_ptr = dx.mutable_device_data<T>();
 
         math::relu_gradient<T, CPUContext>(
             size,
@@ -65,9 +65,9 @@ public:
     }
 
 private:
-    TensorMemRef *x;
-    TensorMemRef *dy;
-    TensorMemRef *dx;
+    Tensor x;
+    Tensor dy;
+    Tensor dx;
     int size;
 };
 
@@ -76,27 +76,27 @@ REGIST_OP_GRAD_ALGO(ReLU)
     .Input("Y", type::float32::string)
     .Input("dY", type::float32::string)
     .Output("dX", type::float32::string)
-    .Device(Device::CPU::string)
+    .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = ReLUGrad<Device::CPU, type::float32>;
+        using T = ReLUGrad<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
 
-template <class Dev, class Tp>
+template <class Tp>
 class Sigmoid : public OpAlgo{
 using T = typename Tp::T;
 public:
-    Sigmoid(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
+    Sigmoid(OpAlgoContext *oac) : OpAlgo(oac, "Sigmoid"){
         y = oac->get_output(0);
-        size = x->Size();
+        x = y.get_children()[0];
+        size = x.Size();
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto y_ptr = y->Data<T>();
+        auto x_ptr = x.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
         math::sigmoid<T, CPUContext>(
             size,
             x_ptr,
@@ -104,36 +104,36 @@ public:
             );
     }
 private:
-    TensorMemRef *x;
-    TensorMemRef *y;
+    Tensor x;
+    Tensor y;
     int size;
 };
 
 REGIST_OP_ALGO(Sigmoid)
     .Input("X", type::float32::string)
     .Output("Y", type::float32::string)
-    .Device(Device::CPU::string)
+    .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = Sigmoid<Device::CPU, type::float32>;
+        using T = Sigmoid<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
+template <class Tp>
 class SigmoidGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     SigmoidGrad(OpAlgoContext *oac) : OpAlgo(oac){
-        x = oac->get_input(0);
-        dy = oac->get_input(2);
         dx = oac->get_output(0);
-        size = x->Size();
+        x = dx.get_children()[0];
+        dy = dx.get_children()[2];
+        size = x.Size();
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto dy_ptr = dy->Data<T>();
-        auto dx_ptr = dx->Data<T>();
+        auto x_ptr = x.device_data<T>();
+        auto dy_ptr = dy.device_data<T>();
+        auto dx_ptr = dx.mutable_device_data<T>();
 
         math::sigmoid_gradient<T, CPUContext>(
             size,
@@ -144,9 +144,9 @@ public:
     }
 
 private:
-    TensorMemRef *x;
-    TensorMemRef *dy;
-    TensorMemRef *dx;
+    Tensor x;
+    Tensor dy;
+    Tensor dx;
     int size;
 };
 
@@ -155,9 +155,9 @@ REGIST_OP_GRAD_ALGO(Sigmoid)
     .Input("Y", type::float32::string)
     .Input("dY", type::float32::string)
     .Output("dX", type::float32::string)
-    .Device(Device::CPU::string)
+    .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = SigmoidGrad<Device::CPU, type::float32>;
+        using T = SigmoidGrad<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();

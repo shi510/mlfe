@@ -1,39 +1,39 @@
 #include "../core/op_algo.h"
 #include "../core/device.h"
-#include "../core/tensor_mem_ref.h"
 #include "../math/blas.h"
 #include "../math/transform.h"
 #include "../device_context/cuda_context.h"
 
-namespace mlfe{ namespace algorithm_cuda{
+namespace mlfe{
+namespace algorithm_cuda{
 
-template <class Dev, class Tp>
+template <class Tp>
 class MaxPool : public OpAlgo{
 using T = typename Tp::T;
 public:
-    MaxPool(OpAlgoContext *oac) : OpAlgo(oac){
+    MaxPool(OpAlgoContext *oac) : OpAlgo(oac, "MaxPool"){
         using IntVec = std::vector<type::int32::T>;
-        x = oac->get_input(0);
-        idx = oac->get_output(0);
-        y = oac->get_output(1);
-        filters_hw = oac->GetAttr<IntVec>("filters_hw");
-        strides = oac->GetAttr<IntVec>("strides");
-        pads = oac->GetAttr<IntVec>("pads");
+        y = oac->get_output(0);
+        x = y.get_children()[0];
+        idx = y.get_children()[1];
+        filters_hw = oac->get_attr<IntVec>("kernel");
+        strides = oac->get_attr<IntVec>("stride");
+        pads = oac->get_attr<IntVec>("padding");
 
-        in_c = x->Shape()[1];
-        in_h = x->Shape()[2];
-        in_w = x->Shape()[3];
-        out_h = y->Shape()[2];
-        out_w = y->Shape()[3];
+        in_c = x.Shape()[1];
+        in_h = x.Shape()[2];
+        in_w = x.Shape()[3];
+        out_h = y.Shape()[2];
+        out_w = y.Shape()[3];
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto idx_ptr = idx->Data<int>();
-        auto y_ptr = y->Data<T>();
+        auto x_ptr = x.device_data<T>();
+        auto idx_ptr = idx.mutable_device_data<int>();
+        auto y_ptr = y.mutable_device_data<T>();
 
         math::MaxPool<T, CUDAContext>(
-            y->Size(), x_ptr,
+            y.Size(), x_ptr,
             in_c, in_h, in_w,
             out_h, out_w,
             filters_hw[0], filters_hw[1], strides[0], strides[1],
@@ -42,9 +42,9 @@ public:
             );
     }
 private:
-    TensorMemRef *x;
-    TensorMemRef *idx;
-    TensorMemRef *y;
+    Tensor x;
+    Tensor idx;
+    Tensor y;
     int in_c, in_h, in_w;
     int out_h, out_w;
     std::vector<type::int32::T> filters_hw;
@@ -56,44 +56,42 @@ REGIST_OP_ALGO(MaxPool)
     .Input("X", type::float32::string)
     .Output("IDX", type::float32::string)
     .Output("Y", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = MaxPool<Device::CUDA, type::float32>;
+        using T = MaxPool<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
+template <class Tp>
 class MaxPoolGrad : public OpAlgo{
     using T = typename Tp::T;
 public:
     MaxPoolGrad(OpAlgoContext *oac) : OpAlgo(oac){
         using IntVec = std::vector<type::int32::T>;
-        x = oac->get_input(0);
-        idx = oac->get_input(1);
-        y = oac->get_input(2);
-        dy = oac->get_input(3);
         dx = oac->get_output(0);
-        filters_hw = oac->GetAttr<IntVec>("filters_hw");
-        strides = oac->GetAttr<IntVec>("strides");
-        pads = oac->GetAttr<IntVec>("pads");
+        x = dx.get_children()[0];
+        idx = dx.get_children()[1];
+        dy = dx.get_children()[3];
+        filters_hw = oac->get_attr<IntVec>("kernel");
+        strides = oac->get_attr<IntVec>("stride");
+        pads = oac->get_attr<IntVec>("padding");
 
-        in_c = x->Shape()[1];
-        in_h = x->Shape()[2];
-        in_w = x->Shape()[3];
-        out_h = y->Shape()[2];
-        out_w = y->Shape()[3];
+        in_c = x.Shape()[1];
+        in_h = x.Shape()[2];
+        in_w = x.Shape()[3];
+        out_h = dy.Shape()[2];
+        out_w = dy.Shape()[3];
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto idx_ptr = idx->Data<int>();
-        auto y_ptr = y->Data<T>();
-        auto dy_ptr = dy->Data<T>();
-        auto dx_ptr = dx->Data<T>();
+        auto x_ptr = x.device_data<T>();
+        auto idx_ptr = idx.device_data<int>();
+        auto dy_ptr = dy.device_data<T>();
+        auto dx_ptr = dx.mutable_device_data<T>();
 
         math::MaxPoolGradient<T, CUDAContext>(
-            dy->Size(),
+            dy.Size(),
             dy_ptr, idx_ptr,
             in_c, in_h, in_w,
             out_h, out_w,
@@ -105,11 +103,11 @@ public:
     }
 
 private:
-    TensorMemRef *x;
-    TensorMemRef *idx;
-    TensorMemRef *y;
-    TensorMemRef *dy;
-    TensorMemRef *dx;
+    Tensor x;
+    Tensor idx;
+    Tensor y;
+    Tensor dy;
+    Tensor dx;
     int in_c, in_h, in_w;
     int out_h, out_w;
     std::vector<type::int32::T> filters_hw;
@@ -123,9 +121,9 @@ REGIST_OP_GRAD_ALGO(MaxPool)
     .Input("Y", type::float32::string)
     .Input("dY", type::float32::string)
     .Output("dX", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = MaxPoolGrad<Device::CUDA, type::float32>;
+        using T = MaxPoolGrad<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();

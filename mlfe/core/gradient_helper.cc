@@ -5,11 +5,7 @@
 namespace mlfe{
 using GH = GradientHelper;
 
-GH::GradientHelper(const OpDesignContext *odc) : odc(odc), dep(OpDependency::Builder("Unknown").Finish()){}
-
-OpDependency GH::get_opdep() const{
-    return dep;
-}
+GH::GradientHelper(const OpDesignContext *odc) : odc(odc){}
 
 using GHR = GradientHelperRegistry;
 
@@ -37,8 +33,8 @@ std::vector<std::string> GHR::GetAllOpName(){
 
 GHR::HelperPtr GHR::GetHelper(std::string name, OpDesignContext *odc){
     if(registry.count(name) <= 0){
-        throw std::string("GradientHelperRegistry.GetHelper : \
-            Not found for ") + name;
+        throw std::string("GradientHelperRegistry.GetHelper : "
+            "Not found for ") + name;
     }
     return registry[name](odc);
 }

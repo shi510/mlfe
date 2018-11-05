@@ -1,7 +1,9 @@
-#include "basic_arithmetics.h"
-#include "../core/op_dep.h"
+#include "../core/op_algo.h"
 #include "../core/gradient_helper.h"
-#include <iostream>
+#include "basic_arithmetics.h"
+#include "matmul.h"
+#include "initializer.h"
+#include <algorithm>
 
 namespace mlfe{
 namespace functional{
@@ -48,17 +50,13 @@ public:
         TensorUmap gpair;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
-        Tensor dx1, dx2;
-        dep = OpDependency::Builder("ElementwiseAddGradient")
-            .Input(x1)
-            .Input(x2)
-            .Input(dy)
-            .Output(dx1)
-            .Output(dx2)
-            .Finish();
+        Tensor one = functional::constant(1, y.Shape());
+        //Tensor dx1 = functional::mul(one, dy);
+        //Tensor dx2 = functional::mul(one, dy);
+        //one.eval();
 
-        gpair[x1] = dx1;
-        gpair[x2] = dx2;
+        gpair[x1] = dy;
+        gpair[x2] = dy;
         return gpair;
     }
 };
@@ -107,14 +105,8 @@ public:
         TensorUmap gpair;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
-        Tensor dx1, dx2;
-        dep = OpDependency::Builder("ElementwiseMulGradient")
-            .Input(x1)
-            .Input(x2)
-            .Input(dy)
-            .Output(dx1)
-            .Output(dx2)
-            .Finish();
+        Tensor dx1 = functional::mul(x2, dy);
+        Tensor dx2 = functional::mul(x1, dy);
 
         gpair[x1] = dx1;
         gpair[x2] = dx2;
@@ -162,75 +154,41 @@ public:
                                 Tensor dy
                                ) override{
         TensorUmap gpair;
-        auto odb = OpDependency::Builder("ElementwiseAddGradient")
-            .Input(dy);
-        for(auto &x : y.get_children()){
-            Tensor d;
-            odb = odb.Output(d);
-            gpair[x] = d;
-        }
-        dep = odb.Finish();
+        Tensor x1 = y.get_children()[0];
+        Tensor x2 = y.get_children()[1];
+        Tensor dx1 = functional::mul(x2, dy);
+        Tensor dx2 = functional::mul(x1, dy);
+
+        gpair[x1] = dx1;
+        gpair[x2] = dx2;
         return gpair;
     }
 };
 
 REGIST_GRADIENT_HELPER(AddN, AddNGradient)
 
-template <>
-Tensor Add<Tensor>(Tensor a, Tensor b){
-    Tensor y;
-    auto dep = OpDependency::Builder("ElementwiseAdd")
-        .Input(a)
-        .Input(b)
-        .Output(y)
-        .Finish();
-    y = Tensor::DependencyAdder(dep);
-    y.add_child(a);
-    y.add_child(b);
-    return y;
-}
+class MatrixVectorAddGradient : public GradientHelper{
+public:
+    MatrixVectorAddGradient(const OpDesignContext *odc)
+        : GradientHelper(odc){}
 
-template <>
-Tensor Sub<Tensor>(Tensor a, Tensor b){
-    Tensor y;
-    auto dep = OpDependency::Builder("ElementwiseSub")
-        .Input(a)
-        .Input(b)
-        .Output(y)
-        .Finish();
-    y = Tensor::DependencyAdder(dep);
-    y.add_child(a);
-    y.add_child(b);
-    return y;
-}
+    TensorUmap compute_gradient(Tensor y,
+                                Tensor dy
+                               ) override{
+        TensorUmap gpair;
+        Tensor mat = y.get_children()[0];
+        Tensor vec = y.get_children()[1];
+        Tensor one = functional::constant(1, {y.Shape()[0], 1});
+        Tensor dvec = functional::matmul(dy, one, true);
+        one.eval();
 
-template <>
-Tensor Mul<Tensor>(Tensor a, Tensor b){
-    Tensor y;
-    auto dep = OpDependency::Builder("ElementwiseMul")
-        .Input(a)
-        .Input(b)
-        .Output(y)
-        .Finish();
-    y = Tensor::DependencyAdder(dep);
-    y.add_child(a);
-    y.add_child(b);
-    return y;
-}
+        gpair[mat] = dy;
+        gpair[vec] = dvec;
+        return gpair;
+    }
+};
 
-template <>
-Tensor Div<Tensor>(Tensor a, Tensor b){
-    Tensor y;
-    auto dep = OpDependency::Builder("ElementwiseDiv")
-        .Input(a)
-        .Input(b)
-        .Output(y)
-        .Finish();
-    y = Tensor::DependencyAdder(dep);
-    y.add_child(a);
-    y.add_child(b);
-    return y;
-}
+REGIST_GRADIENT_HELPER(MatrixVectorAdd, MatrixVectorAddGradient)
 
 template <>
 Tensor Add<double>(Tensor a, double b){
@@ -260,17 +218,77 @@ Tensor Div<double>(Tensor a, double b){
     return y;
 }
 
+
+Tensor add(Tensor x1, Tensor x2){
+    Tensor y;
+    auto x1_shape = x1.Shape();
+    auto x2_shape = x2.Shape();
+    auto max_dim = std::max(x1_shape.size(), x2_shape.size());
+    auto min_dim = std::min(x1_shape.size(), x2_shape.size());
+    std::vector<int> max_shape, min_shape;
+    if(max_dim == x1_shape.size()){
+        max_shape = x1_shape;
+        min_shape = x2_shape;
+    }
+    else{
+        max_shape = x2_shape;
+        min_shape = x1_shape;
+    }
+    y = functional::variable(max_shape);
+    y.add_child(x1);
+    y.add_child(x2);
+    if(max_dim == 4 && min_dim == 1){
+        if(max_shape[1] == min_shape[0]){
+            OpAlgoContext cxt("BatchedMatrixVectorAdd");
+            Tensor::AssignOpFunctor(y, cxt);
+        }
+        else{
+            std::string err = "Can not add with ";
+            err += std::to_string(max_dim) + "d";
+            err += " and ";
+            err += std::to_string(min_dim) + "d";
+            throw err;
+        }
+    }
+    else if(max_dim == 2 && min_dim == 1){
+        if(max_shape[1] == min_shape[0]){
+            OpAlgoContext cxt("MatrixVectorAdd");
+            Tensor::AssignOpFunctor(y, cxt);
+        }
+        else{
+            std::string err = "Can not add with ";
+            err += std::to_string(max_dim) + "d";
+            err += " and ";
+            err += std::to_string(min_dim) + "d";
+            throw err;
+        }
+    }
+    else if(max_dim == min_dim){
+        OpAlgoContext cxt("ElementwiseAdd");
+        Tensor::AssignOpFunctor(y, cxt);
+    }
+
+    return y;
+}
+
+Tensor mul(Tensor x1, Tensor x2){
+    Tensor y = functional::variable(x1.Shape());
+    OpAlgoContext cxt("ElementwiseMul");
+    y.add_child(x1);
+    y.add_child(x2);
+    Tensor::AssignOpFunctor(y, cxt);
+
+    return y;
+}
+
 Tensor add_n(std::vector<Tensor> xs){
     if(xs.size() >= 2){
-        Tensor y;
-        auto odb = OpDependency::Builder("AddN");
+        Tensor y = functional::variable(xs[0].Shape());
+        OpAlgoContext cxt("AddN");
         for(auto &x : xs){
-            odb = odb.Input(x);
             y.add_child(x);
         }
-        odb = odb.Output(y);
-        auto dep = odb.Finish();
-        y = Tensor::DependencyAdder(dep);
+        Tensor::AssignOpFunctor(y, cxt);
         return y;
     }
     else if(xs.size() == 1){
@@ -289,9 +307,9 @@ Tensor operator Expr<Tensor>(Tensor a, Tensor b){        \
     return functional::OpName(a, b);                      \
 }
 
-DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(Add, +)
-DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(Sub, -)
-DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(Mul, *)
-DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(Div, /)
+DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(add, +)
+//DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(sub, -)
+DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(mul, *)
+//DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(div, /)
 
 } // end namespace mlfe

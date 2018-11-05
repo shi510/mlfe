@@ -3,7 +3,9 @@
 
 namespace mlfe{
 
-OpAlgo::OpAlgo(OpAlgoContext *oac){}
+OpAlgo::OpAlgo(OpAlgoContext *oac, std::string name){
+    this->name = name;
+}
 
 using OAS = OpAlgoSchema;
 
@@ -59,20 +61,12 @@ OpAlgoSchema OASB::Finish(){
     return oas;
 }
 
-OpAlgoContext::OpAlgoContext(Device dev, Workspace *ws, OpDesignContext *odc){
-    this->device = dev;
-    this->ws = ws;
-    attrs = odc->AllAttrs();
-    for(int n = 0; n < odc->NumInput(); ++n){
-        _inputs.push_back(odc->Input(n));
-    }
-    for(int n = 0; n < odc->NumOutput(); ++n){
-        _outputs.push_back(odc->Output(n));
-    }
+OpAlgoContext::OpAlgoContext(std::string op_name){
+    _op_name = op_name;
 }
 
-Device OpAlgoContext::GetDevice(){
-    return device;
+std::string OpAlgoContext::get_op_name() const{
+    return _op_name;
 }
 
 int OpAlgoContext::num_inputs() const{
@@ -83,18 +77,30 @@ int OpAlgoContext::num_outputs() const{
     return _outputs.size();
 }
 
-TensorMemRef *OpAlgoContext::get_input(int idx) const{
+Tensor OpAlgoContext::get_input(int idx) const{
     if(_inputs.size() <= idx){
         throw std::string("OpAlgoContext::get_input - index too large.");
     }
-    return ws->find(_inputs[idx].Name())->second.get();
+    return _inputs[idx];
 }
 
-TensorMemRef *OpAlgoContext::get_output(int idx) const{
+Tensor OpAlgoContext::get_output(int idx) const{
     if(_outputs.size() <= idx){
         throw std::string("OpAlgoContext::get_output - index too large.");
     }
-    return ws->find(_outputs[idx].Name())->second.get();
+    return _outputs[idx];
+}
+
+void OpAlgoContext::add_input(Tensor in){
+    _inputs.push_back(in);
+}
+
+void OpAlgoContext::add_output(Tensor out){
+    _outputs.push_back(out);
+}
+
+void OpAlgoContext::add_attr(Attribution attr){
+    _attrs.SetAttr(attr);
 }
 
 using OAR = OpAlgoRegistry;
@@ -122,7 +128,7 @@ std::vector<std::string> OAR::GetAllOpName() const{
 }
 
 OAR::OpAlgoPtr OAR::GetOpAlgo(std::string op_name, OpAlgoContext *oac) const{
-    if(registry.count(op_name) <= 0){
+    if(registry.find(op_name) == registry.end()){
         throw std::string("OpAlgoRegistry::GetOpAlgo - "
             "Not found for ") + op_name;
     }

@@ -20,10 +20,7 @@ public:
                                         Tensor dy
                                        ) = 0;
 
-    OpDependency get_opdep() const;
-
 protected:
-    OpDependency dep;
     const OpDesignContext *odc;
 };
 

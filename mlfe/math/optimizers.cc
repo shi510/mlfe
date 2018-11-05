@@ -6,11 +6,11 @@ namespace mlfe{ namespace math{
 template <>
 void gradient_descent_momentum<float, CPUContext>(const int size,
                                                   float *w,
-                                                  float *dw,
+                                                  const float *dw,
                                                   float *w_momentum,
-                                                  float lr,
-                                                  float momentum,
-                                                  float decay
+                                                  const float lr,
+                                                  const float momentum,
+                                                  const float decay
                                                  )
 {
     for(int n = 0; n < size; ++n){
@@ -23,12 +23,12 @@ void gradient_descent_momentum<float, CPUContext>(const int size,
 template <>
 void adadelta<float, CPUContext>(const int size,
                                  float *w,
-                                 float *dw,
+                                 const float *dw,
                                  float *grad_hist,
                                  float *acc_hist,
-                                 float lr,
-                                 float momentum,
-                                 float eps
+                                 const float lr,
+                                 const float momentum,
+                                 const float eps
                                 )
 {
     for(int n = 0; n < size; ++n){
@@ -44,13 +44,13 @@ void adadelta<float, CPUContext>(const int size,
 template <>
 void adam<float, CPUContext>(const int size,
                              float *w,
-                             float *dw,
+                             const float *dw,
                              float *m_hist,
                              float *v_hist,
-                             float lr,
-                             float beta1,
-                             float beta2,
-                             float eps
+                             const float lr,
+                             const float beta1,
+                             const float beta2,
+                             const float eps
                             )
 {
     float correction = lr * sqrt(1.f - beta2) / (1.f - beta1);

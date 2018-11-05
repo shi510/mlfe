@@ -48,6 +48,9 @@ Variable::Variable(std::vector<int> shape) : ti(type::float32()){
 }
 
 int Variable::Size() const{
+    //std::cout << _size << std::endl;
+    //std::cout << std::accumulate(_shape->Dims().begin(),
+    //    _shape->Dims().end(), 1, std::multiplies<int>()) << std::endl;
     return std::accumulate(_shape->Dims().begin(),
         _shape->Dims().end(), 1, std::multiplies<int>());
 }

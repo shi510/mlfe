@@ -5,11 +5,11 @@ namespace mlfe{ namespace math{
 template <typename T>
 __global__ void momentum_update_kernel(const int size,
                                        T *w,
-                                       T *dw,
+                                       const T *dw,
                                        T *w_momentum,
-                                       T lr,
-                                       T momentum,
-                                       T decay
+                                       const T lr,
+                                       const T momentum,
+                                       const T decay
                                       )
 {
     CUDA_1D_KERNEL_LOOP(n, size){
@@ -22,11 +22,11 @@ __global__ void momentum_update_kernel(const int size,
 template <>
 void gradient_descent_momentum<float, CUDAContext>(const int size,
                                                    float *w,
-                                                   float *dw,
+                                                   const float *dw,
                                                    float *w_momentum,
-                                                   float lr,
-                                                   float momentum,
-                                                   float decay
+                                                   const float lr,
+                                                   const float momentum,
+                                                   const float decay
                                                   )
 {
     momentum_update_kernel<float><<<
@@ -40,12 +40,12 @@ void gradient_descent_momentum<float, CUDAContext>(const int size,
 template <typename T>
 __global__ void adadelta_kernel(const int size,
                                 T *w,
-                                T *dw,
+                                const T *dw,
                                 T *grad_hist,
                                 T *acc_hist,
-                                T lr,
-                                T momentum,
-                                T eps
+                                const T lr,
+                                const T momentum,
+                                const T eps
                                )
 {
     CUDA_1D_KERNEL_LOOP(n, size){
@@ -61,12 +61,12 @@ __global__ void adadelta_kernel(const int size,
 template <>
 void adadelta<float, CUDAContext>(const int size,
                                   float *w,
-                                  float *dw,
+                                  const float *dw,
                                   float *grad_hist,
                                   float *acc_hist,
-                                  float lr,
-                                  float momentum,
-                                  float eps
+                                  const float lr,
+                                  const float momentum,
+                                  const float eps
                                  )
 {
     adadelta_kernel<float><<<
@@ -80,13 +80,13 @@ void adadelta<float, CUDAContext>(const int size,
 template <typename T>
 __global__ void adam_kernel(const int size,
                             T *w,
-                            T *dw,
+                            const T *dw,
                             T *m_hist,
                             T *v_hist,
-                            T lr,
-                            T beta1,
-                            T beta2,
-                            T eps
+                            const T lr,
+                            const T beta1,
+                            const T beta2,
+                            const T eps
                            )
 {
     T correction = lr * sqrt(T(1) - beta2) / (T(1) - beta1);
@@ -103,13 +103,13 @@ __global__ void adam_kernel(const int size,
 template <>
 void adam<float, CUDAContext>(const int size,
                               float *w,
-                              float *dw,
+                              const float *dw,
                               float *m_hist,
                               float *v_hist,
-                              float lr,
-                              float beta1,
-                              float beta2,
-                              float eps
+                              const float lr,
+                              const float beta1,
+                              const float beta2,
+                              const float eps
                              )
 {
     adam_kernel<float><<<

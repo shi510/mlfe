@@ -36,37 +36,14 @@ public:
                                 Tensor dy
                                ) override{
         TensorUmap gpair;
-        Tensor x = odc->Input(0);
-        Tensor dx;
-
-        dep = OpDependency::Builder("ReshapeGradient")
-            .Input(x)
-            .Input(dy)
-            .Output(dx)
-            .Finish();
-
-        gpair[x] = dx;
+        Tensor x = y.get_children()[0];
+        gpair[x] = functional::reshape(dy, x.Shape());
 
         return gpair;
     }
 };
 
 REGIST_GRADIENT_HELPER(Reshape, ReshapeGradient)
-
-Tensor Reshape(Tensor x, std::vector<type::int32::T> shape){
-    Tensor y;
-
-    auto dep = OpDependency::Builder("Reshape")
-        .Input(x)
-        .Output(y)
-        .Attr({ "shape", shape })
-        .Finish();
-
-    y = Tensor::DependencyAdder(dep);
-    y.add_child(x);
-
-    return y;
-}
 
 } // end namespace functional
 } // end namespace mlfe

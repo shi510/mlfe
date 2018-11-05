@@ -1,5 +1,5 @@
 #include "reduce.h"
-#include "../core/op_dep.h"
+#include "../core/op_algo.h"
 #include "../core/tensor.h"
 #include "../core/op_design.h"
 #include "../core/gradient_helper.h"
@@ -36,17 +36,13 @@ public:
                                 Tensor dy
                                ) override{
         TensorUmap gpair;
-        Tensor x = odc->Input(0);
-        Tensor dx;
-
-        dep = OpDependency::Builder("ReduceMeanGradient")
-            .Input(x)
-            .Input(dy)
-            .Output(dx)
-            .Finish();
+        Tensor x = y.get_children()[0];
+        Tensor dx = functional::variable(x.Shape());
+        OpAlgoContext ctx("ReduceMeanGradient");
+        dx.add_child(dy);
+        Tensor::AssignOpFunctor(dx, ctx);
 
         gpair[x] = dx;
-
         return gpair;
     }
 };
@@ -55,15 +51,13 @@ REGIST_GRADIENT_HELPER(ReduceMean, ReduceMeanGradient)
 
 namespace functional{
 
-Tensor Mean(Tensor x){
-    Tensor y;
-    auto dep = OpDependency::Builder("ReduceMean")
-        .Input(x)
-        .Output(y)
-        .Finish();
+Tensor mean(Tensor x){
+    Tensor y = functional::variable({1});
+    OpAlgoContext ctx("ReduceMean");
 
-    y = Tensor::DependencyAdder(dep);
     y.add_child(x);
+    Tensor::AssignOpFunctor(y, ctx);
+
     return y;
 }
 

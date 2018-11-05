@@ -1,8 +1,10 @@
 #ifndef __OP_ALGO_HPP__
 #define __OP_ALGO_HPP__
-#include "tensor_mem_ref.h"
 #include "../utils/types.h"
 #include "op_design.h"
+#include "device.h"
+#include "tensor.h"
+#include "attribute.h"
 #include <vector>
 #include <memory>
 #include <map>
@@ -15,10 +17,15 @@ class OpAlgoContext;
 
 class OpAlgo{
 public:
-    OpAlgo(OpAlgoContext *oac);
+    OpAlgo(OpAlgoContext *oac, std::string name = "");
 
     virtual void Compute() = 0;
+
+    std::string get_name() const{
+        return name;
+    }
 private:
+    std::string name;
 };
 
 class OpAlgoSchema{
@@ -62,32 +69,42 @@ private:
 };
 
 class OpAlgoContext{
-using VarPtr = std::shared_ptr<TensorMemRef>;
 using Tensors = std::vector<Tensor>;
-using Workspace = std::map<std::string, VarPtr>;
+using Workspace = std::map<std::string, memory_ptr>;
 public:
-    OpAlgoContext(Device dev, Workspace *ws, OpDesignContext *odc);
+    OpAlgoContext(std::string op_name);
+
+    std::string get_op_name() const;
 
     int num_inputs() const;
 
     int num_outputs() const;
 
-    TensorMemRef *get_input(int idx) const;
+    Tensor get_input(int idx) const;
 
-    TensorMemRef *get_output(int idx) const;
+    Tensor get_output(int idx) const;
 
-    Device GetDevice();
+    void add_input(Tensor in);
+
+    void add_output(Tensor out);
+
+    void add_attr(Attribution attr);
 
     template <class T>
-    T GetAttr(std::string name);
+    T get_attr(std::string name) const;
 
 private:
-    Device device;
-    Workspace *ws;
-    Attributes attrs;
+    std::string _op_name;
+    Workspace _ws;
+    Attributes _attrs;
     Tensors _inputs;
     Tensors _outputs;
 };
+
+template <typename T>
+T OpAlgoContext::get_attr(std::string name) const{
+    return _attrs.GetAttr<T>(name);
+}
 
 class OpAlgoRegistry{
 using OpAlgoPtr = std::shared_ptr<OpAlgo>;
@@ -110,11 +127,6 @@ private:
 struct OpAlgoRegisterer{
     OpAlgoRegisterer(OpAlgoSchema oas);
 };
-
-template <class T>
-T OpAlgoContext::GetAttr(std::string name){
-    return attrs.GetAttr<T>(name);
-}
 
 #define REGIST_OP_ALGO(Name, ...)                           \
     _REGIST_OP_ALGO_(Name, __VA_ARGS__)

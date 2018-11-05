@@ -1,51 +1,50 @@
 #include "../core/op_algo.h"
 #include "../core/device.h"
-#include "../core/tensor_mem_ref.h"
 #include "../math/blas.h"
 #include "../math/basic_functions.h"
 #include "../math/transform.h"
 #include "../device_context/cuda_context.h"
-#include <iostream>
 
-namespace mlfe{ namespace algorithm_cuda{
+namespace mlfe{
+namespace algorithm_cuda{
 
-template <class Dev, class Tp>
+template <class Tp>
 class Convolution : public OpAlgo{
 using T = typename Tp::T;
 public:
-    Convolution(OpAlgoContext *oac) : OpAlgo(oac){
-        using IntVec = std::vector<type::int32::T>;
-        x = oac->get_input(0);
-        w = oac->get_input(1);
+    Convolution(OpAlgoContext *oac) : OpAlgo(oac, "Convolution"){
         y = oac->get_output(0);
-        filters = oac->GetAttr<type::int32::T>("filters");
-        filters_hw = oac->GetAttr<IntVec>("filters_hw");
-        strides = oac->GetAttr<IntVec>("strides");
-        pads = oac->GetAttr<IntVec>("pads");
+        x = y.get_children()[0];
+        w = y.get_children()[1];
+        auto x_shape = x.Shape();
+        auto w_shape = w.Shape();
+        auto y_shape = y.Shape();
+        filters_hw.resize(2);
+        filters_hw[0] = w_shape[2];
+        filters_hw[1] = w_shape[3];
+        strides = oac->get_attr<std::vector<int>>("strides");
+        pads = oac->get_attr<std::vector<int>>("pads");
 
-        batch = x->Shape()[0];
         // Output Filters.
-        m = filters;
+        m = w_shape[0];
         // Output Feature Map Size.
-        n = y->Shape()[2] * y->Shape()[3];
+        n = y_shape[2] * y_shape[3];
         // Weight Size.
-        k = x->Shape()[1] * filters_hw[1] * filters_hw[0];
+        k = w_shape[1] * w_shape[2] * w_shape[3];
 
-        in_c = x->Shape()[1];
-        in_h = x->Shape()[2];
-        in_w = x->Shape()[3];
+        batch = x_shape[0];
+        in_c = x_shape[1];
+        in_h = x_shape[2];
+        in_w = x_shape[3];
 
-        col_buf = oac->GetDevice().CreateDeviceMemory();
-        col_buf.Allocate(k * n * Tp::size);
+        col_buf = create_memory(k * n * Tp::size);
     }
 
     void Compute() override{
-        const T *x_ptr = x->Data<T>();
-        const T *w_ptr = w->Data<T>();
-        T *y_ptr = y->Data<T>();
-        T *col_ptr = col_buf.Data<T>();
-
-
+        auto x_ptr = x.device_data<T>();
+        auto w_ptr = w.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        auto col_buf_ptr = col_buf->mutable_device_data<T>();
         for(int i = 0; i < batch; ++i){
             /*
             * image to column in range on kernel size.
@@ -54,7 +53,7 @@ public:
                 in_c, in_h, in_w,
                 filters_hw[0], filters_hw[1],
                 strides[0], pads[0],
-                x_ptr, col_ptr);
+                x_ptr, col_buf_ptr);
 
             /*
             * convolution with kernel.
@@ -65,21 +64,22 @@ public:
             math::gemm<T, CUDAContext>(false, false,
                 m, n, k,
                 static_cast<T>(1), w_ptr, k,
-                col_ptr, n,
+                col_buf_ptr, n,
                 static_cast<T>(0), y_ptr, n, &cuda);
 
             /*
             * next batch.
             */
-            x_ptr += x->Size() / batch;
+            x_ptr += x.Size() / batch;
             y_ptr += n * m;
         }
     }
+
 private:
-    TensorMemRef *x;
-    TensorMemRef *w;
-    TensorMemRef *y;
-    DeviceMemory col_buf;
+    Tensor y;
+    Tensor x;
+    Tensor w;
+    memory_ptr col_buf;
     int m, n, k, batch;
     int in_c, in_h, in_w;
     type::int32::T filters;
@@ -93,68 +93,154 @@ REGIST_OP_ALGO(Convolution)
     .Input("X", type::float32::string)
     .Input("W", type::float32::string)
     .Output("Y", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = Convolution<Device::CUDA, type::float32>;
+        using T = Convolution<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Dev, class Tp>
-class ConvolutionGrad : public OpAlgo{
+template <class Tp>
+class Conv2DGradientInput : public OpAlgo{
 using T = typename Tp::T;
 public:
-    ConvolutionGrad(OpAlgoContext *oac) : OpAlgo(oac){
+    Conv2DGradientInput(OpAlgoContext *oac) : OpAlgo(oac){
         using IntVec = std::vector<type::int32::T>;
-        x = oac->get_input(0);
-        w = oac->get_input(1);
-        y = oac->get_input(2);
-        dy = oac->get_input(3);
-        dw = oac->get_output(0);
-        dx = oac->get_output(1);
-        filters = oac->GetAttr<type::int32::T>("filters");
-        filters_hw = oac->GetAttr<IntVec>("filters_hw");
-        strides = oac->GetAttr<IntVec>("strides");
-        pads = oac->GetAttr<IntVec>("pads");
+        dx = oac->get_output(0);
+        w = dx.get_children()[0];
+        dy = dx.get_children()[1];
+        filters = w.Shape()[0];
+        filters_hw.resize(2);
+        filters_hw[0] = w.Shape()[2];
+        filters_hw[1] = w.Shape()[3];
+        strides = oac->get_attr<IntVec>("strides");
+        pads = oac->get_attr<IntVec>("pads");
 
-        batch = x->Shape()[0];
-        in_c = x->Shape()[1];
-        in_h = x->Shape()[2];
-        in_w = x->Shape()[3];
+        batch = dx.Shape()[0];
+        in_c = dx.Shape()[1];
+        in_h = dx.Shape()[2];
+        in_w = dx.Shape()[3];
 
         // Output Filters.
         m = filters;
         // Output Feature Map Size.
-        n = y->Shape()[2] * y->Shape()[3];
+        n = dy.Shape()[2] * dy.Shape()[3];
         // Weight Size.
-        k = x->Shape()[1] * filters_hw[1] * filters_hw[0];
+        k = w.Shape()[1] * filters_hw[1] * filters_hw[0];
 
-        col_buf = oac->GetDevice().CreateDeviceMemory();
-        col_buf.Allocate(k * n * Tp::size);
+        col_buf = create_memory(k * n * Tp::size);
     }
 
     void Compute() override{
-        auto x_ptr = x->Data<T>();
-        auto w_ptr = w->Data<T>();
-        auto y_ptr = y->Data<T>();
-        auto dy_ptr = dy->Data<T>();
-        auto dw_ptr = dw->Data<T>();
-        auto dx_ptr = dx->Data<T>();
-        T *col_ptr = col_buf.Data<T>();
+        auto w_ptr = w.device_data<T>();
+        auto dy_ptr = dy.device_data<T>();
+        auto dx_ptr = dx.mutable_device_data<T>();
+        auto col_ptr = col_buf->mutable_device_data<T>();
+
+        //math::set<T, CUDAContext>(
+        //    dx_t.Size(),
+        //    static_cast<T>(0),
+        //    dx_ptr
+        //    );
+
+        for(int i = 0; i < batch; ++i){
+            /*
+            * Calculate loss to propagate through bottom.
+            * w({filters, kernel_size})^T * dy({filters, out_size})
+            *  = col({kernel_size, out_size})
+            */
+            math::gemm<T, CUDAContext>(
+                true, false, k, n, m,
+                static_cast<T>(1), w_ptr, k,
+                dy_ptr, n,
+                static_cast<T>(0), col_ptr, n, &cuda
+                );
+
+            math::col2im<T, CUDAContext>(
+                col_ptr,
+                in_c, in_h, in_w,
+                filters_hw[0], strides[0], pads[0],
+                dx_ptr
+                );
+
+            /*
+            * next batch.
+            */
+            dx_ptr += dx.Size() / batch;
+            dy_ptr += n * m;
+        }
+    }
+
+private:
+    Tensor w;
+    Tensor dx;
+    Tensor dy;
+    memory_ptr col_buf;
+    int m, n, k, batch;
+    int in_c, in_h, in_w;
+    type::int32::T filters;
+    std::vector<type::int32::T> filters_hw;
+    std::vector<type::int32::T> strides;
+    std::vector<type::int32::T> pads;
+    CUDAContext cuda;
+};
+
+REGIST_OP_GRAD_ALGO(Conv2DGradientInput)
+    .Input("W", type::float32::string)
+    .Input("Y", type::float32::string)
+    .Input("dY", type::float32::string)
+    .Output("dX", type::float32::string)
+    .Device("CUDA")
+    .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
+        using T = Conv2DGradientInput<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
+template <class Tp>
+class Conv2DGradientFilter : public OpAlgo{
+using T = typename Tp::T;
+public:
+    Conv2DGradientFilter(OpAlgoContext *oac) : OpAlgo(oac){
+        using IntVec = std::vector<type::int32::T>;
+        dw = oac->get_output(0);
+        x = dw.get_children()[0];
+        dy = dw.get_children()[1];
+        filters = dw.Shape()[0];
+        filters_hw.resize(2);
+        filters_hw[0] = dw.Shape()[2];
+        filters_hw[1] = dw.Shape()[3];
+        strides = oac->get_attr<IntVec>("strides");
+        pads = oac->get_attr<IntVec>("pads");
+
+        batch = x.Shape()[0];
+        in_c = x.Shape()[1];
+        in_h = x.Shape()[2];
+        in_w = x.Shape()[3];
+
+        // Output Filters.
+        m = filters;
+        // Output Feature Map Size.
+        n = dy.Shape()[2] * dy.Shape()[3];
+        // Weight Size.
+        k = x.Shape()[1] * filters_hw[1] * filters_hw[0];
+
+        col_buf = create_memory(k * n * Tp::size);
+    }
+
+    void Compute() override{
+        auto x_ptr = x.device_data<T>();
+        auto dy_ptr = dy.device_data<T>();
+        auto dw_ptr = dw.mutable_device_data<T>();
+        auto col_ptr = col_buf->mutable_device_data<T>();
 
         math::set<T, CUDAContext>(
-            dx->Size(),
-            static_cast<T>(0),
-            dx_ptr
-            );
-        math::set<T, CUDAContext>(
-            dw->Size(),
+            dw.Size(),
             static_cast<T>(0),
             dw_ptr
             );
 
         for(int i = 0; i < batch; ++i){
-
             math::im2col<T, CUDAContext>(
                 in_c, in_h, in_w,
                 filters_hw[0], filters_hw[1],
@@ -178,41 +264,18 @@ public:
                 );
 
             /*
-            * Calculate loss to propagate through bottom.
-            * w({filters, kernel_size})^T * dy({filters, out_size})
-            *  = col({kernel_size, out_size})
-            */
-            math::gemm<T, CUDAContext>(
-                true, false, k, n, m,
-                static_cast<T>(1), w_ptr, k,
-                dy_ptr, n,
-                static_cast<T>(0), col_ptr, n, &cuda
-                );
-
-            math::col2im<T, CUDAContext>(
-                col_ptr,
-                in_c, in_h, in_w,
-                filters_hw[0], strides[0], pads[0],
-                dx_ptr
-                );
-
-            /*
             * next batch.
             */
-            x_ptr += x->Size() / batch;
-            dx_ptr += dx->Size() / batch;
+            x_ptr += x.Size() / batch;
             dy_ptr += n * m;
         }
     }
 
 private:
-    TensorMemRef *x;
-    TensorMemRef *w;
-    TensorMemRef *y;
-    TensorMemRef *dy;
-    TensorMemRef *dw;
-    TensorMemRef *dx;
-    DeviceMemory col_buf;
+    Tensor x;
+    Tensor dy;
+    Tensor dw;
+    memory_ptr col_buf;
     int m, n, k, batch;
     int in_c, in_h, in_w;
     type::int32::T filters;
@@ -222,16 +285,14 @@ private:
     CUDAContext cuda;
 };
 
-REGIST_OP_GRAD_ALGO(Convolution)
+REGIST_OP_GRAD_ALGO(Conv2DGradientFilter)
     .Input("X", type::float32::string)
-    .Input("W", type::float32::string)
     .Input("Y", type::float32::string)
     .Input("dY", type::float32::string)
     .Output("dW", type::float32::string)
-    .Output("dX", type::float32::string)
-    .Device(Device::CUDA::string)
+    .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
-        using T = ConvolutionGrad<Device::CUDA, type::float32>;
+        using T = Conv2DGradientFilter<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
