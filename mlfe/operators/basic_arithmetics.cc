@@ -234,7 +234,7 @@ Tensor add(Tensor x1, Tensor x2){
         max_shape = x2_shape;
         min_shape = x1_shape;
     }
-    y = functional::variable(max_shape);
+    y = functional::create_variable(max_shape);
     y.add_child(x1);
     y.add_child(x2);
     if(max_dim == 4 && min_dim == 1){
@@ -272,7 +272,7 @@ Tensor add(Tensor x1, Tensor x2){
 }
 
 Tensor mul(Tensor x1, Tensor x2){
-    Tensor y = functional::variable(x1.Shape());
+    Tensor y = functional::create_variable(x1.Shape());
     OpAlgoContext cxt("ElementwiseMul");
     y.add_child(x1);
     y.add_child(x2);
@@ -283,7 +283,7 @@ Tensor mul(Tensor x1, Tensor x2){
 
 Tensor add_n(std::vector<Tensor> xs){
     if(xs.size() >= 2){
-        Tensor y = functional::variable(xs[0].Shape());
+        Tensor y = functional::create_variable(xs[0].Shape());
         OpAlgoContext cxt("AddN");
         for(auto &x : xs){
             y.add_child(x);

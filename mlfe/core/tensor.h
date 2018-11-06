@@ -15,7 +15,7 @@ class OpAlgoContext;
 
 namespace functional{
 
-Tensor variable(std::vector<int> shape);
+Tensor create_variable(std::vector<int> shape);
 
 Tensor reshape(Tensor x, std::vector<int> shape);
 
@@ -59,10 +59,10 @@ public:
     memory_ptr get_memory() const;
 
     template <typename T>
-    inline const T *host_data();
+    inline const T *data();
 
     template <typename T>
-    inline T *mutable_host_data();
+    inline T *mutable_data();
 
     template <typename T>
     inline const T *device_data();
@@ -88,7 +88,7 @@ protected:
     void compute_gradient(const Tensor root);
 
 private:
-    friend Tensor functional::variable(std::vector<int>);
+    friend Tensor functional::create_variable(std::vector<int>);
     friend Tensor functional::reshape(Tensor x, std::vector<int> shape);
     friend struct std::hash<Tensor>;
     friend struct AssignOpFunctor;
@@ -102,12 +102,12 @@ T Tensor::get_attr(std::string name){
 }
 
 template <typename T>
-inline const T *Tensor::host_data(){
+inline const T *Tensor::data(){
     return static_cast<const T *>(_host_data());
 }
 
 template <typename T>
-inline T *Tensor::mutable_host_data(){
+inline T *Tensor::mutable_data(){
     return static_cast<T *>(_mutable_host_data());
 }
 

@@ -92,7 +92,7 @@ public:
         TensorUmap gpair;
         Tensor x = y.get_children()[0];
         Tensor idx = y.get_children()[1];
-        Tensor dx = functional::variable(x.Shape());
+        Tensor dx = functional::create_variable(x.Shape());
         auto y_ctx = y.get_context();
         OpAlgoContext ctx("MaxPoolGradient");
 
@@ -139,8 +139,8 @@ Tensor pool_max(Tensor x,
                ){
     int out_h = (x.Shape()[2] - kernel[0] + 2 * padding[0]) / stride[0] + 1;
     int out_w = (x.Shape()[3] - kernel[1] + 2 * padding[1]) / stride[1] + 1;
-    Tensor y = functional::variable({x.Shape()[0], x.Shape()[1], out_h, out_w});
-    Tensor idx = functional::variable({x.Shape()[0], x.Shape()[1], out_h, out_w});
+    Tensor y = create_variable({x.Shape()[0], x.Shape()[1], out_h, out_w});
+    Tensor idx = create_variable({x.Shape()[0], x.Shape()[1], out_h, out_w});
     OpAlgoContext ctx("MaxPool");
     y.add_child(x);
     y.add_child(idx);

@@ -37,7 +37,7 @@ public:
                                ) override{
         TensorUmap gpair;
         Tensor x = y.get_children()[0];
-        Tensor dx = functional::variable(x.Shape());
+        Tensor dx = functional::create_variable(x.Shape());
         OpAlgoContext ctx("ReduceMeanGradient");
         dx.add_child(dy);
         Tensor::AssignOpFunctor(dx, ctx);
@@ -52,7 +52,7 @@ REGIST_GRADIENT_HELPER(ReduceMean, ReduceMeanGradient)
 namespace functional{
 
 Tensor mean(Tensor x){
-    Tensor y = functional::variable({1});
+    Tensor y = create_variable({1});
     OpAlgoContext ctx("ReduceMean");
 
     y.add_child(x);

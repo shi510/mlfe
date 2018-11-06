@@ -58,8 +58,8 @@ public:
         TensorUmap gpair;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
-        Tensor dx1 = functional::variable(x1.Shape());
-        Tensor dx2 = functional::variable(x2.Shape());
+        Tensor dx1 = functional::create_variable(x1.Shape());
+        Tensor dx2 = functional::create_variable(x2.Shape());
 
         gpair[x1] = dx1;
         gpair[x2] = dx2;
@@ -75,7 +75,7 @@ REGIST_GRADIENT_HELPER(SquaredDifference, SquaredDifferenceGradient)
 // TODO : elementwise substraction and broadcasted multiplication.
 Tensor squared_difference(Tensor x1, Tensor x2){
     throw std::string("this op is not supported.");
-    Tensor y = functional::variable(x1.Shape());
+    Tensor y = create_variable(x1.Shape());
     OpAlgoContext ctx("SquaredDifference");
     y.add_child(x1);
     y.add_child(x2);

@@ -62,7 +62,7 @@ REGIST_GRADIENT_HELPER(Normal, NormalGradient)
 namespace functional{
 
 Tensor constant(type::float64::T val, std::vector<int> shape){
-    Tensor y = functional::variable(shape);
+    Tensor y = create_variable(shape);
     OpAlgoContext ctx("Constant");
     ctx.add_attr({"value", static_cast<type::float32::T>(val)});
     Tensor::AssignOpFunctor(y, ctx);
@@ -70,7 +70,7 @@ Tensor constant(type::float64::T val, std::vector<int> shape){
 }
 
 Tensor normal(type::float64::T std, std::vector<int> shape){
-    Tensor y = functional::variable(shape);
+    Tensor y = create_variable(shape);
     OpAlgoContext ctx("Normal");
     ctx.add_attr({"std", static_cast<type::float32::T>(std)});
     ctx.add_attr({"clrip", static_cast<bool>(false)});
@@ -79,7 +79,7 @@ Tensor normal(type::float64::T std, std::vector<int> shape){
 }
 
 Tensor truncated_normal(type::float64::T std, std::vector<int> shape){
-    Tensor y = functional::variable(shape);
+    Tensor y = create_variable(shape);
     OpAlgoContext ctx("Normal");
     ctx.add_attr({"std", static_cast<type::float32::T>(std)});
     ctx.add_attr({"clrip", static_cast<bool>(true)});

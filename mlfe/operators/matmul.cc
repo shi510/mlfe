@@ -116,7 +116,7 @@ Tensor matmul(Tensor a, Tensor b, bool trans_a, bool trans_b){
         y_shape[0] = a.Shape()[0];
         y_shape[1] = b.Shape()[1];
     }
-    y = functional::variable(y_shape);
+    y = create_variable(y_shape);
     y.add_child(a);
     y.add_child(b);
     ctx.add_attr({"trans_a", trans_a});

@@ -71,8 +71,8 @@ public:
         TensorUmap gpair;
         Tensor x = y.get_children()[0];
         Tensor w = y.get_children()[1];
-        Tensor dx = functional::variable(x.Shape());
-        Tensor dw = functional::variable(w.Shape());
+        Tensor dx = functional::create_variable(x.Shape());
+        Tensor dw = functional::create_variable(w.Shape());
         OpAlgoContext ctx_x_grad("Conv2DGradientInputGradient");
         OpAlgoContext ctx_w_grad("Conv2DGradientFilterGradient");
         OpAlgoContext ctx = y.get_context();
@@ -104,7 +104,7 @@ Tensor conv2d(Tensor x,
     auto w_shape = w.Shape();
     int out_h = (x_shape[2] - w_shape[2] + 2 * pads[0]) / strides[0] + 1;
     int out_w = (x_shape[3] - w_shape[3] + 2 * pads[1]) / strides[1] + 1;
-    Tensor y = functional::variable({x_shape[0], w_shape[0], out_h, out_w});
+    Tensor y = create_variable({x_shape[0], w_shape[0], out_h, out_w});
     OpAlgoContext ctx("Convolution");
     ctx.add_attr({"strides", strides});
     ctx.add_attr({"pads", pads});

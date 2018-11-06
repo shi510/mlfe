@@ -15,7 +15,7 @@ public:
         x = y.get_children()[0];
         prob = y.get_children()[1];
         mask = y.get_children()[2];
-        drop_ratio = prob.host_data<T>()[0];
+        drop_ratio = prob.device_data<T>()[0];
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
         size = x.Size();
     }
@@ -62,7 +62,7 @@ public:
         prob = dx.get_children()[0];
         mask = dx.get_children()[1];
         dy = dx.get_children()[2];
-        drop_ratio = prob.host_data<T>()[0];
+        drop_ratio = prob.device_data<T>()[0];
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
         size = dy.Size();
     }

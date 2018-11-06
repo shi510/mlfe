@@ -226,7 +226,7 @@ Tensor::AssignOpFunctor::AssignOpFunctor(Tensor t, OpAlgoContext ctx){
 
 namespace functional{
 
-Tensor variable(std::vector<int> shape){
+Tensor create_variable(std::vector<int> shape){
     Tensor var;
     var.Reshape(shape);
     var.internal_data->_mem = create_memory(var.Size() * var.Type().size);

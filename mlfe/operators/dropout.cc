@@ -45,7 +45,7 @@ public:
         Tensor x = y.get_children()[0];
         Tensor prob = y.get_children()[1];
         Tensor mask = y.get_children()[2];
-        Tensor dx = functional::variable(x.Shape());
+        Tensor dx = functional::create_variable(x.Shape());
         OpAlgoContext ctx("DenseGradient");
         dx.add_child(x);
         dx.add_child(prob);
@@ -62,8 +62,8 @@ public:
 REGIST_GRADIENT_HELPER(Dropout, DropoutGradient)
 
 Tensor Dropout(Tensor x, Tensor prob){
-    Tensor y = functional::variable(x.Shape());
-    Tensor dropout_mask = functional::variable(x.Shape());
+    Tensor y = functional::create_variable(x.Shape());
+    Tensor dropout_mask = functional::create_variable(x.Shape());
     OpAlgoContext ctx("Dropout");
     y.add_child(x);
     y.add_child(prob);

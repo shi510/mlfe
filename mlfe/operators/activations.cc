@@ -40,7 +40,7 @@ public:
                                ) override{
         TensorUmap gpair;
         Tensor x = y.get_children()[0];
-        Tensor dx = variable(x.Shape());
+        Tensor dx = create_variable(x.Shape());
         OpAlgoContext cxt("ReLUGradient");
         dx.add_child(x);
         dx.add_child(y);
@@ -87,7 +87,7 @@ public:
                                ) override{
         TensorUmap gpair;
         Tensor x = y.get_children()[0];
-        Tensor dx = variable(x.Shape());
+        Tensor dx = create_variable(x.Shape());
         OpAlgoContext cxt("SigmoidGradient");
         dx.add_child(x);
         dx.add_child(y);
@@ -101,7 +101,7 @@ public:
 REGIST_GRADIENT_HELPER(Sigmoid, SigmoidGradient)
 
 Tensor relu(Tensor x){
-    Tensor y = functional::variable(x.Shape());
+    Tensor y = functional::create_variable(x.Shape());
     OpAlgoContext cxt("ReLU");
     y.add_child(x);
     Tensor::AssignOpFunctor(y, cxt);
@@ -110,7 +110,7 @@ Tensor relu(Tensor x){
 }
 
 Tensor sigmoid(Tensor x){
-    Tensor y = functional::variable(x.Shape());
+    Tensor y = functional::create_variable(x.Shape());
     OpAlgoContext cxt("ReLU");
     y.add_child(x);
     Tensor::AssignOpFunctor(y, cxt);
