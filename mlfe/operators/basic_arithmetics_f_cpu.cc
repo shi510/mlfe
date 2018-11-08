@@ -11,7 +11,8 @@ template <class Tp>
 class ElementwiseAdd : public OpAlgo{
 using T = typename Tp::T;
 public:
-    ElementwiseAdd(OpAlgoContext *oac) : OpAlgo(oac){
+    ElementwiseAdd(OpAlgoContext *oac) 
+        : OpAlgo(oac, "ElementwiseAdd"){
         y = oac->get_output(0);
         x1 = y.get_children()[0];
         x2 = y.get_children()[1];
@@ -49,7 +50,8 @@ template <class Tp>
 class ElementwiseMul : public OpAlgo{
 using T = typename Tp::T;
 public:
-    ElementwiseMul(OpAlgoContext *oac) : OpAlgo(oac){
+    ElementwiseMul(OpAlgoContext *oac) 
+        : OpAlgo(oac, "ElementwiseMul"){
         y = oac->get_output(0);
         x1 = y.get_children()[0];
         x2 = y.get_children()[1];
@@ -85,13 +87,13 @@ template <class Tp>
 class AddN : public OpAlgo{
 using T = typename Tp::T;
 public:
-    AddN(OpAlgoContext *oac) : OpAlgo(oac){
-        _num_inputs = oac->num_inputs();
-        for(int n = 0; n < _num_inputs; ++n){
-            xs.push_back(oac->get_input(n));
-        }
+    AddN(OpAlgoContext *oac) : OpAlgo(oac, "AddN"){
         y = oac->get_output(0);
-        size = xs[0].Size();
+        size = y.Size();
+        _num_inputs = y.get_children().size();
+        for(int n = 0; n < _num_inputs; ++n){
+            xs.push_back(y.get_children()[n]);
+        }
     }
 
     void Compute() override{
