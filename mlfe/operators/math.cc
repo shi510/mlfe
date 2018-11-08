@@ -52,19 +52,15 @@ public:
     SquaredDifferenceGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y,
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
         Tensor dx1 = functional::create_variable(x1.Shape());
         Tensor dx2 = functional::create_variable(x2.Shape());
-
-        gpair[x1] = dx1;
-        gpair[x2] = dx2;
-
-        return gpair;
+        in_grads.push_back(dx1);
+        in_grads.push_back(dx2);
+        return in_grads;
     }
 };
 

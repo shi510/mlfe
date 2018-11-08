@@ -68,10 +68,8 @@ public:
     MatMulGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y,
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor a = y.get_children()[0];
         Tensor b = y.get_children()[1];
         auto ctx = y.get_context();
@@ -79,10 +77,9 @@ public:
         bool trans_a = ctx.get_attr<bool>("trans_a");
         Tensor da = functional::matmul(dy, b, false, trans_b != true);
         Tensor db = functional::matmul(a, dy, trans_a != true, false);
-
-        gpair[a] = da;
-        gpair[b] = db;
-        return gpair;
+        in_grads.push_back(da);
+        in_grads.push_back(db);
+        return in_grads;
     }
 };
 

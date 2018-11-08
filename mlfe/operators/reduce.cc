@@ -32,18 +32,15 @@ public:
     ReduceMeanGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x = y.get_children()[0];
         Tensor dx = functional::create_variable(x.Shape());
         OpAlgoContext ctx("ReduceMeanGradient");
         dx.add_child(dy);
         Tensor::AssignOpFunctor(dx, ctx);
-
-        gpair[x] = dx;
-        return gpair;
+        in_grads.push_back(dx);
+        return in_grads;
     }
 };
 

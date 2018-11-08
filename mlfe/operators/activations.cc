@@ -35,10 +35,8 @@ public:
     ReLUGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x = y.get_children()[0];
         Tensor dx = create_variable(x.Shape());
         OpAlgoContext cxt("ReLUGradient");
@@ -46,8 +44,8 @@ public:
         dx.add_child(y);
         dx.add_child(dy);
         Tensor::AssignOpFunctor(dx, cxt);
-        gpair[x] = dx;
-        return gpair;
+        in_grads.push_back(dx);
+        return in_grads;
     }
 };
 
@@ -82,10 +80,8 @@ public:
     SigmoidGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x = y.get_children()[0];
         Tensor dx = create_variable(x.Shape());
         OpAlgoContext cxt("SigmoidGradient");
@@ -93,8 +89,8 @@ public:
         dx.add_child(y);
         dx.add_child(dy);
         Tensor::AssignOpFunctor(dx, cxt);
-        gpair[x] = dx;
-        return gpair;
+        in_grads.push_back(dx);
+        return in_grads;
     }
 };
 

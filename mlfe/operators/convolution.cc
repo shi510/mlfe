@@ -64,11 +64,9 @@ public:
     ConvolutionGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using IntVec = std::vector<type::int32::T>;
-        TensorUmap gpair;
+        VecTensor in_grads;
         Tensor x = y.get_children()[0];
         Tensor w = y.get_children()[1];
         Tensor dx = functional::create_variable(x.Shape());
@@ -86,10 +84,9 @@ public:
         dw.add_child(dy);
         Tensor::AssignOpFunctor(dx, ctx_x_grad);
         Tensor::AssignOpFunctor(dw, ctx_w_grad);
-
-        gpair[x] = dx;
-        gpair[w] = dw;
-        return gpair;
+        in_grads.push_back(dx);
+        in_grads.push_back(dw);
+        return in_grads;
     }
 };
 

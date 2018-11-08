@@ -182,16 +182,18 @@ void Tensor::compute_gradient(const Tensor root){
             auto dy = functional::add_n(dy_collector[var]);
             //calculate input's gradients.
             auto input_grad = op_grad->compute_gradient(var, dy);
-            // store all input's gradients.
-            for(auto &it : input_grad){
-                dy_collector[it.first].push_back(it.second);
-                it.first.internal_data->_gradient = make_ptr(it.second);
-                root.internal_data->_backward_list.push_back(it.first.internal_data->_gradient);
-            }
             //set current variable's gradient, if a partial gradient exists.
             if(dy_collector[var].size() > 1){
                 var.internal_data->_gradient = make_ptr(dy);
                 root.internal_data->_backward_list.push_back(var.internal_data->_gradient);
+            }
+            // store all input's gradients.
+            for(int n = 0; n < var.get_children().size(); ++n){
+                Tensor x = var.get_children()[n];
+                Tensor x_grad = input_grad[n];
+                dy_collector[x].push_back(x_grad);
+                x.internal_data->_gradient = make_ptr(x_grad);
+                root.internal_data->_backward_list.push_back(x.internal_data->_gradient);
             }
         }
     }

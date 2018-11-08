@@ -12,13 +12,11 @@ namespace mlfe{
 
 class GradientHelper{
 public:
-    using TensorUmap = std::unordered_map<Tensor, Tensor>;
+    using VecTensor = std::vector<Tensor>;
 
     GradientHelper(const OpDesignContext *odc);
 
-    virtual TensorUmap compute_gradient(Tensor var,
-                                        Tensor dy
-                                       ) = 0;
+    virtual VecTensor compute_gradient(Tensor var, Tensor dy) = 0;
 
 protected:
     const OpDesignContext *odc;

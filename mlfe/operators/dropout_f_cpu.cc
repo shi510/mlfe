@@ -14,7 +14,7 @@ public:
         y = oac->get_output(0);
         x = y.get_children()[0];
         prob = y.get_children()[1];
-        mask = y.get_children()[2];
+        mask = oac->get_attr<Tensor>("mask");
         drop_ratio = prob.device_data<T>()[0];
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
         size = x.Size();
@@ -63,8 +63,8 @@ public:
     DropoutGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
         prob = dx.get_children()[0];
-        mask = dx.get_children()[1];
-        dy = dx.get_children()[2];
+        dy = dx.get_children()[1];
+        mask = oac->get_attr<Tensor>("mask");
         drop_ratio = prob.device_data<T>()[0];
         drop_ratio_inv = T(1) / (T(1) - drop_ratio);
         size = dy.Size();

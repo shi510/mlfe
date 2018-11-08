@@ -44,20 +44,15 @@ public:
     ElementwiseAddGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y,
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
         Tensor one = functional::constant(1, y.Shape());
-        //Tensor dx1 = functional::mul(one, dy);
-        //Tensor dx2 = functional::mul(one, dy);
-        //one.eval();
 
-        gpair[x1] = dy;
-        gpair[x2] = dy;
-        return gpair;
+        in_grads.push_back(dy);
+        in_grads.push_back(dy);
+        return in_grads;
     }
 };
 
@@ -99,18 +94,15 @@ public:
     ElementwiseMulGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y,
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
         Tensor dx1 = functional::mul(x2, dy);
         Tensor dx2 = functional::mul(x1, dy);
-
-        gpair[x1] = dx1;
-        gpair[x2] = dx2;
-        return gpair;
+        in_grads.push_back(dx1);
+        in_grads.push_back(dx2);
+        return in_grads;
     }
 };
 
@@ -150,18 +142,15 @@ public:
     AddNGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y,
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x1 = y.get_children()[0];
         Tensor x2 = y.get_children()[1];
         Tensor dx1 = functional::mul(x2, dy);
         Tensor dx2 = functional::mul(x1, dy);
-
-        gpair[x1] = dx1;
-        gpair[x2] = dx2;
-        return gpair;
+        in_grads.push_back(dx1);
+        in_grads.push_back(dx2);
+        return in_grads;
     }
 };
 
@@ -172,19 +161,16 @@ public:
     MatrixVectorAddGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y,
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor mat = y.get_children()[0];
         Tensor vec = y.get_children()[1];
         Tensor one = functional::constant(1, {y.Shape()[0], 1});
         Tensor dvec = functional::matmul(dy, one, true);
         one.eval();
-
-        gpair[mat] = dy;
-        gpair[vec] = dvec;
-        return gpair;
+        in_grads.push_back(dy);
+        in_grads.push_back(dvec);
+        return in_grads;
     }
 };
 
@@ -303,7 +289,7 @@ Tensor add_n(std::vector<Tensor> xs){
 
 #define DEFINE_BASIC_ARITHMETIC_TENSOR_EXPR(OpName, Expr) \
 template <>                                               \
-Tensor operator Expr<Tensor>(Tensor a, Tensor b){        \
+Tensor operator Expr<Tensor>(Tensor a, Tensor b){         \
     return functional::OpName(a, b);                      \
 }
 

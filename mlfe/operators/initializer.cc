@@ -32,12 +32,10 @@ public:
     ConstantGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
-        gpair[y] = dy;
-        return gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
+        in_grads.push_back(dy);
+        return in_grads;
     }
 };
 
@@ -48,12 +46,10 @@ public:
     NormalGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
-        gpair[y] = dy;
-        return gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
+        in_grads.push_back(dy);
+        return in_grads;
     }
 };
 

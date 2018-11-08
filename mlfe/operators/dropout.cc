@@ -38,24 +38,20 @@ public:
     DropoutGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x = y.get_children()[0];
         Tensor prob = y.get_children()[1];
-        Tensor mask = y.get_children()[2];
         Tensor dx = functional::create_variable(x.Shape());
         OpAlgoContext ctx("DenseGradient");
+        Tensor mask = y.get_context().get_attr<Tensor>("mask");
         dx.add_child(x);
         dx.add_child(prob);
-        dx.add_child(mask);
         dx.add_child(dy);
+        ctx.add_attr({"mask", mask});
         Tensor::AssignOpFunctor(dx, ctx);
-
-        gpair[x] = dx;
-
-        return gpair;
+        in_grads.push_back(dx);
+        return in_grads;
     }
 };
 

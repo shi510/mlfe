@@ -33,10 +33,8 @@ public:
     SigmoidXEntropyGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor logit = y.get_children()[0];
         Tensor label = y.get_children()[1];
         Tensor logit_grad = functional::create_variable(logit.Shape());
@@ -48,10 +46,9 @@ public:
         logit_grad.add_child(dy);
         label_grad.add_child(dy);
         Tensor::AssignOpFunctor(logit_grad, ctx);
-
-        gpair[logit] = logit_grad;
-        //gpair[label] = dy;
-        return gpair;
+        in_grads.push_back(logit_grad);
+        in_grads.push_back(dy);
+        return in_grads;
     }
 };
 
@@ -85,10 +82,8 @@ public:
     SoftmaxCrossEntropyWithLabelGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor logit = y.get_children()[0];
         Tensor label = y.get_children()[1];
         Tensor logit_grad = functional::create_variable(logit.Shape());
@@ -100,10 +95,9 @@ public:
         logit_grad.add_child(dy);
         label_grad.add_child(dy);
         Tensor::AssignOpFunctor(logit_grad, ctx);
-
-        gpair[logit] = logit_grad;
-        //gpair[label] = dy;
-        return gpair;
+        in_grads.push_back(logit_grad);
+        in_grads.push_back(dy);
+        return in_grads;
     }
 };
 

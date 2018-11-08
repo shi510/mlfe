@@ -32,14 +32,12 @@ public:
     ReshapeGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
-        TensorUmap gpair;
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
         Tensor x = y.get_children()[0];
-        gpair[x] = functional::reshape(dy, x.Shape());
-
-        return gpair;
+        Tensor dx = functional::reshape(dy, x.Shape());
+        in_grads.push_back(dx);
+        return in_grads;
     }
 };
 

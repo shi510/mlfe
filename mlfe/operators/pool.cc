@@ -85,13 +85,11 @@ public:
     MaxPoolGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using Ints = std::vector<type::int32::T>;
-        TensorUmap gpair;
+        VecTensor in_grads;
         Tensor x = y.get_children()[0];
-        Tensor idx = y.get_children()[1];
+        Tensor idx = y.get_context().get_attr<Tensor>("idx");
         Tensor dx = functional::create_variable(x.Shape());
         auto y_ctx = y.get_context();
         OpAlgoContext ctx("MaxPoolGradient");
@@ -104,10 +102,10 @@ public:
         ctx.add_attr({"kernel", y_ctx.get_attr<Ints>("kernel")});
         ctx.add_attr({"stride", y_ctx.get_attr<Ints>("stride")});
         ctx.add_attr({"padding", y_ctx.get_attr<Ints>("padding")});
+        ctx.add_attr({"idx", idx});
         Tensor::AssignOpFunctor(dx, ctx);
-
-        gpair[x] = dx;
-        return gpair;
+        in_grads.push_back(dx);
+        return in_grads;
     }
 };
 
@@ -118,13 +116,11 @@ public:
     AvgPoolGradient(const OpDesignContext *odc)
         : GradientHelper(odc){}
 
-    TensorUmap compute_gradient(Tensor y, 
-                                Tensor dy
-                               ) override{
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using IntVec = std::vector<type::int32::T>;
-        TensorUmap gpair;
+        VecTensor in_grads;
 
-        return gpair;
+        return in_grads;
     }
 };
 
@@ -143,10 +139,10 @@ Tensor pool_max(Tensor x,
     Tensor idx = create_variable({x.Shape()[0], x.Shape()[1], out_h, out_w});
     OpAlgoContext ctx("MaxPool");
     y.add_child(x);
-    y.add_child(idx);
     ctx.add_attr({"kernel", kernel});
     ctx.add_attr({"stride", stride});
     ctx.add_attr({"padding", padding});
+    ctx.add_attr({"idx", idx});
     Tensor::AssignOpFunctor(y, ctx);
 
     return y;
