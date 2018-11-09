@@ -25,6 +25,12 @@ void fill(Tensor to, const Tensor from);
 
 class Tensor final : public Variable{
 public:
+    template <typename T>
+    class iterator;
+
+    template <typename T>
+    class const_iterator;
+
     struct AssignOpFunctor;
 
     Tensor();
@@ -57,6 +63,18 @@ public:
     OpAlgoContext get_context() const;
 
     memory_ptr get_memory() const;
+
+    template <typename T>
+    iterator<T> begin();
+
+    template <typename T>
+    const_iterator<T> cbegin();
+
+    template <typename T>
+    iterator<T> end();
+
+    template <typename T>
+    const_iterator<T> cend();
 
     template <typename T>
     inline const T *data();
@@ -102,6 +120,26 @@ T Tensor::get_attr(std::string name){
 }
 
 template <typename T>
+Tensor::iterator<T> Tensor::begin(){
+    return iterator<T>(mutable_data<T>());
+}
+
+template <typename T>
+Tensor::const_iterator<T> Tensor::cbegin(){
+    return const_iterator<T>(data<T>());
+}
+
+template <typename T>
+Tensor::iterator<T> Tensor::end(){
+    return iterator<T>(mutable_data<T>() + Size());
+}
+
+template <typename T>
+Tensor::const_iterator<T> Tensor::cend(){
+    return const_iterator<T>(data<T>() + Size());
+}
+
+template <typename T>
 inline const T *Tensor::data(){
     return static_cast<const T *>(_host_data());
 }
@@ -135,6 +173,92 @@ float Tensor::get_attr<float>(std::string name);
 
 template <>
 std::vector<int> Tensor::get_attr<std::vector<int>>(std::string name);
+
+template <typename T>
+class Tensor::iterator{
+public:
+    using this_type = iterator;
+    using value_type = T;
+    using reference = T &;
+    using pointer = T *;
+    using difference_type = int;
+    using iterator_category = std::forward_iterator_tag;
+
+    iterator(pointer ptr) : _ptr(ptr){}
+
+    this_type operator++(){
+        ++_ptr;
+        return *this;
+    }
+
+    this_type operator++(int){
+        this_type prev = *this;
+        ++_ptr;
+        return prev;
+    }
+
+    reference operator*() const{
+        return *_ptr;
+    }
+
+    pointer operator->() const{
+        return _ptr;
+    }
+
+    bool operator==(const this_type& rhs) const{
+        return _ptr == rhs._ptr;
+    }
+
+    bool operator!=(const this_type& rhs) const{
+        return _ptr != rhs._ptr;
+    }
+
+private:
+    pointer _ptr;
+};
+
+template <typename T>
+class Tensor::const_iterator{
+public:
+    using this_type = const_iterator;
+    using value_type = const T;
+    using reference = const T &;
+    using pointer = const T *;
+    using difference_type = int;
+    using iterator_category = std::forward_iterator_tag;
+
+    const_iterator(pointer ptr) : _ptr(ptr){}
+
+    this_type operator++(){
+        ++_ptr;
+        return *this;
+    }
+
+    this_type operator++(int){
+        this_type prev = *this;
+        ++_ptr;
+        return prev;
+    }
+
+    reference operator*() const{
+        return *_ptr;
+    }
+
+    pointer operator->() const{
+        return _ptr;
+    }
+
+    bool operator==(const this_type& rhs) const{
+        return _ptr == rhs._ptr;
+    }
+
+    bool operator!=(const this_type& rhs) const{
+        return _ptr != rhs._ptr;
+    }
+
+private:
+    pointer _ptr;
+};
 
 struct Tensor::AssignOpFunctor{
     AssignOpFunctor(Tensor t, OpAlgoContext cxt);

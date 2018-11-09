@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <mlfe/core.h>
 #include <mlfe/operators.h>
-#include <mlfe/core/op_algo.h>
 
 namespace autodiff_test{
 using namespace mlfe;
