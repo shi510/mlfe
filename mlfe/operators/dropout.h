@@ -5,7 +5,7 @@
 namespace mlfe{
 namespace functional{
 
-Tensor Dropout(Tensor x, type::float64::T probability, bool is_training);
+Tensor dropout(Tensor x, Tensor prob);
 
 } // end namespace functional
 } // end namespace mlfe

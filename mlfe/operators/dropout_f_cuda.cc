@@ -10,13 +10,11 @@ template <class Tp>
 class Dropout : public OpAlgo{
 using T = typename Tp::T;
 public:
-    Dropout(OpAlgoContext *oac) : OpAlgo(oac){
+    Dropout(OpAlgoContext *oac) : OpAlgo(oac, "Dropout"){
         y = oac->get_output(0);
         x = y.get_children()[0];
-        prob = y.get_children()[1];
         mask = oac->get_attr<Tensor>("mask");
-        drop_ratio = prob.device_data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        prob = oac->get_attr<Tensor>("prob");
         size = x.Size();
     }
 
@@ -24,8 +22,12 @@ public:
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         auto mask_ptr = mask.mutable_device_data<T>();
-        if(drop_ratio != 0){
-            math::bernoulli_distribution<T, CUDAContext>(size, drop_ratio, mask_ptr);
+        auto bernouli_fn = math::bernoulli_distribution<T, CUDAContext>;
+
+        drop_ratio = prob.data<T>()[0];
+        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        if(drop_ratio != T(0)){
+            bernouli_fn(size, T(1) - drop_ratio, mask_ptr);
             math::scal<T, CUDAContext>(size, drop_ratio_inv, mask_ptr, y_ptr);
             math::elementwise_mul<T, CUDAContext>(size, x_ptr, y_ptr, y_ptr);
         }
@@ -33,6 +35,7 @@ public:
             copy(x.get_memory(), y.get_memory());
         }
     }
+
 private:
     Tensor x;
     Tensor y;
@@ -59,11 +62,9 @@ using T = typename Tp::T;
 public:
     DropoutGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        prob = dx.get_children()[0];
         dy = dx.get_children()[1];
         mask = oac->get_attr<Tensor>("mask");
-        drop_ratio = prob.device_data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        prob = oac->get_attr<Tensor>("prob");
         size = dy.Size();
     }
 
@@ -71,8 +72,15 @@ public:
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
         auto mask_ptr = mask.device_data<T>();
-        math::scal<T, CUDAContext>(size, drop_ratio_inv, mask_ptr, dx_ptr);
-        math::elementwise_mul<T, CUDAContext>(size, dy_ptr, dx_ptr, dx_ptr);
+        drop_ratio = prob.data<T>()[0];
+        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        if(drop_ratio != T(0)){
+            math::scal<T, CUDAContext>(size, drop_ratio_inv, mask_ptr, dx_ptr);
+            math::elementwise_mul<T, CUDAContext>(size, dy_ptr, dx_ptr, dx_ptr);
+        }
+        else{
+            copy(dy.get_memory(), dx.get_memory());
+        }
     }
 
 private:

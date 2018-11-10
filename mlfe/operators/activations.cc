@@ -107,7 +107,7 @@ Tensor relu(Tensor x){
 
 Tensor sigmoid(Tensor x){
     Tensor y = functional::create_variable(x.Shape());
-    OpAlgoContext cxt("ReLU");
+    OpAlgoContext cxt("Sigmoid");
     y.add_child(x);
     Tensor::AssignOpFunctor(y, cxt);
 

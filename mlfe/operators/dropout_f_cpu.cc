@@ -13,18 +13,20 @@ public:
     Dropout(OpAlgoContext *oac) : OpAlgo(oac){
         y = oac->get_output(0);
         x = y.get_children()[0];
-        prob = y.get_children()[1];
         mask = oac->get_attr<Tensor>("mask");
-        drop_ratio = prob.device_data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        prob = oac->get_attr<Tensor>("prob");
         size = x.Size();
-        b_dist = std::bernoulli_distribution(T(1) - drop_ratio);
+        
     }
 
     void Compute() override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         auto mask_ptr = mask.mutable_device_data<T>();
+
+        drop_ratio = prob.data<T>()[0];
+        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        b_dist = std::bernoulli_distribution(T(1) - drop_ratio);
         if(drop_ratio != 0){
             for(int n = 0; n < size; ++n){
                 T mask_val = mask_ptr[n] = b_dist(CPUContext::rng);
@@ -62,11 +64,9 @@ using T = typename Tp::T;
 public:
     DropoutGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        prob = dx.get_children()[0];
         dy = dx.get_children()[1];
         mask = oac->get_attr<Tensor>("mask");
-        drop_ratio = prob.device_data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        prob = oac->get_attr<Tensor>("prob");
         size = dy.Size();
     }
 
@@ -74,8 +74,18 @@ public:
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
         auto mask_ptr = mask.device_data<T>();
-        for(int n = 0; n < size; ++n){
-            dx_ptr[n] = dy_ptr[n] * mask_ptr[n] * drop_ratio_inv;
+
+        drop_ratio = prob.data<T>()[0];
+        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
+        if(drop_ratio != T(0)){
+            for(int n = 0; n < size; ++n){
+                dx_ptr[n] = dy_ptr[n] * mask_ptr[n] * drop_ratio_inv;
+            }
+        }
+        else{
+            for(int n = 0; n < size; ++n){
+                dx_ptr[n] = dy_ptr[n];
+            }
         }
     }
 
