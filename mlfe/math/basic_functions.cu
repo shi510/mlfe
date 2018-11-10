@@ -3,8 +3,26 @@
 #include "blas.h"
 #include "../device_context/cuda_context.h"
 
-namespace mlfe{ namespace math{
+namespace mlfe{
+namespace math{
 
+template <class T> __global__
+void negative_kernel(const int size,
+                     const T *x_ptr,
+                     T *y_ptr){
+    CUDA_1D_KERNEL_LOOP(n, size){
+        y_ptr[n] = -x_ptr[n];
+    }
+}
+
+template <>
+void negative<float, CUDAContext>(const int size,
+                                  const float *x_ptr,
+                                  float *y_ptr
+                                 ){
+    negative_kernel <<<CUDA_CONTEXT_GET_BLOCKS(size),
+        CUDA_CONTEXT_NUM_THREADS>>>(size, x_ptr, y_ptr);
+}
 
 template <class T> __global__
 void squared_difference_kernel(const int size,

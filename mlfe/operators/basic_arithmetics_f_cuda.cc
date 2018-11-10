@@ -8,6 +8,81 @@ namespace mlfe{
 namespace algorithm_cuda{
 
 template <class Tp>
+class Negative : public OpAlgo{
+using T = typename Tp::T;
+public:
+    Negative(OpAlgoContext *oac) : OpAlgo(oac, "Negative"){
+        y = oac->get_output(0);
+        x = y.get_children()[0];
+        size = y.Size();
+    }
+
+    void Compute() override{
+        auto x_ptr = x.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        math::negative<float, CUDAContext>(size, x_ptr, y_ptr);
+    }
+
+private:
+    Tensor x;
+    Tensor y;
+    int size;
+};
+
+REGIST_OP_ALGO(Negative)
+    .Input("X", "float32")
+    .Output("Y", type::float32::string)
+    .Device("CUDA")
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
+        using T = Negative<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
+#define ADD_BASIC_OP(Name)                                           \
+template <class Tp>                                                  \
+class Elementwise##Name : public OpAlgo{                             \
+using T = typename Tp::T;                                            \
+public:                                                              \
+    Elementwise##Name(OpAlgoContext *oac)                            \
+        : OpAlgo(oac, "Elementwise" # Name){                         \
+        y = oac->get_output(0);                                      \
+        x1 = y.get_children()[0];                                    \
+        x2 = y.get_children()[1];                                    \
+        size = y.Size();                                             \
+    }                                                                \
+    void Compute() override{                                         \
+        auto x1_ptr = x1.device_data<T>();                           \
+        auto x2_ptr = x2.device_data<T>();                           \
+        auto y_ptr = y.mutable_device_data<T>();                     \
+        math::Name##Cuda<T>(size, x1_ptr, x2_ptr, y_ptr);            \
+    }                                                                \
+private:                                                             \
+    Tensor x1;                                                       \
+    Tensor x2;                                                       \
+    Tensor y;                                                        \
+    int size;                                                        \
+};                                                                   \
+REGIST_OP_ALGO(Elementwise##Name)                                    \
+    .Input("X1", "float32")                                          \
+    .Input("X2", "float32")                                          \
+    .Output("Y", type::float32::string)                              \
+    .Device("CUDA")                                                  \
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{    \
+        using T = Elementwise##Name<type::float32>;                  \
+        return std::make_shared<T>(oac);                             \
+    })                                                               \
+    .Finish();
+
+ADD_BASIC_OP(Add)
+ADD_BASIC_OP(Sub)
+ADD_BASIC_OP(Mul)
+ADD_BASIC_OP(Div)
+
+#undef ADD_BASIC_OP
+
+#if 0
+template <class Tp>
 class ElementwiseAdd : public OpAlgo{
 using T = typename Tp::T;
 public:
@@ -39,6 +114,42 @@ REGIST_OP_ALGO(ElementwiseAdd)
     .Device("CUDA")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
         using T = ElementwiseAdd<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
+template <class Tp>
+class ElementwiseSub : public OpAlgo{
+using T = typename Tp::T;
+public:
+    ElementwiseSub(OpAlgoContext *oac) : OpAlgo(oac, "ElementwiseSub"){
+        y = oac->get_output(0);
+        x1 = y.get_children()[0];
+        x2 = y.get_children()[1];
+        size = y.Size();
+    }
+
+    void Compute() override{
+        auto x1_ptr = x1.device_data<T>();
+        auto x2_ptr = x2.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        math::SubCuda<T>(size, x1_ptr, x2_ptr, y_ptr);
+    }
+
+private:
+    Tensor x1;
+    Tensor x2;
+    Tensor y;
+    int size;
+};
+
+REGIST_OP_ALGO(ElementwiseSub)
+    .Input("X1", "float32")
+    .Input("X2", "float32")
+    .Output("Y", type::float32::string)
+    .Device("CUDA")
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
+        using T = ElementwiseSub<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
@@ -77,6 +188,43 @@ REGIST_OP_ALGO(ElementwiseMul)
         return std::make_shared<T>(oac);
     })
     .Finish();
+
+template <class Tp>
+class ElementwiseDiv : public OpAlgo{
+using T = typename Tp::T;
+public:
+    ElementwiseDiv(OpAlgoContext *oac) : OpAlgo(oac, "ElementwiseDiv"){
+        y = oac->get_output(0);
+        x1 = y.get_children()[0];
+        x2 = y.get_children()[1];
+        size = y.Size();
+    }
+
+    void Compute() override{
+        auto x1_ptr = x1.device_data<T>();
+        auto x2_ptr = x2.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        math::DivCuda<T>(y.Size(), x1_ptr, x2_ptr, y_ptr);
+    }
+
+private:
+    Tensor x1;
+    Tensor x2;
+    Tensor y;
+    int size;
+};
+
+REGIST_OP_ALGO(ElementwiseDiv)
+    .Input("Xs", "float32s")
+    .Output("Y", type::float32::string)
+    .Device("CUDA")
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
+        using T = ElementwiseDiv<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
+#endif
 
 template <class Tp>
 class AddN : public OpAlgo{

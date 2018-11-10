@@ -8,80 +8,82 @@ namespace mlfe{
 namespace algorithm_cpu{
 
 template <class Tp>
-class ElementwiseAdd : public OpAlgo{
+class Negative : public OpAlgo{
 using T = typename Tp::T;
 public:
-    ElementwiseAdd(OpAlgoContext *oac) 
-        : OpAlgo(oac, "ElementwiseAdd"){
+    Negative(OpAlgoContext *oac) : OpAlgo(oac, "Negative"){
         y = oac->get_output(0);
-        x1 = y.get_children()[0];
-        x2 = y.get_children()[1];
+        x = y.get_children()[0];
         size = y.Size();
     }
 
     void Compute() override{
-        auto x1_ptr = x1.device_data<T>();
-        auto x2_ptr = x2.device_data<T>();
+        auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         for(int n = 0; n < size; ++n){
-            y_ptr[n] = x1_ptr[n] + x2_ptr[n];
+            y_ptr[n] = -x_ptr[n];
         }
     }
 
 private:
-    Tensor x1;
-    Tensor x2;
+    Tensor x;
     Tensor y;
     int size;
 };
 
-REGIST_OP_ALGO(ElementwiseAdd)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
+REGIST_OP_ALGO(Negative)
+    .Input("X", "float32")
     .Output("Y", type::float32::string)
     .Device("CPU")
     .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = ElementwiseAdd<type::float32>;
+        using T = Negative<type::float32>;
         return std::make_shared<T>(oac);
     })
     .Finish();
 
-template <class Tp>
-class ElementwiseMul : public OpAlgo{
-using T = typename Tp::T;
-public:
-    ElementwiseMul(OpAlgoContext *oac) 
-        : OpAlgo(oac, "ElementwiseMul"){
-        y = oac->get_output(0);
-        x1 = y.get_children()[0];
-        x2 = y.get_children()[1];
-        size = y.Size();
-    }
-
-    void Compute() override{
-        auto x1_ptr = x1.device_data<T>();
-        auto x2_ptr = x2.device_data<T>();
-        auto y_ptr = y.mutable_device_data<T>();
-        for(int n = 0; n < size; ++n){
-            y_ptr[n] = x1_ptr[n] * x2_ptr[n];
-        }
-    }
-private:
-    Tensor x1;
-    Tensor x2;
-    Tensor y;
-    int size;
-};
-
-REGIST_OP_ALGO(ElementwiseMul)
-    .Input("Xs", "float32s")
-    .Output("Y", type::float32::string)
-    .Device("CPU")
-    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
-        using T = ElementwiseMul<type::float32>;
-        return std::make_shared<T>(oac);
-    })
+#define ADD_BASIC_OP(Name, Expr)                                     \
+template <class Tp>                                                  \
+class Elementwise##Name : public OpAlgo{                             \
+using T = typename Tp::T;                                            \
+public:                                                              \
+    Elementwise##Name(OpAlgoContext *oac)                            \
+        : OpAlgo(oac, "Elementwise" # Name){                         \
+        y = oac->get_output(0);                                      \
+        x1 = y.get_children()[0];                                    \
+        x2 = y.get_children()[1];                                    \
+        size = y.Size();                                             \
+    }                                                                \
+    void Compute() override{                                         \
+        auto x1_ptr = x1.device_data<T>();                           \
+        auto x2_ptr = x2.device_data<T>();                           \
+        auto y_ptr = y.mutable_device_data<T>();                     \
+        for(int n = 0; n < size; ++n){                               \
+            y_ptr[n] = x1_ptr[n] Expr x2_ptr[n];                     \
+        }                                                            \
+    }                                                                \
+private:                                                             \
+    Tensor x1;                                                       \
+    Tensor x2;                                                       \
+    Tensor y;                                                        \
+    int size;                                                        \
+};                                                                   \
+REGIST_OP_ALGO(Elementwise##Name)                                    \
+    .Input("X1", "float32")                                          \
+    .Input("X2", "float32")                                          \
+    .Output("Y", type::float32::string)                              \
+    .Device("CPU")                                                   \
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{    \
+        using T = Elementwise##Name<type::float32>;                  \
+        return std::make_shared<T>(oac);                             \
+    })                                                               \
     .Finish();
+
+ADD_BASIC_OP(Add, +)
+ADD_BASIC_OP(Sub, -)
+ADD_BASIC_OP(Mul, *)
+ADD_BASIC_OP(Div, /)
+
+#undef ADD_BASIC_OP
 
 template <class Tp>
 class AddN : public OpAlgo{
@@ -121,7 +123,6 @@ REGIST_OP_ALGO(AddN)
         return std::make_shared<T>(oac);
     })
     .Finish();
-
 
 template <class Tp>
 class MatrixVectorAdd : public OpAlgo{

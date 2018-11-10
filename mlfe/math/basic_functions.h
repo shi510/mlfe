@@ -1,7 +1,13 @@
 #ifndef __MATH_BASIC_FUNCTIONS_H__
 #define __MATH_BASIC_FUNCTIONS_H__
 
-namespace mlfe{ namespace math{
+namespace mlfe{
+namespace math{
+
+template <class T, class Dev>
+void negative(const int size,
+              const T *x_ptr,
+              T *y_ptr);
 
 template <class T, class Dev>
 void squared_difference(const int size,
