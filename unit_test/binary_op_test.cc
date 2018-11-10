@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <mlfe/core.h>
 #include <mlfe/operators.h>
+#include <cmath>
 
 using namespace mlfe;
 namespace fn = functional;
@@ -93,4 +94,178 @@ TEST(binary_op, div){
 
     EXPECT_LE(result.data<T>()[3], -1.4285 + 1e-4);
     EXPECT_GE(result.data<T>()[3], -1.4285 - 1e-4);
+}
+
+TEST(binary_op, matmul){
+
+    // [2, 2] = [2, 3] x [3, 2]
+    {
+        auto a = fn::create_variable({2, 3});
+        auto b = fn::create_variable({3, 2});
+
+        a.mutable_data<float>()[0] = 1;
+        a.mutable_data<float>()[1] = 2;
+        a.mutable_data<float>()[2] = 3;
+
+        a.mutable_data<float>()[3] = 4;
+        a.mutable_data<float>()[4] = 5;
+        a.mutable_data<float>()[5] = 6;
+
+        b.mutable_data<float>()[0] = 10;
+        b.mutable_data<float>()[1] = 20;
+
+        b.mutable_data<float>()[2] = 30;
+        b.mutable_data<float>()[3] = 40;
+
+        b.mutable_data<float>()[4] = 50;
+        b.mutable_data<float>()[5] = 60;
+
+        auto c = fn::matmul(a, b);
+        EXPECT_EQ(c.Size(), 4);
+        EXPECT_EQ(c.Shape()[0], 2);
+        EXPECT_EQ(c.Shape()[1], 2);
+        c.eval();
+
+        EXPECT_EQ(c.data<float>()[0], 10 + 60 + 150);
+        EXPECT_EQ(c.data<float>()[1], 20 + 80 + 180);
+
+        EXPECT_EQ(c.data<float>()[2], 40 + 150 + 300);
+        EXPECT_EQ(c.data<float>()[3], 80 + 200 + 360);
+    }
+    
+    // [2, 2] = [2, 3] x [2, 3]^T
+    {
+        auto a = fn::create_variable({2, 3});
+        auto b = fn::create_variable({2, 3});
+
+        a.mutable_data<float>()[0] = 1;
+        a.mutable_data<float>()[1] = 2;
+        a.mutable_data<float>()[2] = 3;
+
+        a.mutable_data<float>()[3] = 4;
+        a.mutable_data<float>()[4] = 5;
+        a.mutable_data<float>()[5] = 6;
+
+        b.mutable_data<float>()[0] = 10;
+        b.mutable_data<float>()[1] = 20;
+        b.mutable_data<float>()[2] = 30;
+
+        b.mutable_data<float>()[3] = 40;
+        b.mutable_data<float>()[4] = 50;
+        b.mutable_data<float>()[5] = 60;
+
+        auto c = fn::matmul(a, b, false, true);
+        EXPECT_EQ(c.Size(), 4);
+        EXPECT_EQ(c.Shape()[0], 2);
+        EXPECT_EQ(c.Shape()[1], 2);
+        c.eval();
+
+        EXPECT_EQ(c.data<float>()[0], 10 + 40 + 90);
+        EXPECT_EQ(c.data<float>()[1], 40 + 100 + 180);
+
+        EXPECT_EQ(c.data<float>()[2], 40 + 100 + 180);
+        EXPECT_EQ(c.data<float>()[3], 160 + 250 + 360);
+    }
+
+    // [3, 3] = [2, 3]^T x [2, 3]
+    {
+        auto a = fn::create_variable({2, 3});
+        auto b = fn::create_variable({2, 3});
+
+        a.mutable_data<float>()[0] = 1;
+        a.mutable_data<float>()[1] = 2;
+        a.mutable_data<float>()[2] = 3;
+
+        a.mutable_data<float>()[3] = 4;
+        a.mutable_data<float>()[4] = 5;
+        a.mutable_data<float>()[5] = 6;
+
+        b.mutable_data<float>()[0] = 10;
+        b.mutable_data<float>()[1] = 20;
+        b.mutable_data<float>()[2] = 30;
+
+        b.mutable_data<float>()[3] = 40;
+        b.mutable_data<float>()[4] = 50;
+        b.mutable_data<float>()[5] = 60;
+
+        auto c = fn::matmul(a, b, true);
+        EXPECT_EQ(c.Size(), 9);
+        EXPECT_EQ(c.Shape()[0], 3);
+        EXPECT_EQ(c.Shape()[1], 3);
+        c.eval();
+
+        EXPECT_EQ(c.data<float>()[0], 10 + 160);
+        EXPECT_EQ(c.data<float>()[1], 20 + 200);
+        EXPECT_EQ(c.data<float>()[2], 30 + 240);
+
+        EXPECT_EQ(c.data<float>()[3], 20 + 200);
+        EXPECT_EQ(c.data<float>()[4], 40 + 250);
+        EXPECT_EQ(c.data<float>()[5], 60 + 300);
+        
+        EXPECT_EQ(c.data<float>()[6], 30 + 240);
+        EXPECT_EQ(c.data<float>()[7], 60 + 300);
+        EXPECT_EQ(c.data<float>()[8], 90 + 360);
+    }
+
+    // [2, 2] = [3, 2]^T x [2, 3]^T
+    {
+        auto a = fn::create_variable({3, 2});
+        auto b = fn::create_variable({2, 3});
+
+        a.mutable_data<float>()[0] = 1;
+        a.mutable_data<float>()[1] = 2;
+
+        a.mutable_data<float>()[2] = 3;
+        a.mutable_data<float>()[3] = 4;
+
+        a.mutable_data<float>()[4] = 5;
+        a.mutable_data<float>()[5] = 6;
+
+        b.mutable_data<float>()[0] = 10;
+        b.mutable_data<float>()[1] = 20;
+        b.mutable_data<float>()[2] = 30;
+
+        b.mutable_data<float>()[3] = 40;
+        b.mutable_data<float>()[4] = 50;
+        b.mutable_data<float>()[5] = 60;
+
+        auto c = fn::matmul(a, b, true, true);
+        EXPECT_EQ(c.Size(), 4);
+        EXPECT_EQ(c.Shape()[0], 2);
+        EXPECT_EQ(c.Shape()[1], 2);
+        c.eval();
+
+        EXPECT_EQ(c.data<float>()[0], 10 + 60 + 150);
+        EXPECT_EQ(c.data<float>()[1], 40 + 150 + 300);
+
+        EXPECT_EQ(c.data<float>()[2], 20 + 80 + 180);
+        EXPECT_EQ(c.data<float>()[3], 80 + 200 + 360);
+    }
+}
+
+TEST(binary_op, squared_difference){
+    auto a = fn::create_variable({2, 2});
+    auto b = fn::create_variable({2, 2});
+
+    a.mutable_data<float>()[0] = 1;
+    a.mutable_data<float>()[1] = 2;
+    a.mutable_data<float>()[2] = 3;
+    a.mutable_data<float>()[3] = 4;
+
+    b.mutable_data<float>()[0] = -10;
+    b.mutable_data<float>()[1] = 20;
+    b.mutable_data<float>()[2] = -30;
+    b.mutable_data<float>()[3] = 40;
+
+    auto c = fn::squared_difference(a, b);
+    EXPECT_EQ(c.Size(), 4);
+    EXPECT_EQ(c.Shape()[0], 2);
+    EXPECT_EQ(c.Shape()[1], 2);
+    c.eval();
+
+    EXPECT_EQ(c.data<float>()[0], std::pow(1 - -10, 2));
+    EXPECT_EQ(c.data<float>()[1], std::pow(2 - 20, 2));
+
+    EXPECT_EQ(c.data<float>()[2], std::pow(3 - -30, 2));
+    EXPECT_EQ(c.data<float>()[3], std::pow(4 - 40, 2));
 }
