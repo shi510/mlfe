@@ -50,7 +50,7 @@ else()
   list(APPEND mlfe_library_dependencies flatbuffers)
 endif()
 
-if(BUILD_APPS)
+if(BUILD_EXAMPLE)
   find_package(OpenCV REQUIRED)
 endif()
 

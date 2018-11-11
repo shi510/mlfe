@@ -1,5 +1,6 @@
 #include "cifar.h"
 #include "mnist.h"
+#include "wider_face.h"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -46,6 +47,15 @@ int main(int argc, char *args[]){
                     args[2] + slash + std::string("data_batch_5.bin")
                 },
                 args[2] + slash + std::string("test_batch.bin")
+            );
+        }
+        else if(!data_name.compare("wider_face")){
+            CreateSimpledbForWiderFace(
+                "wider_face_pos_train.simpledb",
+                "wider_face_part_train.simpledb",
+                "wider_face_neg_train.simpledb",
+                args[2],
+                args[3] + slash + "wider_face_train_bbx_gt.txt"
             );
         }
         else{
