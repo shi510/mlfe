@@ -121,9 +121,9 @@ TEST(binary_op, matmul){
         b.mutable_data<float>()[5] = 60;
 
         auto c = fn::matmul(a, b);
-        EXPECT_EQ(c.Size(), 4);
-        EXPECT_EQ(c.Shape()[0], 2);
-        EXPECT_EQ(c.Shape()[1], 2);
+        EXPECT_EQ(c.size(), 4);
+        EXPECT_EQ(c.shape()[0], 2);
+        EXPECT_EQ(c.shape()[1], 2);
         c.eval();
 
         EXPECT_EQ(c.data<float>()[0], 10 + 60 + 150);
@@ -155,9 +155,9 @@ TEST(binary_op, matmul){
         b.mutable_data<float>()[5] = 60;
 
         auto c = fn::matmul(a, b, false, true);
-        EXPECT_EQ(c.Size(), 4);
-        EXPECT_EQ(c.Shape()[0], 2);
-        EXPECT_EQ(c.Shape()[1], 2);
+        EXPECT_EQ(c.size(), 4);
+        EXPECT_EQ(c.shape()[0], 2);
+        EXPECT_EQ(c.shape()[1], 2);
         c.eval();
 
         EXPECT_EQ(c.data<float>()[0], 10 + 40 + 90);
@@ -189,9 +189,9 @@ TEST(binary_op, matmul){
         b.mutable_data<float>()[5] = 60;
 
         auto c = fn::matmul(a, b, true);
-        EXPECT_EQ(c.Size(), 9);
-        EXPECT_EQ(c.Shape()[0], 3);
-        EXPECT_EQ(c.Shape()[1], 3);
+        EXPECT_EQ(c.size(), 9);
+        EXPECT_EQ(c.shape()[0], 3);
+        EXPECT_EQ(c.shape()[1], 3);
         c.eval();
 
         EXPECT_EQ(c.data<float>()[0], 10 + 160);
@@ -230,9 +230,9 @@ TEST(binary_op, matmul){
         b.mutable_data<float>()[5] = 60;
 
         auto c = fn::matmul(a, b, true, true);
-        EXPECT_EQ(c.Size(), 4);
-        EXPECT_EQ(c.Shape()[0], 2);
-        EXPECT_EQ(c.Shape()[1], 2);
+        EXPECT_EQ(c.size(), 4);
+        EXPECT_EQ(c.shape()[0], 2);
+        EXPECT_EQ(c.shape()[1], 2);
         c.eval();
 
         EXPECT_EQ(c.data<float>()[0], 10 + 60 + 150);
@@ -258,9 +258,9 @@ TEST(binary_op, squared_difference){
     b.mutable_data<float>()[3] = 40;
 
     auto c = fn::squared_difference(a, b);
-    EXPECT_EQ(c.Size(), 4);
-    EXPECT_EQ(c.Shape()[0], 2);
-    EXPECT_EQ(c.Shape()[1], 2);
+    EXPECT_EQ(c.size(), 4);
+    EXPECT_EQ(c.shape()[0], 2);
+    EXPECT_EQ(c.shape()[1], 2);
     c.eval();
 
     EXPECT_EQ(c.data<float>()[0], std::pow(1 - -10, 2));

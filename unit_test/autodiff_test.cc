@@ -11,7 +11,7 @@ struct case0{
     case0(){
         one = fn::constant(1, {2, 2});
         three = fn::constant(3, {2, 2});
-        plus_1_2 = fn::add(one, fn::constant(2, one.Shape()));
+        plus_1_2 = fn::add(one, fn::constant(2, one.shape()));
         cube_of_3 = plus_1_2 * plus_1_2 * three;
         y = fn::mean(cube_of_3);
         y.eval();
@@ -35,27 +35,27 @@ TEST(autodiff_test, eval_check){
 
     // one = [1, 1, 1, 1]
     std::for_each(tcase.one.data<float>(),
-                  tcase.one.data<float>() + tcase.one.Size(),
+                  tcase.one.data<float>() + tcase.one.size(),
                   [](const float &val){ EXPECT_EQ(val, 1.f); });
 
     // three = [3, 3, 3, 3]
     std::for_each(tcase.three.data<float>(),
-                  tcase.three.data<float>() + tcase.three.Size(),
+                  tcase.three.data<float>() + tcase.three.size(),
                   [](const float &val){ EXPECT_EQ(val, 3.f); });
 
     // plus_1_2 = one + 2 = [3, 3, 3, 3]
     std::for_each(tcase.plus_1_2.data<float>(),
-                  tcase.plus_1_2.data<float>() + tcase.plus_1_2.Size(),
+                  tcase.plus_1_2.data<float>() + tcase.plus_1_2.size(),
                   [](const float &val){ EXPECT_EQ(val, 3.f); });
 
     //cube_of_3 = plus_1_2 * plus_1_2 * 3 = [27, 27, 27, 27]
     std::for_each(tcase.cube_of_3.data<float>(),
-                  tcase.cube_of_3.data<float>() + tcase.cube_of_3.Size(),
+                  tcase.cube_of_3.data<float>() + tcase.cube_of_3.size(),
                   [](const float &val){ EXPECT_EQ(val, 27.f); });
 
     //y = sumation(cube_of_3) / len(cube_of_3) = [27]
     std::for_each(tcase.y.data<float>(),
-                  tcase.y.data<float>() + tcase.y.Size(),
+                  tcase.y.data<float>() + tcase.y.size(),
                   [](const float &val){ EXPECT_EQ(val, 27.f); });
 }
 
@@ -67,30 +67,30 @@ TEST(autodiff_test, grad_check){
     // the gradient of root of computation graph is one.
     answer = 1.f;
     std::for_each(tcase.y.grad().data<float>(),
-        tcase.y.grad().data<float>() + tcase.y.grad().Size(),
+        tcase.y.grad().data<float>() + tcase.y.grad().size(),
         [&](const float &val){ EXPECT_EQ(val, answer); });
 
     // gradient of cube_of_3 = 1 / len(cube_of_3)
-    answer = 1.f / tcase.cube_of_3.Size();
+    answer = 1.f / tcase.cube_of_3.size();
     std::for_each(tcase.cube_of_3.grad().data<float>(),
-        tcase.cube_of_3.grad().data<float>() + tcase.cube_of_3.grad().Size(),
+        tcase.cube_of_3.grad().data<float>() + tcase.cube_of_3.grad().size(),
         [&](const float &val){ EXPECT_EQ(val, answer); });
 
     // gradient of three = plus_1_2 * plus_1_2 * dy
     answer = 3.f * 3.f * answer;
     std::for_each(tcase.three.grad().data<float>(),
-        tcase.three.grad().data<float>() + tcase.three.grad().Size(),
+        tcase.three.grad().data<float>() + tcase.three.grad().size(),
         [&](const float &val){ EXPECT_EQ(val, answer); });
 
     // gradient of plus_1_2 = 2 * plus_1_2 * dy
-    answer = 2.f * 3.f * 3.f * 1.f / tcase.cube_of_3.Size();
+    answer = 2.f * 3.f * 3.f * 1.f / tcase.cube_of_3.size();
     std::for_each(tcase.plus_1_2.grad().data<float>(),
-        tcase.plus_1_2.grad().data<float>() + tcase.plus_1_2.grad().Size(),
+        tcase.plus_1_2.grad().data<float>() + tcase.plus_1_2.grad().size(),
         [&](const float &val){ EXPECT_EQ(val, answer); });
 
     // gradient of one = dy
     answer = answer;
     std::for_each(tcase.one.grad().data<float>(),
-        tcase.one.grad().data<float>() + tcase.one.grad().Size(),
+        tcase.one.grad().data<float>() + tcase.one.grad().size(),
         [&](const float &val){ EXPECT_EQ(val, answer); });
 }
