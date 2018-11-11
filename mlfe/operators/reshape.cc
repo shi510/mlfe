@@ -1,5 +1,4 @@
 #include "reshape.h"
-#include "../core/op_dep.h"
 #include "../core/gradient_helper.h"
 
 namespace mlfe{ namespace functional{

@@ -1,5 +1,4 @@
 #include "activations.h"
-#include "../core/op_dep.h"
 #include "../core/op_algo.h"
 #include "../core/tensor.h"
 #include "../core/gradient_helper.h"

@@ -2,7 +2,6 @@
 #define __GRADIENT_HELPER_HPP__
 #include "op_design.h"
 #include "graph.h"
-#include "op_dep.h"
 #include <memory>
 #include <string>
 #include <vector>
