@@ -17,17 +17,17 @@ REGIST_OP(SquaredDifference)
         auto x2 = odc->Input(1);
         auto y = odc->Output(0);
         
-        if(x1.Dims() != x2.Dims()){
+        if(x1.dims() != x2.dims()){
             throw std::string("squared_difference op : ") +
-                std::string("x1.Shape() != x2.Shape()");
+                std::string("x1.shape() != x2.shape()");
         }
-        for(int n = 0; n < x1.Dims(); ++n){
-            if(x1.Shape()[n] != x2.Shape()[n]){
+        for(int n = 0; n < x1.dims(); ++n){
+            if(x1.shape()[n] != x2.shape()[n]){
                 throw std::string("squared_difference op : ") +
-                    std::string("x1.Shape() != x2.Shape()");
+                    std::string("x1.shape() != x2.shape()");
             }
         }
-        y.Reshape(x1.Shape(), type::float32());
+        y.reshape(x1.shape(), type::float32());
     })
     .Finish();
 
@@ -43,8 +43,8 @@ REGIST_OP_GRAD(SquaredDifference)
         auto dy = odc->Input(2);
         auto dx1 = odc->Output(0);
         auto dx2 = odc->Output(1);
-        dx1.Reshape(x1.Shape(), type::float32());
-        dx2.Reshape(x2.Shape(), type::float32());
+        dx1.reshape(x1.shape(), type::float32());
+        dx2.reshape(x2.shape(), type::float32());
     })
     .Finish();
 
@@ -58,7 +58,7 @@ public:
         VecTensor in_grads;
         auto x1 = y.get_children()[0];
         auto x2 = y.get_children()[1];
-        auto two = functional::constant(2, x1.Shape());
+        auto two = functional::constant(2, x1.shape());
         Tensor dx1 = fn::mul(two, fn::sub(x1, x2));
         Tensor dx2 = fn::negative(fn::mul(two, fn::sub(x1, x2)));
         in_grads.push_back(dx1);
@@ -70,7 +70,7 @@ public:
 REGIST_GRADIENT_HELPER(SquaredDifference, SquaredDifferenceGradient)
 
 Tensor squared_difference(Tensor x1, Tensor x2){
-    Tensor y = create_variable(x1.Shape());
+    Tensor y = create_variable(x1.shape());
     OpAlgoContext ctx("SquaredDifference");
     y.add_child(x1);
     y.add_child(x2);

@@ -131,12 +131,12 @@ Tensor::const_iterator<T> Tensor::cbegin(){
 
 template <typename T>
 Tensor::iterator<T> Tensor::end(){
-    return iterator<T>(mutable_data<T>() + Size());
+    return iterator<T>(mutable_data<T>() + size());
 }
 
 template <typename T>
 Tensor::const_iterator<T> Tensor::cend(){
-    return const_iterator<T>(data<T>() + Size());
+    return const_iterator<T>(data<T>() + size());
 }
 
 template <typename T>

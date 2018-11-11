@@ -16,9 +16,9 @@ public:
         y = oac->get_output(0);
         x = y.get_children()[0];
         w = y.get_children()[1];
-        auto x_shape = x.Shape();
-        auto w_shape = w.Shape();
-        auto y_shape = y.Shape();
+        auto x_shape = x.shape();
+        auto w_shape = w.shape();
+        auto y_shape = y.shape();
         filters_hw.resize(2);
         filters_hw[0] = w_shape[2];
         filters_hw[1] = w_shape[3];
@@ -70,7 +70,7 @@ public:
             /*
             * next batch.
             */
-            x_ptr += x.Size() / batch;
+            x_ptr += x.size() / batch;
             y_ptr += n * m;
         }
     }
@@ -109,24 +109,24 @@ public:
         dx = oac->get_output(0);
         w = dx.get_children()[0];
         dy = dx.get_children()[1];
-        filters = w.Shape()[0];
+        filters = w.shape()[0];
         filters_hw.resize(2);
-        filters_hw[0] = w.Shape()[2];
-        filters_hw[1] = w.Shape()[3];
+        filters_hw[0] = w.shape()[2];
+        filters_hw[1] = w.shape()[3];
         strides = oac->get_attr<IntVec>("strides");
         pads = oac->get_attr<IntVec>("pads");
 
-        batch = dx.Shape()[0];
-        in_c = dx.Shape()[1];
-        in_h = dx.Shape()[2];
-        in_w = dx.Shape()[3];
+        batch = dx.shape()[0];
+        in_c = dx.shape()[1];
+        in_h = dx.shape()[2];
+        in_w = dx.shape()[3];
 
         // Output Filters.
         m = filters;
         // Output Feature Map Size.
-        n = dy.Shape()[2] * dy.Shape()[3];
+        n = dy.shape()[2] * dy.shape()[3];
         // Weight Size.
-        k = w.Shape()[1] * filters_hw[1] * filters_hw[0];
+        k = w.shape()[1] * filters_hw[1] * filters_hw[0];
 
         col_buf = create_memory(k * n * Tp::size);
     }
@@ -138,7 +138,7 @@ public:
         auto col_ptr = col_buf->mutable_device_data<T>();
 
         //math::set<T, CUDAContext>(
-        //    dx_t.Size(),
+        //    dx_t.size(),
         //    static_cast<T>(0),
         //    dx_ptr
         //    );
@@ -166,7 +166,7 @@ public:
             /*
             * next batch.
             */
-            dx_ptr += dx.Size() / batch;
+            dx_ptr += dx.size() / batch;
             dy_ptr += n * m;
         }
     }
@@ -206,24 +206,24 @@ public:
         dw = oac->get_output(0);
         x = dw.get_children()[0];
         dy = dw.get_children()[1];
-        filters = dw.Shape()[0];
+        filters = dw.shape()[0];
         filters_hw.resize(2);
-        filters_hw[0] = dw.Shape()[2];
-        filters_hw[1] = dw.Shape()[3];
+        filters_hw[0] = dw.shape()[2];
+        filters_hw[1] = dw.shape()[3];
         strides = oac->get_attr<IntVec>("strides");
         pads = oac->get_attr<IntVec>("pads");
 
-        batch = x.Shape()[0];
-        in_c = x.Shape()[1];
-        in_h = x.Shape()[2];
-        in_w = x.Shape()[3];
+        batch = x.shape()[0];
+        in_c = x.shape()[1];
+        in_h = x.shape()[2];
+        in_w = x.shape()[3];
 
         // Output Filters.
         m = filters;
         // Output Feature Map Size.
-        n = dy.Shape()[2] * dy.Shape()[3];
+        n = dy.shape()[2] * dy.shape()[3];
         // Weight Size.
-        k = x.Shape()[1] * filters_hw[1] * filters_hw[0];
+        k = x.shape()[1] * filters_hw[1] * filters_hw[0];
 
         col_buf = create_memory(k * n * Tp::size);
     }
@@ -235,7 +235,7 @@ public:
         auto col_ptr = col_buf->mutable_device_data<T>();
 
         math::set<T, CUDAContext>(
-            dw.Size(),
+            dw.size(),
             static_cast<T>(0),
             dw_ptr
             );
@@ -266,7 +266,7 @@ public:
             /*
             * next batch.
             */
-            x_ptr += x.Size() / batch;
+            x_ptr += x.size() / batch;
             dy_ptr += n * m;
         }
     }

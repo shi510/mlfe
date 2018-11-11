@@ -15,7 +15,7 @@ public:
         y = oac->get_output(0);
         x1 = y.get_children()[0];
         x2 = y.get_children()[1];
-        size = x1.Size();
+        size = x1.size();
     }
     
     void Compute() override{

@@ -16,8 +16,8 @@ public:
         logit = loss.get_children()[0];
         label = loss.get_children()[1];
 
-        m = logit.Shape()[0];
-        n = logit.Shape()[1];
+        m = logit.shape()[0];
+        n = logit.shape()[1];
     }
 
     void Compute() override{
@@ -60,8 +60,8 @@ public:
         logit = logit_grad.get_children()[0];
         label = logit_grad.get_children()[1];
         loss_grad = logit_grad.get_children()[3];
-        m = logit.Shape()[0];
-        n = logit.Shape()[1];
+        m = logit.shape()[0];
+        n = logit.shape()[1];
     }
 
     void Compute() override{
@@ -108,8 +108,8 @@ public:
         loss = oac->get_output(0);
         logit = loss.get_children()[0];
         label = loss.get_children()[1];
-        m = logit.Shape()[0];
-        n = logit.Shape()[1];
+        m = logit.shape()[0];
+        n = logit.shape()[1];
         size = m * n;
 
         prob = create_memory(m * n * Tp::size);
@@ -204,8 +204,8 @@ public:
         logit = logit_grad.get_children()[0];
         label = logit_grad.get_children()[1];
         loss_grad = logit_grad.get_children()[3];
-        m = logit.Shape()[0];
-        n = logit.Shape()[1];
+        m = logit.shape()[0];
+        n = logit.shape()[1];
         size = m * n;
 
         prob = create_memory(m * n * Tp::size);

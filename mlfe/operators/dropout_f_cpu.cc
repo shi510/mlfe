@@ -15,7 +15,7 @@ public:
         x = y.get_children()[0];
         mask = oac->get_attr<Tensor>("mask");
         prob = oac->get_attr<Tensor>("prob");
-        size = x.Size();
+        size = x.size();
         
     }
 
@@ -67,7 +67,7 @@ public:
         dy = dx.get_children()[1];
         mask = oac->get_attr<Tensor>("mask");
         prob = oac->get_attr<Tensor>("prob");
-        size = dy.Size();
+        size = dy.size();
     }
 
     void Compute() override{

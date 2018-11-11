@@ -18,7 +18,7 @@ public:
         beta1 = oac->get_attr<T>("Beta1");
         beta2 = oac->get_attr<T>("Beta2");
         eps = oac->get_attr<T>("Epsilon");
-        size = x.Size();
+        size = x.size();
 
         m_hist = create_memory(size * Tp::size);
         v_hist = create_memory(size * Tp::size);

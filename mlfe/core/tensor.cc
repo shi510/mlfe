@@ -42,7 +42,7 @@ Tensor::Tensor(std::vector<int> shape)
 
 Tensor::~Tensor(){}
 
-std::string Variable::Name() const{
+std::string Variable::name() const{
     return *_name + "_" + std::to_string(_id->Id());
 }
 
@@ -168,7 +168,7 @@ void Tensor::compute_gradient(const Tensor root){
         return v1.get_exec_order() > v2.get_exec_order();
     });
     // root gradient is 1.
-    dy_collector[root].push_back(functional::constant(1, root.Shape()));
+    dy_collector[root].push_back(functional::constant(1, root.shape()));
     // set root gradient.
     root._pimpl->_gradient = make_ptr(dy_collector[root][0]);
     root._pimpl->_gradient->eval();
@@ -230,8 +230,8 @@ namespace functional{
 
 Tensor create_variable(std::vector<int> shape){
     Tensor var;
-    var.Reshape(shape);
-    var._pimpl->_mem = create_memory(var.Size() * var.Type().size);
+    var.reshape(shape);
+    var._pimpl->_mem = create_memory(var.size() * var.type().size);
     return var;
 }
 
@@ -243,7 +243,7 @@ Tensor reshape(Tensor x, std::vector<int> shape){
     y._pimpl->_gradient = nullptr;
     y._pimpl->_ctx = x._pimpl->_ctx;
     y._pimpl->_mem = x._pimpl->_mem;
-    y.Reshape(shape);
+    y.reshape(shape);
     Tensor::AssignOpFunctor(y, ctx);
     return y;
 }

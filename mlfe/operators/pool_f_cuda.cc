@@ -20,11 +20,11 @@ public:
         pads = oac->get_attr<IntVec>("padding");
         idx = oac->get_attr<Tensor>("idx");
 
-        in_c = x.Shape()[1];
-        in_h = x.Shape()[2];
-        in_w = x.Shape()[3];
-        out_h = y.Shape()[2];
-        out_w = y.Shape()[3];
+        in_c = x.shape()[1];
+        in_h = x.shape()[2];
+        in_w = x.shape()[3];
+        out_h = y.shape()[2];
+        out_w = y.shape()[3];
     }
 
     void Compute() override{
@@ -33,7 +33,7 @@ public:
         auto y_ptr = y.mutable_device_data<T>();
 
         math::MaxPool<T, CUDAContext>(
-            y.Size(), x_ptr,
+            y.size(), x_ptr,
             in_c, in_h, in_w,
             out_h, out_w,
             filters_hw[0], filters_hw[1], strides[0], strides[1],
@@ -77,11 +77,11 @@ public:
         pads = oac->get_attr<IntVec>("padding");
         idx = oac->get_attr<Tensor>("idx");
 
-        in_c = x.Shape()[1];
-        in_h = x.Shape()[2];
-        in_w = x.Shape()[3];
-        out_h = dy.Shape()[2];
-        out_w = dy.Shape()[3];
+        in_c = x.shape()[1];
+        in_h = x.shape()[2];
+        in_w = x.shape()[3];
+        out_h = dy.shape()[2];
+        out_w = dy.shape()[3];
     }
 
     void Compute() override{
@@ -91,7 +91,7 @@ public:
         auto dx_ptr = dx.mutable_device_data<T>();
 
         math::MaxPoolGradient<T, CUDAContext>(
-            dy.Size(),
+            dy.size(),
             dy_ptr, idx_ptr,
             in_c, in_h, in_w,
             out_h, out_w,

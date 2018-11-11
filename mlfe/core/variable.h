@@ -17,9 +17,9 @@ public:
 
     void reshape(std::vector<int> dims);
 
-    const std::vector<int> &Dims() const;
+    const std::vector<int> &dims() const;
 
-    void Clear();
+    void clear();
 
 private:
     std::vector<int> _dims;
@@ -35,23 +35,23 @@ public:
 
     Variable(const Variable &) = default;
 
-    std::string Name() const;
+    std::string name() const;
 
-    void SetName(std::string name){
+    void set_name(std::string name){
         *_name = name;
     }
 
-    int Size() const;
+    int size() const;
 
-    int Dims() const;
+    int dims() const;
 
-    int Dim(int idx) const;
+    int dim(int idx) const;
 
-    std::vector<int> Shape() const;
+    std::vector<int> shape() const;
 
-    void Reshape(std::vector<int> shape, type::TypeInfo ti = type::float32());
+    void reshape(std::vector<int> shape, type::TypeInfo ti = type::float32());
 
-    type::TypeInfo Type() const;
+    type::TypeInfo type() const;
 
 private:
     class UniqueID{

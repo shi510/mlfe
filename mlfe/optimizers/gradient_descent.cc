@@ -31,16 +31,16 @@ gradient_descent::gradient_descent(double lr, double momentum)
 void gradient_descent::apply(Tensor var, Tensor var_grad){
 #if defined(OPTION_USE_CUDNN) || defined(OPTION_USE_CUDA)
     if(_var_hist.find(var_grad) == _var_hist.end()){
-        auto mem = create_memory(var_grad.Size() * sizeof(float));
+        auto mem = create_memory(var_grad.size() * sizeof(float));
         math::set<float, CUDAContext>(
-            var_grad.Size(),
+            var_grad.size(),
             static_cast<float>(0),
             mem->mutable_device_data<float>()
             );
         _var_hist[var_grad] = mem;
     }
     math::gradient_descent_momentum<float, CUDAContext>(
-        var.Size(),
+        var.size(),
         var.mutable_device_data<float>(),
         var_grad.mutable_device_data<float>(),
         _var_hist[var_grad]->mutable_device_data<float>(),
@@ -50,16 +50,16 @@ void gradient_descent::apply(Tensor var, Tensor var_grad){
         );
 #else
     if(_var_hist.find(var_grad) == _var_hist.end()){
-        auto mem = create_memory(var_grad.Size() * sizeof(float));
+        auto mem = create_memory(var_grad.size() * sizeof(float));
         math::set<float, CPUContext>(
-            var_grad.Size(),
+            var_grad.size(),
             static_cast<float>(0),
             mem->mutable_device_data<float>()
             );
         _var_hist[var_grad] = mem;
     }
     math::gradient_descent_momentum<float, CPUContext>(
-        var.Size(),
+        var.size(),
         var.mutable_device_data<float>(),
         var_grad.device_data<float>(),
         _var_hist[var_grad]->mutable_device_data<float>(),

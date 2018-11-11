@@ -17,11 +17,11 @@ void Shape::reshape(std::vector<int> dims){
     _dims = dims;
 }
 
-const std::vector<int> &Shape::Dims() const{
+const std::vector<int> &Shape::dims() const{
     return _dims;
 }
 
-void Shape::Clear(){
+void Shape::clear(){
     _dims.clear();
 }
 
@@ -43,38 +43,38 @@ Variable::Variable(std::vector<int> shape) : ti(type::float32()){
     _name = std::make_shared<std::string>("Variable");
     _id = std::make_shared<UniqueID>();
     _shape = std::make_shared<class Shape>(shape);
-    _size = std::accumulate(_shape->Dims().begin(),
-        _shape->Dims().end(), 1, std::multiplies<int>());
+    _size = std::accumulate(_shape->dims().begin(),
+        _shape->dims().end(), 1, std::multiplies<int>());
 }
 
-int Variable::Size() const{
+int Variable::size() const{
     //std::cout << _size << std::endl;
     //std::cout << std::accumulate(_shape->Dims().begin(),
     //    _shape->Dims().end(), 1, std::multiplies<int>()) << std::endl;
-    return std::accumulate(_shape->Dims().begin(),
-        _shape->Dims().end(), 1, std::multiplies<int>());
+    return std::accumulate(_shape->dims().begin(),
+        _shape->dims().end(), 1, std::multiplies<int>());
 }
 
-int Variable::Dims() const{
-    return _shape->Dims().size();
+int Variable::dims() const{
+    return _shape->dims().size();
 }
 
-int Variable::Dim(int idx) const{
-    return _shape->Dims()[idx];
+int Variable::dim(int idx) const{
+    return _shape->dims()[idx];
 }
 
-std::vector<int> Variable::Shape() const{
-    return _shape->Dims();
+std::vector<int> Variable::shape() const{
+    return _shape->dims();
 }
 
-void Variable::Reshape(std::vector<int> shape, type::TypeInfo ti){
+void Variable::reshape(std::vector<int> shape, type::TypeInfo ti){
     _shape->reshape(shape);
-    _size = std::accumulate(_shape->Dims().begin(),
-        _shape->Dims().end(), 1, std::multiplies<int>());
+    _size = std::accumulate(_shape->dims().begin(),
+        _shape->dims().end(), 1, std::multiplies<int>());
     this->ti = ti;
 }
 
-type::TypeInfo Variable::Type() const{
+type::TypeInfo Variable::type() const{
     return ti;
 }
 } // end namespace mlfe;

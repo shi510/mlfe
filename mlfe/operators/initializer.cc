@@ -12,7 +12,7 @@ REGIST_OP(Constant)
     .ShapeInference([](OpDesignContext * odc){
         auto y = odc->Output(0);
         auto shape = odc->GetAttr<std::vector<int>>("shape");
-        y.Reshape(shape);
+        y.reshape(shape);
     })
     .Finish();
 
@@ -23,7 +23,7 @@ REGIST_OP(Normal)
     .ShapeInference([](OpDesignContext * odc){
         auto y = odc->Output(0);
         auto shape = odc->GetAttr<std::vector<int>>("shape");
-        y.Reshape(shape);
+        y.reshape(shape);
     })
     .Finish();
 

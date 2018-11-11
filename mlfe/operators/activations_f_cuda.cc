@@ -12,7 +12,7 @@ public:
     ReLU(OpAlgoContext *oac) : OpAlgo(oac, "ReLU"){
         y = oac->get_output(0);
         x = y.get_children()[0];
-        size = x.Size();
+        size = x.size();
     }
 
     void Compute() override{
@@ -48,7 +48,7 @@ public:
         dx = oac->get_output(0);
         x = dx.get_children()[0];
         dy = dx.get_children()[2];
-        size = x.Size();
+        size = x.size();
     }
 
     void Compute() override{
@@ -90,7 +90,7 @@ public:
     Sigmoid(OpAlgoContext *oac) : OpAlgo(oac, "Sigmoid"){
         y = oac->get_output(0);
         x = y.get_children()[0];
-        size = x.Size();
+        size = x.size();
     }
 
     void Compute() override{
@@ -126,7 +126,7 @@ public:
         dx = oac->get_output(0);
         x = dx.get_children()[0];
         dy = dx.get_children()[2];
-        size = x.Size();
+        size = x.size();
     }
 
     void Compute() override{

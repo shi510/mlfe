@@ -19,8 +19,8 @@ public:
         y = oac->get_output(0);
         x = y.get_children()[0];
         std::fill(shape.begin(), shape.end(), 1);
-        for(int n = 0; n < x.Shape().size(); ++n){
-            shape[n] = x.Shape()[n];
+        for(int n = 0; n < x.shape().size(); ++n){
+            shape[n] = x.shape()[n];
         }
         cudnnCreate(&handle);
         cudnnCreateTensorDescriptor(&x_desc);
@@ -90,8 +90,8 @@ public:
         y = x_grad.get_children()[1];
         y_grad = x_grad.get_children()[2];
         std::fill(shape.begin(), shape.end(), 1);
-        for(int n = 0; n < x.Shape().size(); ++n){
-            shape[n] = x.Shape()[n];
+        for(int n = 0; n < x.shape().size(); ++n){
+            shape[n] = x.shape()[n];
         }
         cudnnCreate(&handle);
         cudnnCreateTensorDescriptor(&x_desc);
@@ -164,8 +164,8 @@ public:
         y = oac->get_output(0);
         x = y.get_children()[0];
         std::fill(shape.begin(), shape.end(), 1);
-        for(int n = 0; n < x.Shape().size(); ++n){
-            shape[n] = x.Shape()[n];
+        for(int n = 0; n < x.shape().size(); ++n){
+            shape[n] = x.shape()[n];
         }
         cudnnCreate(&handle);
         cudnnCreateTensorDescriptor(&x_desc);
@@ -236,8 +236,8 @@ public:
         y = x_grad.get_children()[1];
         y_grad = x_grad.get_children()[2];
         std::fill(shape.begin(), shape.end(), 1);
-        for(int n = 0; n < x.Shape().size(); ++n){
-            shape[n] = x.Shape()[n];
+        for(int n = 0; n < x.shape().size(); ++n){
+            shape[n] = x.shape()[n];
         }
         cudnnCreate(&handle);
         cudnnCreateTensorDescriptor(&x_desc);

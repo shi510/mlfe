@@ -19,30 +19,30 @@ REGIST_OP(MatMul)
         bool trans_b = odc->GetAttr<bool>("trans_b");
         std::vector<int> y_shape(2);
 
-        runtime_assert(a.Shape().size() == 2,
+        runtime_assert(a.shape().size() == 2,
             "MatMulOp : A is not a matrix.");
 
-        runtime_assert(b.Shape().size() == 2,
+        runtime_assert(b.shape().size() == 2,
             "MatMulOp : B is not a matrix.");
 
         if(trans_a && !trans_b){
-            y_shape[0] = a.Shape()[1];
-            y_shape[1] = b.Shape()[1];
+            y_shape[0] = a.shape()[1];
+            y_shape[1] = b.shape()[1];
         }
         else if(!trans_a && trans_b){
-            y_shape[0] = a.Shape()[0];
-            y_shape[1] = b.Shape()[0];
+            y_shape[0] = a.shape()[0];
+            y_shape[1] = b.shape()[0];
         }
         else if(trans_a && trans_b){
-            y_shape[0] = a.Shape()[1];
-            y_shape[1] = b.Shape()[0];
+            y_shape[0] = a.shape()[1];
+            y_shape[1] = b.shape()[0];
         }
         else{
-            y_shape[0] = a.Shape()[0];
-            y_shape[1] = b.Shape()[1];
+            y_shape[0] = a.shape()[0];
+            y_shape[1] = b.shape()[1];
         }
 
-        y.Reshape(y_shape, type::float32());
+        y.reshape(y_shape, type::float32());
     })
     .Finish();
 
@@ -58,8 +58,8 @@ REGIST_OP_GRAD(MatMul)
         auto b = odc->Input(1);
         auto db = odc->Output(0);
         auto da = odc->Output(1);
-        db.Reshape(b.Shape(), type::float32());
-        da.Reshape(a.Shape(), type::float32());
+        db.reshape(b.shape(), type::float32());
+        da.reshape(a.shape(), type::float32());
     })
     .Finish();
 
@@ -91,27 +91,27 @@ Tensor matmul(Tensor a, Tensor b, bool trans_a, bool trans_b){
     Tensor y;
     OpAlgoContext ctx("MatMul");
     std::vector<int> y_shape(2);
-    runtime_assert(a.Shape().size() == 2,
+    runtime_assert(a.shape().size() == 2,
         "MatMulOp : A is not a matrix.");
 
-    runtime_assert(b.Shape().size() == 2,
+    runtime_assert(b.shape().size() == 2,
         "MatMulOp : B is not a matrix.");
 
     if(trans_a && !trans_b){
-        y_shape[0] = a.Shape()[1];
-        y_shape[1] = b.Shape()[1];
+        y_shape[0] = a.shape()[1];
+        y_shape[1] = b.shape()[1];
     }
     else if(!trans_a && trans_b){
-        y_shape[0] = a.Shape()[0];
-        y_shape[1] = b.Shape()[0];
+        y_shape[0] = a.shape()[0];
+        y_shape[1] = b.shape()[0];
     }
     else if(trans_a && trans_b){
-        y_shape[0] = a.Shape()[1];
-        y_shape[1] = b.Shape()[0];
+        y_shape[0] = a.shape()[1];
+        y_shape[1] = b.shape()[0];
     }
     else{
-        y_shape[0] = a.Shape()[0];
-        y_shape[1] = b.Shape()[1];
+        y_shape[0] = a.shape()[0];
+        y_shape[1] = b.shape()[1];
     }
     y = create_variable(y_shape);
     y.add_child(a);

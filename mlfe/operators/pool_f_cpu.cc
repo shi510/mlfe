@@ -22,12 +22,12 @@ public:
         pads = oac->get_attr<IntVec>("padding");
         idx = oac->get_attr<Tensor>("idx");
 
-        batch = x.Shape()[0];
-        in_c = x.Shape()[1];
-        in_h = x.Shape()[2];
-        in_w = x.Shape()[3];
-        out_h = y.Shape()[2];
-        out_w = y.Shape()[3];
+        batch = x.shape()[0];
+        in_c = x.shape()[1];
+        in_h = x.shape()[2];
+        in_w = x.shape()[3];
+        out_h = y.shape()[2];
+        out_w = y.shape()[3];
     }
 
     void Compute() override{
@@ -36,7 +36,7 @@ public:
         auto y_ptr = y.mutable_device_data<T>();
 
         math::set<T, CPUContext>(
-            y.Size(),
+            y.size(),
             T(-FLT_MAX),
             y.mutable_device_data<T>()
             );
@@ -104,12 +104,12 @@ public:
         pads = oac->get_attr<IntVec>("padding");
         idx = oac->get_attr<Tensor>("idx");
 
-        batch = x.Shape()[0];
-        in_c = x.Shape()[1];
-        in_h = x.Shape()[2];
-        in_w = x.Shape()[3];
-        out_h = dy.Shape()[2];
-        out_w = dy.Shape()[3];
+        batch = x.shape()[0];
+        in_c = x.shape()[1];
+        in_h = x.shape()[2];
+        in_w = x.shape()[3];
+        out_h = dy.shape()[2];
+        out_w = dy.shape()[3];
     }
 
     void Compute() override{
@@ -119,7 +119,7 @@ public:
         auto dx_ptr = dx.mutable_device_data<T>();
 
         math::set<T, CPUContext>(
-            dx.Size(),
+            dx.size(),
             static_cast<T>(0),
             dx_ptr
             );

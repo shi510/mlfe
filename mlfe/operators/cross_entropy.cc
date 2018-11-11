@@ -12,7 +12,7 @@ REGIST_OP(SigmoidCrossEntropy)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto loss = odc->Output(0);
-        loss.Reshape({ x.Shape()[0] }, type::float32());
+        loss.reshape({ x.shape()[0] }, type::float32());
     })
     .Finish();
 
@@ -24,7 +24,7 @@ REGIST_OP_GRAD(SigmoidCrossEntropy)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -37,8 +37,8 @@ public:
         VecTensor in_grads;
         Tensor logit = y.get_children()[0];
         Tensor label = y.get_children()[1];
-        Tensor logit_grad = functional::create_variable(logit.Shape());
-        Tensor label_grad = functional::create_variable(label.Shape());
+        Tensor logit_grad = functional::create_variable(logit.shape());
+        Tensor label_grad = functional::create_variable(label.shape());
         OpAlgoContext ctx("SigmoidCrossEntropyGradient");
         logit_grad.add_child(logit);
         logit_grad.add_child(label);
@@ -61,7 +61,7 @@ REGIST_OP(SoftmaxCrossEntropyWithLabel)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto loss = odc->Output(0);
-        loss.Reshape({ x.Shape()[0] }, type::float32());
+        loss.reshape({ x.shape()[0] }, type::float32());
     })
     .Finish();
 
@@ -73,7 +73,7 @@ REGIST_OP_GRAD(SoftmaxCrossEntropyWithLabel)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -86,8 +86,8 @@ public:
         VecTensor in_grads;
         Tensor logit = y.get_children()[0];
         Tensor label = y.get_children()[1];
-        Tensor logit_grad = functional::create_variable(logit.Shape());
-        Tensor label_grad = functional::create_variable(label.Shape());
+        Tensor logit_grad = functional::create_variable(logit.shape());
+        Tensor label_grad = functional::create_variable(label.shape());
         OpAlgoContext ctx("SoftmaxCrossEntropyWithLabelGradient");
         logit_grad.add_child(logit);
         logit_grad.add_child(label);
@@ -106,7 +106,7 @@ REGIST_GRADIENT_HELPER(SoftmaxCrossEntropyWithLabel, SoftmaxCrossEntropyWithLabe
 namespace functional{
 
 Tensor softmax_cross_entropy(Tensor logit, Tensor label){
-    Tensor xent = create_variable({logit.Shape()[0]});
+    Tensor xent = create_variable({logit.shape()[0]});
     OpAlgoContext ctx("SoftmaxCrossEntropyWithLabel");
     xent.add_child(logit);
     xent.add_child(label);
@@ -116,7 +116,7 @@ Tensor softmax_cross_entropy(Tensor logit, Tensor label){
 }
 
 Tensor sigmoid_cross_entropy(Tensor logit, Tensor label){
-    Tensor xent = create_variable({logit.Shape()[0]});
+    Tensor xent = create_variable({logit.shape()[0]});
     OpAlgoContext ctx("SigmoidCrossEntropy");
     xent.add_child(logit);
     xent.add_child(label);

@@ -15,7 +15,7 @@ public:
     Constant(OpAlgoContext *oac) : OpAlgo(oac, "Constant"){
         y = oac->get_output(0);
         value = oac->get_attr<type::float32::T>("value");
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
@@ -48,7 +48,7 @@ public:
         y = oac->get_output(0);
         std = oac->get_attr<type::float32::T>("std");
         clip = oac->get_attr<bool>("clip");
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{

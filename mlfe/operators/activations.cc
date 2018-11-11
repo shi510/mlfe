@@ -12,8 +12,8 @@ REGIST_OP(ReLU)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto y = odc->Output(0);
-        if (x.Name() != y.Name()){
-            y.Reshape(x.Shape(), x.Type());
+        if (x.name() != y.name()){
+            y.reshape(x.shape(), x.type());
         }
     })
     .Finish();
@@ -26,7 +26,7 @@ REGIST_OP_GRAD(ReLU)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), x.Type());
+        dx.reshape(x.shape(), x.type());
     })
     .Finish();
 
@@ -38,7 +38,7 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor x = y.get_children()[0];
-        Tensor dx = create_variable(x.Shape());
+        Tensor dx = create_variable(x.shape());
         OpAlgoContext cxt("ReLUGradient");
         dx.add_child(x);
         dx.add_child(y);
@@ -57,8 +57,8 @@ REGIST_OP(Sigmoid)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto y = odc->Output(0);
-        if(x.Name() != y.Name()){
-            y.Reshape(x.Shape(), x.Type());
+        if(x.name() != y.name()){
+            y.reshape(x.shape(), x.type());
         }
     })
     .Finish();
@@ -71,7 +71,7 @@ REGIST_OP_GRAD(Sigmoid)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), x.Type());
+        dx.reshape(x.shape(), x.type());
     })
     .Finish();
 
@@ -83,7 +83,7 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor x = y.get_children()[0];
-        Tensor dx = create_variable(x.Shape());
+        Tensor dx = create_variable(x.shape());
         OpAlgoContext cxt("SigmoidGradient");
         dx.add_child(x);
         dx.add_child(y);
@@ -97,7 +97,7 @@ public:
 REGIST_GRADIENT_HELPER(Sigmoid, SigmoidGradient)
 
 Tensor relu(Tensor x){
-    Tensor y = functional::create_variable(x.Shape());
+    Tensor y = functional::create_variable(x.shape());
     OpAlgoContext cxt("ReLU");
     y.add_child(x);
     Tensor::AssignOpFunctor(y, cxt);
@@ -106,7 +106,7 @@ Tensor relu(Tensor x){
 }
 
 Tensor sigmoid(Tensor x){
-    Tensor y = functional::create_variable(x.Shape());
+    Tensor y = functional::create_variable(x.shape());
     OpAlgoContext cxt("Sigmoid");
     y.add_child(x);
     Tensor::AssignOpFunctor(y, cxt);

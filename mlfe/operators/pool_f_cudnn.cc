@@ -43,14 +43,14 @@ public:
             _x_desc,
             CUDNN_TENSOR_NCHW,
             cudnn_type(Tp::string),
-            x.Shape()[0], x.Shape()[1], x.Shape()[2], x.Shape()[3]
+            x.shape()[0], x.shape()[1], x.shape()[2], x.shape()[3]
         );
 
         cudnnSetTensor4dDescriptor(
             _y_desc,
             CUDNN_TENSOR_NCHW,
             cudnn_type(Tp::string),
-            y.Shape()[0], y.Shape()[1], y.Shape()[2], y.Shape()[3]
+            y.shape()[0], y.shape()[1], y.shape()[2], y.shape()[3]
         );
 
         ASSERT_SUCCESS(cudnnSetPooling2dDescriptor(
@@ -152,14 +152,14 @@ public:
             _dx_desc,
             CUDNN_TENSOR_NCHW,
             cudnn_type(Tp::string),
-            dx.Shape()[0], dx.Shape()[1], dx.Shape()[2], dx.Shape()[3]
+            dx.shape()[0], dx.shape()[1], dx.shape()[2], dx.shape()[3]
         );
 
         cudnnSetTensor4dDescriptor(
             _dy_desc,
             CUDNN_TENSOR_NCHW,
             cudnn_type(Tp::string),
-            dy.Shape()[0], dy.Shape()[1], dy.Shape()[2], dy.Shape()[3]
+            dy.shape()[0], dy.shape()[1], dy.shape()[2], dy.shape()[3]
         );
 
         ASSERT_SUCCESS(cudnnSetPooling2dDescriptor(

@@ -21,11 +21,11 @@ REGIST_OP(MaxPool)
         auto filters_hw = odc->GetAttr<IntVec>("filters_hw");
         auto strides = odc->GetAttr<IntVec>("strides");
         auto pads = odc->GetAttr<IntVec>("pads");
-        auto x_shape = x.Shape();
+        auto x_shape = x.shape();
         int out_h = (x_shape[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
         int out_w = (x_shape[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
-        idx.Reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
-        y.Reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
+        idx.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
+        y.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
     })
     .Finish();
 
@@ -38,7 +38,7 @@ REGIST_OP_GRAD(MaxPool)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -59,11 +59,11 @@ REGIST_OP(AvgPool)
         auto filters_hw = odc->GetAttr<IntVec>("filters_hw");
         auto strides = odc->GetAttr<IntVec>("strides");
         auto pads = odc->GetAttr<IntVec>("pads");
-        auto x_shape = x.Shape();
+        auto x_shape = x.shape();
         int out_h = (x_shape[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
         int out_w = (x_shape[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
-        idx.Reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
-        y.Reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
+        idx.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
+        y.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
     })
     .Finish();
 
@@ -76,7 +76,7 @@ REGIST_OP_GRAD(AvgPool)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -90,7 +90,7 @@ public:
         VecTensor in_grads;
         Tensor x = y.get_children()[0];
         Tensor idx = y.get_context().get_attr<Tensor>("idx");
-        Tensor dx = functional::create_variable(x.Shape());
+        Tensor dx = functional::create_variable(x.shape());
         auto y_ctx = y.get_context();
         OpAlgoContext ctx("MaxPoolGradient");
 
@@ -132,10 +132,10 @@ Tensor pool_max(Tensor x,
                 std::vector<int> stride, 
                 std::vector<int> padding
                ){
-    int out_h = (x.Shape()[2] - kernel[0] + 2 * padding[0]) / stride[0] + 1;
-    int out_w = (x.Shape()[3] - kernel[1] + 2 * padding[1]) / stride[1] + 1;
-    Tensor y = create_variable({x.Shape()[0], x.Shape()[1], out_h, out_w});
-    Tensor idx = create_variable({x.Shape()[0], x.Shape()[1], out_h, out_w});
+    int out_h = (x.shape()[2] - kernel[0] + 2 * padding[0]) / stride[0] + 1;
+    int out_w = (x.shape()[3] - kernel[1] + 2 * padding[1]) / stride[1] + 1;
+    Tensor y = create_variable({x.shape()[0], x.shape()[1], out_h, out_w});
+    Tensor idx = create_variable({x.shape()[0], x.shape()[1], out_h, out_w});
     OpAlgoContext ctx("MaxPool");
     y.add_child(x);
     ctx.add_attr({"kernel", kernel});

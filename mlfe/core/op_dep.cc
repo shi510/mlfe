@@ -31,10 +31,10 @@ std::string OpDep::UniqueName() const{
     std::stringstream ss;
     ss << "Name:" << odd->op_name;
     for (auto in : odd->inputs) {
-        ss << "/In:" << in.Name();
+        ss << "/In:" << in.name();
     }
     for (auto out : odd->outputs) {
-        ss << "/Out:" << out.Name();
+        ss << "/Out:" << out.name();
     }
     return ss.str();
 }

@@ -14,8 +14,8 @@ REGIST_OP(Dropout)
         auto x = odc->Input(0);
         auto y = odc->Output(0);
         auto mask = odc->Output(1);
-        y.Reshape(x.Shape(), type::float32());
-        mask.Reshape(x.Shape(), type::float32());
+        y.reshape(x.shape(), type::float32());
+        mask.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -29,7 +29,7 @@ REGIST_OP_GRAD(Dropout)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -41,7 +41,7 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         auto x = y.get_children()[0];
-        auto dx = functional::create_variable(x.Shape());
+        auto dx = functional::create_variable(x.shape());
         OpAlgoContext ctx("DropoutGradient");
         auto mask = y.get_context().get_attr<Tensor>("mask");
         auto prob = y.get_context().get_attr<Tensor>("prob");
@@ -58,8 +58,8 @@ public:
 REGIST_GRADIENT_HELPER(Dropout, DropoutGradient)
 
 Tensor dropout(Tensor x, Tensor prob){
-    Tensor y = create_variable(x.Shape());
-    Tensor dropout_mask = create_variable(x.Shape());
+    Tensor y = create_variable(x.shape());
+    Tensor dropout_mask = create_variable(x.shape());
     OpAlgoContext ctx("Dropout");
     y.add_child(x);
     ctx.add_attr({"mask", dropout_mask});

@@ -15,7 +15,7 @@ public:
     ReduceMean(OpAlgoContext *oac) : OpAlgo(oac, "ReduceMean"){
         y = oac->get_output(0);
         x = y.get_children()[0];
-        size = x.Size();
+        size = x.size();
     }
 
     void Compute() override{
@@ -49,7 +49,7 @@ public:
     ReduceMeanGrad(OpAlgoContext *oac) : OpAlgo(oac, "ReduceMeanGradient"){
         dx = oac->get_output(0);
         dy = dx.get_children()[0];
-        size = dx.Size();
+        size = dx.size();
         scale = T(1) / T(size);
     }
 

@@ -27,12 +27,12 @@ REGIST_OP(Convolution)
         auto filters_hw = odc->GetAttr<IntVec>("filters_hw");
         auto strides = odc->GetAttr<IntVec>("strides");
         auto pads = odc->GetAttr<IntVec>("pads");
-        auto x_shape = x.Shape();
-        w.Reshape({ filters, x_shape[1],
+        auto x_shape = x.shape();
+        w.reshape({ filters, x_shape[1],
             filters_hw[0], filters_hw[1] }, type::float32());
         int out_h = (x_shape[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
         int out_w = (x_shape[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
-        y.Reshape({ x.Shape()[0], filters, out_h, out_w }, type::float32());
+        y.reshape({ x.shape()[0], filters, out_h, out_w }, type::float32());
     })
     .Finish();
 
@@ -54,8 +54,8 @@ REGIST_OP_GRAD(Convolution)
         auto w = odc->Input(1);
         auto dw = odc->Output(0);
         auto dx = odc->Output(1);
-        dw.Reshape(w.Shape(), type::float32());
-        dx.Reshape(x.Shape(), type::float32());
+        dw.reshape(w.shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -69,8 +69,8 @@ public:
         VecTensor in_grads;
         Tensor x = y.get_children()[0];
         Tensor w = y.get_children()[1];
-        Tensor dx = functional::create_variable(x.Shape());
-        Tensor dw = functional::create_variable(w.Shape());
+        Tensor dx = functional::create_variable(x.shape());
+        Tensor dw = functional::create_variable(w.shape());
         OpAlgoContext ctx_x_grad("Conv2DGradientInputGradient");
         OpAlgoContext ctx_w_grad("Conv2DGradientFilterGradient");
         OpAlgoContext ctx = y.get_context();
@@ -97,8 +97,8 @@ Tensor conv2d(Tensor x,
               std::vector<type::int32::T> strides,
               std::vector<type::int32::T> pads
               ){
-    auto x_shape = x.Shape();
-    auto w_shape = w.Shape();
+    auto x_shape = x.shape();
+    auto w_shape = w.shape();
     int out_h = (x_shape[2] - w_shape[2] + 2 * pads[0]) / strides[0] + 1;
     int out_w = (x_shape[3] - w_shape[3] + 2 * pads[1]) / strides[1] + 1;
     Tensor y = create_variable({x_shape[0], w_shape[0], out_h, out_w});

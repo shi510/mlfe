@@ -17,7 +17,7 @@ public:
         lr = oac->get_attr<T>("LearningRate");
         mr = oac->get_attr<T>("MomentumRate");
         eps = oac->get_attr<T>("Epsilon");
-        size = x.Size();
+        size = x.size();
 
         grad_hist = create_memory(size * Tp::size);
         acc_hist = create_memory(size * Tp::size);

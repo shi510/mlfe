@@ -14,7 +14,7 @@ public:
     Negative(OpAlgoContext *oac) : OpAlgo(oac, "Negative"){
         y = oac->get_output(0);
         x = y.get_children()[0];
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
@@ -51,7 +51,7 @@ public:                                                              \
         y = oac->get_output(0);                                      \
         x1 = y.get_children()[0];                                    \
         x2 = y.get_children()[1];                                    \
-        size = y.Size();                                             \
+        size = y.size();                                             \
     }                                                                \
     void Compute() override{                                         \
         auto x1_ptr = x1.device_data<T>();                           \
@@ -91,7 +91,7 @@ using T = typename Tp::T;
 public:
     AddN(OpAlgoContext *oac) : OpAlgo(oac, "AddN"){
         y = oac->get_output(0);
-        size = y.Size();
+        size = y.size();
         _num_inputs = y.get_children().size();
         for(int n = 0; n < _num_inputs; ++n){
             xs.push_back(y.get_children()[n]);
@@ -133,8 +133,8 @@ public:
         y = oac->get_output(0);
         mat = y.get_children()[0];
         vec = y.get_children()[1];
-        m = mat.Shape()[0];
-        n = mat.Shape()[1];
+        m = mat.shape()[0];
+        n = mat.shape()[1];
         multiplier = create_memory(m * Tp::size);
         math::set<T, CPUContext>(m, T(1), 
                                  multiplier->mutable_device_data<T>());

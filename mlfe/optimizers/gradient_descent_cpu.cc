@@ -14,7 +14,7 @@ public:
         x = oac->get_output(0);
         x_grad = x.grad();
         lr = oac->get_attr<T>("LearningRate");
-        size = x.Size();
+        size = x.size();
     }
 
     void Compute() override{
@@ -59,7 +59,7 @@ public:
         lr = oac->get_attr<T>("LearningRate");
         mr = oac->get_attr<T>("MomentumRate");
         wd = oac->get_attr<T>("WeightDecay");
-        size = x.Size();
+        size = x.size();
         mmt_hist = create_memory(size * Tp::size);
 
         math::set<T, CPUContext>(

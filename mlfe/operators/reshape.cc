@@ -12,7 +12,7 @@ REGIST_OP(Reshape)
         auto x = odc->Input(0);
         auto y = odc->Output(0);
         auto shape = odc->GetAttr<std::vector<type::int32::T>>("shape");
-        y.Reshape(shape, type::float32());
+        y.reshape(shape, type::float32());
     })
     .Finish();
 
@@ -23,7 +23,7 @@ REGIST_OP_GRAD(Reshape)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -35,7 +35,7 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor x = y.get_children()[0];
-        Tensor dx = functional::reshape(dy, x.Shape());
+        Tensor dx = functional::reshape(dy, x.shape());
         in_grads.push_back(dx);
         return in_grads;
     }

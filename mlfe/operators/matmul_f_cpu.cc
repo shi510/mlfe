@@ -18,31 +18,31 @@ public:
         trans_a = oac->get_attr<bool>("trans_a");
         trans_b = oac->get_attr<bool>("trans_b");
         if(trans_a && !trans_b){
-            m = a.Shape()[1];
-            n = b.Shape()[1];
-            k = a.Shape()[0];
-            runtime_assert(k == b.Shape()[0],
+            m = a.shape()[1];
+            n = b.shape()[1];
+            k = a.shape()[0];
+            runtime_assert(k == b.shape()[0],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
         else if(!trans_a && trans_b){
-            m = a.Shape()[0];
-            n = b.Shape()[0];
-            k = a.Shape()[1];
-            runtime_assert(k == b.Shape()[1],
+            m = a.shape()[0];
+            n = b.shape()[0];
+            k = a.shape()[1];
+            runtime_assert(k == b.shape()[1],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
         else if(trans_a && trans_b){
-            m = a.Shape()[1];
-            n = b.Shape()[0];
-            k = a.Shape()[0];
-            runtime_assert(k == b.Shape()[1],
+            m = a.shape()[1];
+            n = b.shape()[0];
+            k = a.shape()[0];
+            runtime_assert(k == b.shape()[1],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
         else{
-            m = a.Shape()[0];
-            n = b.Shape()[1];
-            k = a.Shape()[1];
-            runtime_assert(k == a.Shape()[1],
+            m = a.shape()[0];
+            n = b.shape()[1];
+            k = a.shape()[1];
+            runtime_assert(k == a.shape()[1],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
     }
@@ -54,9 +54,9 @@ public:
 
         math::gemm<T, CPUContext>(trans_a, trans_b,
                                   m, n, k,
-                                  T(1), a_ptr, a.Shape()[1],
-                                  b_ptr, b.Shape()[1],
-                                  T(0), y_ptr, y.Shape()[1], nullptr
+                                  T(1), a_ptr, a.shape()[1],
+                                  b_ptr, b.shape()[1],
+                                  T(0), y_ptr, y.shape()[1], nullptr
                                  );
     }
 

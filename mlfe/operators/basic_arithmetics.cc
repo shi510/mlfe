@@ -14,7 +14,7 @@ REGIST_OP(Negative)
     .ShapeInference([](OpDesignContext * odc){
         auto x1 = odc->Input(0);
         auto y = odc->Output(0);
-        y.Reshape(x1.Shape(), type::float32());
+        y.reshape(x1.shape(), type::float32());
     })
     .Finish();
 
@@ -25,7 +25,7 @@ REGIST_OP_GRAD(Negative)
     .ShapeInference([](OpDesignContext * odc){
         auto dy = odc->Input(1);
         auto dx = odc->Output(0);
-        dx.Reshape(dy.Shape(), type::float32());
+        dx.reshape(dy.shape(), type::float32());
     })
     .Finish();
 
@@ -52,11 +52,11 @@ REGIST_OP(ElementwiseAdd)
         auto x1 = odc->Input(0);
         auto x2 = odc->Input(1);
         auto y = odc->Output(0);
-        if(x1.Size() != x2.Size()){
+        if(x1.size() != x2.size()){
             throw std::string("ElementwiseAdd : "
                 "the Shape of A and B is not same.");
         }
-        y.Reshape(x1.Shape(), type::float32());
+        y.reshape(x1.shape(), type::float32());
     })
     .Finish();
 
@@ -70,8 +70,8 @@ REGIST_OP_GRAD(ElementwiseAdd)
         auto dy = odc->Input(1);
         auto dx1 = odc->Output(0);
         auto dx2 = odc->Output(1);
-        dx1.Reshape(dy.Shape(), type::float32());
-        dx2.Reshape(dy.Shape(), type::float32());
+        dx1.reshape(dy.shape(), type::float32());
+        dx2.reshape(dy.shape(), type::float32());
     })
     .Finish();
 
@@ -98,11 +98,11 @@ REGIST_OP(ElementwiseSub)
         auto x1 = odc->Input(0);
         auto x2 = odc->Input(1);
         auto y = odc->Output(0);
-        if(x1.Size() != x2.Size()){
+        if(x1.size() != x2.size()){
             throw std::string("ElementwiseSub : "
                 "the Shape of A and B is not same.");
         }
-        y.Reshape(x1.Shape(), type::float32());
+        y.reshape(x1.shape(), type::float32());
     })
     .Finish();
 
@@ -116,8 +116,8 @@ REGIST_OP_GRAD(ElementwiseSub)
         auto dy = odc->Input(1);
         auto dx1 = odc->Output(0);
         auto dx2 = odc->Output(1);
-        dx1.Reshape(dy.Shape(), type::float32());
-        dx2.Reshape(dy.Shape(), type::float32());
+        dx1.reshape(dy.shape(), type::float32());
+        dx2.reshape(dy.shape(), type::float32());
     })
     .Finish();
 
@@ -146,11 +146,11 @@ REGIST_OP(ElementwiseMul)
         auto x1 = odc->Input(0);
         auto x2 = odc->Input(1);
         auto y = odc->Output(0);
-        if(x1.Size() != x2.Size()){
+        if(x1.size() != x2.size()){
             throw std::string("ElementwiseMul : "
                 "the Shape of A and B is not same.");
         }
-        y.Reshape(x1.Shape(), type::float32());
+        y.reshape(x1.shape(), type::float32());
     })
     .Finish();
 
@@ -164,8 +164,8 @@ REGIST_OP_GRAD(ElementwiseMul)
         auto dy = odc->Input(2);
         auto dx1 = odc->Output(0);
         auto dx2 = odc->Output(1);
-        dx1.Reshape(dy.Shape(), type::float32());
-        dx2.Reshape(dy.Shape(), type::float32());
+        dx1.reshape(dy.shape(), type::float32());
+        dx2.reshape(dy.shape(), type::float32());
     })
     .Finish();
 
@@ -196,11 +196,11 @@ REGIST_OP(ElementwiseDiv)
         auto x1 = odc->Input(0);
         auto x2 = odc->Input(1);
         auto y = odc->Output(0);
-        if(x1.Size() != x2.Size()){
+        if(x1.size() != x2.size()){
             throw std::string("ElementwiseDiv : "
                 "the Shape of A and B is not same.");
         }
-        y.Reshape(x1.Shape(), type::float32());
+        y.reshape(x1.shape(), type::float32());
     })
     .Finish();
 
@@ -214,8 +214,8 @@ REGIST_OP_GRAD(ElementwiseDiv)
         auto dy = odc->Input(2);
         auto dx1 = odc->Output(0);
         auto dx2 = odc->Output(1);
-        dx1.Reshape(dy.Shape(), type::float32());
-        dx2.Reshape(dy.Shape(), type::float32());
+        dx1.reshape(dy.shape(), type::float32());
+        dx2.reshape(dy.shape(), type::float32());
     })
     .Finish();
 
@@ -228,7 +228,7 @@ public:
         VecTensor in_grads;
         auto x1 = y.get_children()[0];
         auto x2 = y.get_children()[1];
-        auto one = functional::constant(1, x2.Shape());
+        auto one = functional::constant(1, x2.shape());
         auto dx1 = functional::div(one, x2);
         auto dx2 = functional::negative(functional::mul(y, x2));
         in_grads.push_back(dx1);
@@ -247,12 +247,12 @@ REGIST_OP(AddN)
         auto c = odc->Output(0);
         int num = odc->NumInput();
         for(int n = 1; n < num; ++n){
-            if(x1.Size() != odc->Input(n).Size()){
+            if(x1.size() != odc->Input(n).size()){
                 throw std::string("AddN : "
                     "the Shape of Inputs is not same.");
             }
         }
-        c.Reshape(x1.Shape(), type::float32());
+        c.reshape(x1.shape(), type::float32());
     })
     .Finish();
 
@@ -263,7 +263,7 @@ REGIST_OP_GRAD(AddN)
         auto dy = odc->Input(0);
         for(int n = 0; n < odc->NumOutput(); ++n){
             Tensor d = odc->Output(n);
-            d.Reshape(dy.Shape(), type::float32());
+            d.reshape(dy.shape(), type::float32());
         }
     })
     .Finish();
@@ -296,7 +296,7 @@ public:
         VecTensor in_grads;
         Tensor mat = y.get_children()[0];
         Tensor vec = y.get_children()[1];
-        Tensor one = functional::constant(1, {y.Shape()[0], 1});
+        Tensor one = functional::constant(1, {y.shape()[0], 1});
         Tensor dvec = functional::matmul(dy, one, true);
         one.eval();
         in_grads.push_back(dy);
@@ -337,8 +337,8 @@ Tensor Div<double>(Tensor a, double b){
 
 Tensor negative(Tensor x){
     OpAlgoContext cxt("Negative");
-    Tensor y = create_variable(x.Shape());
-    auto x_shape = x.Shape();
+    Tensor y = create_variable(x.shape());
+    auto x_shape = x.shape();
     y.add_child(x);
     Tensor::AssignOpFunctor(y, cxt);
     return y;
@@ -346,8 +346,8 @@ Tensor negative(Tensor x){
 
 Tensor add(Tensor x1, Tensor x2){
     Tensor y;
-    auto x1_shape = x1.Shape();
-    auto x2_shape = x2.Shape();
+    auto x1_shape = x1.shape();
+    auto x2_shape = x2.shape();
     auto max_dim = std::max(x1_shape.size(), x2_shape.size());
     auto min_dim = std::min(x1_shape.size(), x2_shape.size());
     std::vector<int> max_shape, min_shape;
@@ -397,7 +397,7 @@ Tensor add(Tensor x1, Tensor x2){
 }
 
 Tensor sub(Tensor x1, Tensor x2){
-    Tensor y = functional::create_variable(x1.Shape());
+    Tensor y = functional::create_variable(x1.shape());
     OpAlgoContext cxt("ElementwiseSub");
     y.add_child(x1);
     y.add_child(x2);
@@ -406,7 +406,7 @@ Tensor sub(Tensor x1, Tensor x2){
 }
 
 Tensor mul(Tensor x1, Tensor x2){
-    Tensor y = functional::create_variable(x1.Shape());
+    Tensor y = functional::create_variable(x1.shape());
     OpAlgoContext cxt("ElementwiseMul");
     y.add_child(x1);
     y.add_child(x2);
@@ -415,7 +415,7 @@ Tensor mul(Tensor x1, Tensor x2){
 }
 
 Tensor div(Tensor x1, Tensor x2){
-    Tensor y = functional::create_variable(x1.Shape());
+    Tensor y = functional::create_variable(x1.shape());
     OpAlgoContext cxt("ElementwiseDiv");
     y.add_child(x1);
     y.add_child(x2);
@@ -425,7 +425,7 @@ Tensor div(Tensor x1, Tensor x2){
 
 Tensor add_n(std::vector<Tensor> xs){
     if(xs.size() >= 2){
-        Tensor y = functional::create_variable(xs[0].Shape());
+        Tensor y = functional::create_variable(xs[0].shape());
         OpAlgoContext cxt("AddN");
         for(auto &x : xs){
             y.add_child(x);

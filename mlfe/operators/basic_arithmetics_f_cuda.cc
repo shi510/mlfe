@@ -14,7 +14,7 @@ public:
     Negative(OpAlgoContext *oac) : OpAlgo(oac, "Negative"){
         y = oac->get_output(0);
         x = y.get_children()[0];
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
@@ -49,7 +49,7 @@ public:                                                              \
         y = oac->get_output(0);                                      \
         x1 = y.get_children()[0];                                    \
         x2 = y.get_children()[1];                                    \
-        size = y.Size();                                             \
+        size = y.size();                                             \
     }                                                                \
     void Compute() override{                                         \
         auto x1_ptr = x1.device_data<T>();                           \
@@ -90,7 +90,7 @@ public:
         y = oac->get_output(0);
         x1 = y.get_children()[0];
         x2 = y.get_children()[1];
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
@@ -126,7 +126,7 @@ public:
         y = oac->get_output(0);
         x1 = y.get_children()[0];
         x2 = y.get_children()[1];
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
@@ -162,14 +162,14 @@ public:
         y = oac->get_output(0);
         x1 = y.get_children()[0];
         x2 = y.get_children()[1];
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
         auto x1_ptr = x1.device_data<T>();
         auto x2_ptr = x2.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
-        math::MulCuda<T>(y.Size(), x1_ptr, x2_ptr, y_ptr);
+        math::MulCuda<T>(y.size(), x1_ptr, x2_ptr, y_ptr);
     }
 
 private:
@@ -197,14 +197,14 @@ public:
         y = oac->get_output(0);
         x1 = y.get_children()[0];
         x2 = y.get_children()[1];
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
         auto x1_ptr = x1.device_data<T>();
         auto x2_ptr = x2.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
-        math::DivCuda<T>(y.Size(), x1_ptr, x2_ptr, y_ptr);
+        math::DivCuda<T>(y.size(), x1_ptr, x2_ptr, y_ptr);
     }
 
 private:
@@ -232,7 +232,7 @@ using T = typename Tp::T;
 public:
     AddN(OpAlgoContext *oac) : OpAlgo(oac, "AddN"){
         y = oac->get_output(0);
-        size = y.Size();
+        size = y.size();
         num_inputs = y.get_children().size();
         for(int n = 0; n < num_inputs; ++n){
             xs.push_back(y.get_children()[n]);
@@ -274,8 +274,8 @@ public:
         y = oac->get_output(0);
         mat = y.get_children()[0];
         vec = y.get_children()[1];
-        m = mat.Shape()[0];
-        n = mat.Shape()[1];
+        m = mat.shape()[0];
+        n = mat.shape()[1];
         multiplier = create_memory(m * Tp::size);
         math::set<T, CUDAContext>(m, T(1), 
                                   multiplier->mutable_device_data<T>());

@@ -13,7 +13,7 @@ public:
     Constant(OpAlgoContext *oac) : OpAlgo(oac, "Constant"){
         y = oac->get_output(0);
         value = oac->get_attr<float>("value");
-        size = y.Size();
+        size = y.size();
     }
 
     void Compute() override{
@@ -43,7 +43,7 @@ public:
         x = oac->get_output(0);
         std = oac->get_attr<type::float32::T>("std");
         clip = oac->get_attr<bool>("clip");
-        size = x.Size();
+        size = x.size();
         dist = std::normal_distribution<T>(-std, std);
     }
 

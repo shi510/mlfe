@@ -12,7 +12,7 @@ REGIST_OP(ReduceMean)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto y = odc->Output(0);
-        y.Reshape({ 1 }, type::float32());
+        y.reshape({ 1 }, type::float32());
     })
     .Finish();
 
@@ -23,7 +23,7 @@ REGIST_OP_GRAD(ReduceMean)
     .ShapeInference([](OpDesignContext * odc){
         auto x = odc->Input(0);
         auto dx = odc->Output(0);
-        dx.Reshape(x.Shape(), type::float32());
+        dx.reshape(x.shape(), type::float32());
     })
     .Finish();
 
@@ -35,7 +35,7 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor x = y.get_children()[0];
-        Tensor dx = functional::create_variable(x.Shape());
+        Tensor dx = functional::create_variable(x.shape());
         OpAlgoContext ctx("ReduceMeanGradient");
         dx.add_child(dy);
         Tensor::AssignOpFunctor(dx, ctx);
