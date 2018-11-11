@@ -90,7 +90,7 @@ public:
 
     void eval();
 
-    void backprob();
+    void backprop();
 
     Tensor grad();
 
@@ -110,8 +110,8 @@ private:
     friend Tensor functional::reshape(Tensor x, std::vector<int> shape);
     friend struct std::hash<Tensor>;
     friend struct AssignOpFunctor;
-    struct InternalData;
-    std::shared_ptr<InternalData> internal_data;
+    struct impl;
+    std::shared_ptr<impl> _pimpl;
 };
 
 template <typename T>

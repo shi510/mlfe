@@ -133,8 +133,8 @@ public:
         using IntVec = std::vector<type::int32::T>;
         dx = oac->get_output(0);
         x = dx.get_children()[0];
-        y = dx.get_children()[2];
-        dy = dx.get_children()[3];
+        y = dx.get_children()[1];
+        dy = dx.get_children()[2];
         filters_hw = oac->get_attr<IntVec>("kernel");
         strides = oac->get_attr<IntVec>("stride");
         pads = oac->get_attr<IntVec>("padding");

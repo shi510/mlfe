@@ -95,7 +95,6 @@ public:
         OpAlgoContext ctx("MaxPoolGradient");
 
         dx.add_child(x);
-        dx.add_child(idx);
         dx.add_child(y);
         dx.add_child(dy);
         

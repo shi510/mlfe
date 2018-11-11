@@ -15,10 +15,10 @@ public:
         using IntVec = std::vector<type::int32::T>;
         y = oac->get_output(0);
         x = y.get_children()[0];
-        idx = y.get_children()[1];
         filters_hw = oac->get_attr<IntVec>("kernel");
         strides = oac->get_attr<IntVec>("stride");
         pads = oac->get_attr<IntVec>("padding");
+        idx = oac->get_attr<Tensor>("idx");
 
         in_c = x.Shape()[1];
         in_h = x.Shape()[2];
@@ -71,11 +71,11 @@ public:
         using IntVec = std::vector<type::int32::T>;
         dx = oac->get_output(0);
         x = dx.get_children()[0];
-        idx = dx.get_children()[1];
-        dy = dx.get_children()[3];
+        dy = dx.get_children()[2];
         filters_hw = oac->get_attr<IntVec>("kernel");
         strides = oac->get_attr<IntVec>("stride");
         pads = oac->get_attr<IntVec>("padding");
+        idx = oac->get_attr<Tensor>("idx");
 
         in_c = x.Shape()[1];
         in_h = x.Shape()[2];

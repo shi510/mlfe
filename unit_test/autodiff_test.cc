@@ -17,8 +17,8 @@ struct case0{
         y.eval();
     }
     
-    void backprob(){
-        y.backprob();
+    void backprop(){
+        y.backprop();
     }
 
     Tensor one;
@@ -63,7 +63,7 @@ TEST(autodiff_test, grad_check){
     autodiff_test::case0<float> tcase;
     float answer;
 
-    tcase.backprob();
+    tcase.backprop();
     // the gradient of root of computation graph is one.
     answer = 1.f;
     std::for_each(tcase.y.grad().data<float>(),
