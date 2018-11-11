@@ -1,4 +1,5 @@
 #include "mnist.h"
+#include "utils.h"
 #include <map>
 #include <sstream>
 
@@ -45,22 +46,6 @@ void ReadMnistHeader(std::ifstream &data_file,
     }
 }
 
-flatbuffers::Offset<mlfe::serializable::TensorBlob>
-MakeSerialiableTensor(flatbuffers::FlatBufferBuilder &fbb,
-                      std::string name,
-                      const uint8_t *data_ptr,
-                      std::vector<int> dim
-                     )
-{
-    int size = 1;
-    for(auto &i : dim){ size *= i; }
-    auto name_fb = fbb.CreateString(name);
-    auto data_fb = fbb.CreateVector(data_ptr, size * sizeof(uint8_t));
-    auto dim_fb = fbb.CreateVector(dim.data(), dim.size());
-    auto tb_fb = mlfe::serializable::CreateTensorBlob(fbb, name_fb, data_fb, dim_fb);
-    return tb_fb;
-}
-
 void SaveMNIST(std::shared_ptr<mlfe::DataBase> db,
                std::string data_file_name,
                std::string label_file_name,
@@ -93,8 +78,8 @@ void SaveMNIST(std::shared_ptr<mlfe::DataBase> db,
         std::string tbs_str;
         data_file.read((char *)data.data() + n * size, size);
         label_file.read((char *)label.data() + n, 1);
-        auto tb_data = MakeSerialiableTensor(fbb, "data" + std::to_string(n + 1), data.data() + n * size, { img_h, img_w });
-        auto tb_label = MakeSerialiableTensor(fbb, "label" + std::to_string(n + 1), label.data() + n, { 1 });
+        auto tb_data = Serialize(fbb, "data" + std::to_string(n + 1), data.data() + n * size, { img_h, img_w });
+        auto tb_label = Serialize(fbb, "label" + std::to_string(n + 1), label.data() + n, { 1 });
         tbs_std_vec.push_back(tb_data);
         tbs_std_vec.push_back(tb_label);
         auto tbs_fb_vec = fbb.CreateVector(tbs_std_vec.data(), tbs_std_vec.size());
