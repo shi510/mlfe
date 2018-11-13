@@ -90,8 +90,8 @@ Initializing the trainable variables is important, but in this example, we just 
     auto loss = fn::softmax_cross_entropy(logit, onehot);
     auto sgd_opt = fn::create_gradient_descent(/* learning rate = */ 0.1,
                                                /* momentum = */ 0);
-    std::fill(w.begin<float>(), w.end<float>(), 0);
-    std::fill(b.begin<float>(), b.end<float>(), 0);
+    std::fill(w.begin<T>(), w.end<T>(), 0);
+    std::fill(b.begin<T>(), b.end<T>(), 0);
 ```
 
 An original mnist file can convert into simpledb and can read using simpledb reader.  
@@ -112,11 +112,11 @@ If the label is 5, the one-hot form represents [0, 0, 0, 0, 0, 1, 0, 0, 0, 0].
         for(auto &val : img){
             val /= 256;
         }
-        std::copy(img.begin(), img.end(), x.begin<float>());
-        std::fill(onehot.begin<float>(), onehot.end<float>(), 0);
+        std::copy(img.begin(), img.end(), x.begin<T>());
+        std::fill(onehot.begin<T>(), onehot.end<T>(), 0);
         for(int k = 0; k < batch; ++k){
             const int val = label.data()[k];
-            onehot.mutable_data<float>()[k * cls + val] = 1;
+            onehot.mutable_data<T>()[k * cls + val] = 1;
         }
         loss.eval();
         loss.backprop();

@@ -101,8 +101,8 @@ public:
     void Compute() override{
         auto y_ptr = y.mutable_device_data<T>();
         math::set<T, CPUContext>(size, 0, y_ptr);
-        for(int n = 0; n < _num_inputs; ++n){
-            auto x_ptr = xs[n].device_data<T>();
+        for(auto &x : xs){
+            auto x_ptr = x.template device_data<T>();
             math::axpy<T, CPUContext>(size, 1.f, x_ptr, y_ptr);
         }
     }
