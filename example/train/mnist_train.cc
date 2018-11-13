@@ -37,7 +37,7 @@ void train_simple_mnist(const std::string train_path,
     Tensor y = fn::create_variable({batch, cls});
     auto sgd = fn::create_gradient_descent(lr, mm);
     std::mt19937 rng;
-    std::uniform_real<float> dist(0.1);
+    std::uniform_real_distribution<float> dist(0.1);
 
     std::vector<float> x_val, y_val;
     x_val.resize(x.size());
