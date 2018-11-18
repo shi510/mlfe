@@ -1,79 +1,47 @@
-#ifndef __GRADIENT_CHECKER_HPP__
-#define __GRADIENT_CHECKER_HPP__
-#include <memory>
-#include <algorithm>
+#ifndef __GRADIENT_CHECKER_H__
+#define __GRADIENT_CHECKER_H__
+#include "../core/tensor.h"
 #include <numeric>
-#include "../operators/operator.h"
-#include "../device_context/cpu_context.h"
-#include "../math/blas.h"
 
 namespace mlfe{
 
-template <class DataType, class DeviceContext>
-class GradientChecker {
-public:
-    explicit GradientChecker(DataType _e){
-        e = _e;
-    }
+// numerical = (func(theta + eps) - func(theta - eps)) / (2 * eps)
+template <typename T>
+Tensor numerical_gradient(const T eps, Tensor func, Tensor theta){
+    // numerical gradient.
+    Tensor result = functional::create_variable(theta.shape());
+    Tensor temp = functional::create_variable(func.shape());
     
-    std::shared_ptr<TensorBlob<DeviceContext> > Run(
-                                                    std::shared_ptr<OperatorBase> op,
-                                                    TensorBlob<DeviceContext> *theta,
-                                                    TensorBlob<DeviceContext> *y,
-                                                    TensorBlob<DeviceContext> *analytical_gradient,
-                                                    DataType scaler
-                                                    ){
-        std::shared_ptr<TensorBlob<DeviceContext> > numerical_gradient;
-        std::shared_ptr<TensorBlob<DeviceContext> > gradient_checker;
+    for(int n = 0; n < theta.size(); ++n){
+        auto val = theta.data<T>()[n];
         
-        numerical_gradient = std::make_shared<TensorBlob<DeviceContext> >();
-        gradient_checker = std::make_shared<TensorBlob<DeviceContext> >();
-        numerical_gradient->template Resize<DataType>(*y);
-        gradient_checker->template Resize<DataType>(*theta);
+        theta.mutable_data<T>()[n] = val + eps;
+        func.eval();
         
-        for(int n = 0; n < theta->Size(); ++n){
-            DataType *ng_ptr = numerical_gradient->template GetPtrMutable<DataType>();
-            DataType *ag_ptr = analytical_gradient->template GetPtrMutable<DataType>();
-            DataType *gc_ptr = gradient_checker->template GetPtrMutable<DataType>();
-            DataType val = theta->template GetPtrMutable<DataType>()[n];
-            
-            theta->template GetPtrMutable<DataType>()[n] = val + e;
-            op->Compute();
-            std::copy(
-                      y->template GetPtrConst<DataType>(),
-                      y->template GetPtrConst<DataType>() + y->Size(),
-                      numerical_gradient->template GetPtrMutable<DataType>()
-                      );
-            theta->template GetPtrMutable<DataType>()[n] = val - e;
-            op->Compute();
-            math::axpy<DataType, DeviceContext>(
-                                                y->Size(),
-                                                DataType(-1),
-                                                y->template GetPtrConst<DataType>(),
-                                                ng_ptr
-                                                );
-            math::scal<DataType, DeviceContext>(
-                                                numerical_gradient->Size(),
-                                                DataType(1) / (DataType(2) * e),
-                                                ng_ptr,
-                                                ng_ptr
-                                                );
-            
-            DataType sum = std::accumulate(
-                                           ng_ptr,
-                                           ng_ptr + numerical_gradient->Size(),
-                                           DataType(0)
-                                           ) * scaler;
-            
-            gc_ptr[n] = std::abs(ag_ptr[n] - sum) / std::max(std::abs(ag_ptr[n]), std::abs(sum));
-            theta->template GetPtrMutable<DataType>()[n] = val;
+        std::copy(func.cbegin<T>(),
+                  func.cend<T>(),
+                  temp.begin<T>()
+                  );
+        
+        theta.mutable_data<T>()[n] = val - eps;
+        func.eval();
+        
+        for(int k = 0; k < func.size(); ++k){
+            auto tmp_ptr = temp.mutable_data<T>();
+            auto func_ptr = func.data<T>();
+            tmp_ptr[k] = (tmp_ptr[k] - func_ptr[k]) / (2 * eps);
         }
-        return gradient_checker;
+        
+        T num_grad_nth = std::accumulate(temp.cbegin<T>(),
+                                         temp.cend<T>(),
+                                         T(0)
+                                         );
+        // restore original value
+        theta.mutable_data<T>()[n] = val;
+        result.mutable_data<T>()[n] = num_grad_nth;
     }
-    
-private:
-    DataType e;
-};
+    return result;
+}
 
-} /* namespace mlfe */
-#endif /* __GRADIENT_CHECKER_HPP__ */
+} // end namespace mlfe
+#endif // end #ifndef __GRADIENT_CHECKER_H__
