@@ -125,26 +125,26 @@ using T = typename Tp::T;
 public:
     SigmoidGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        x = dx.get_children()[0];
+        y = dx.get_children()[1];
         dy = dx.get_children()[2];
-        size = x.size();
+        size = y.size();
     }
 
     void Compute() override{
-        auto x_ptr = x.device_data<T>();
+        auto y_ptr = y.device_data<T>();
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
 
         math::sigmoid_gradient<T, CPUContext>(
             size,
-            x_ptr,
+            y_ptr,
             dy_ptr,
             dx_ptr
             );
     }
 
 private:
-    Tensor x;
+    Tensor y;
     Tensor dy;
     Tensor dx;
     int size;
