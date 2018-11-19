@@ -10,3 +10,6 @@
 [submodule "third_party/cub"]
 	path = third_party/cub
 	url = https://github.com/NVlabs/cub
+[submodule "third_party/mkldnn"]
+	path = third_party/mkldnn
+	url = https://github.com/intel/mkl-dnn
