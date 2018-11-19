@@ -298,7 +298,6 @@ public:
         Tensor vec = y.get_children()[1];
         Tensor one = functional::constant(1, {y.shape()[0], 1});
         Tensor dvec = functional::matmul(dy, one, true);
-        one.eval();
         in_grads.push_back(dy);
         in_grads.push_back(dvec);
         return in_grads;
