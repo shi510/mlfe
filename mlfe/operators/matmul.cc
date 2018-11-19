@@ -73,12 +73,32 @@ public:
         Tensor a = y.get_children()[0];
         Tensor b = y.get_children()[1];
         auto ctx = y.get_context();
-        bool trans_b = ctx.get_attr<bool>("trans_b");
         bool trans_a = ctx.get_attr<bool>("trans_a");
-        Tensor da = functional::matmul(dy, b, false, trans_b != true);
-        Tensor db = functional::matmul(a, dy, trans_a != true, false);
-        in_grads.push_back(da);
-        in_grads.push_back(db);
+        bool trans_b = ctx.get_attr<bool>("trans_b");
+        if(!trans_a && !trans_b){
+            Tensor da = functional::matmul(dy, b, false, true);
+            Tensor db = functional::matmul(a, dy, true);
+            in_grads.push_back(da);
+            in_grads.push_back(db);
+        }
+        else if(!trans_a && trans_b){
+            Tensor da = functional::matmul(dy, b);
+            Tensor db = functional::matmul(dy, a, true);
+            in_grads.push_back(da);
+            in_grads.push_back(db);
+        }
+        else if(trans_a && !trans_b){
+            Tensor da = functional::matmul(b, dy, false, true);
+            Tensor db = functional::matmul(a, dy);
+            in_grads.push_back(da);
+            in_grads.push_back(db);
+        }
+        else if(trans_a && trans_b){
+            Tensor da = functional::matmul(b, dy, true, true);
+            Tensor db = functional::matmul(dy, a, true, true);
+            in_grads.push_back(da);
+            in_grads.push_back(db);
+        }
         return in_grads;
     }
 };
