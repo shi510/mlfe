@@ -230,7 +230,7 @@ public:
         auto x2 = y.get_children()[1];
         auto one = functional::constant(1, x2.shape());
         auto dx1 = functional::div(one, x2);
-        auto dx2 = functional::negative(functional::mul(y, x2));
+        auto dx2 = functional::negative(functional::div(y, x2));
         in_grads.push_back(dx1);
         in_grads.push_back(dx2);
         return in_grads;
