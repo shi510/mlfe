@@ -12,8 +12,9 @@
 
 namespace mlfe{
 
+//TODO : use thread for _children_modified
 struct Tensor::impl{
-    impl() : _exec_order(0), _ctx("unknown"){}
+    impl() : _exec_order(0), _ctx("unknown"), _children_modified(true){}
     std::vector<Tensor> _parents;
     std::vector<Tensor> _children;
     int _exec_order;
@@ -24,6 +25,7 @@ struct Tensor::impl{
     Attributes _attrs;
     std::vector<Tensor> _compute_list;
     std::vector<std::shared_ptr<Tensor>> _backward_list;
+    bool _children_modified;
 };
 
 Tensor::Tensor()
@@ -79,10 +81,13 @@ bool Tensor::operator==(const Tensor &v) const{
 
 void Tensor::eval(){
     //compute all children.
-    for(auto t : _pimpl->_compute_list){
-        if(t._pimpl->_algo != nullptr){
-            t._pimpl->_algo->Compute();
+    if(_pimpl->_children_modified){
+        for(auto t : _pimpl->_compute_list){
+            if(t._pimpl->_algo != nullptr){
+                t._pimpl->_algo->Compute();
+            }
         }
+        _pimpl->_children_modified = false;
     }
 }
 
@@ -130,7 +135,7 @@ void Tensor::backprop(){
         compute_gradient(*this);
     }
     for(auto &var : _pimpl->_backward_list){
-        var->_pimpl->_algo->Compute();
+        var->eval();
     }
 }
 
@@ -143,6 +148,10 @@ const void *Tensor::_host_data(){
 }
 
 void *Tensor::_mutable_host_data(){
+    _pimpl->_children_modified = true;
+    for(int n = 0; n < _pimpl->_parents.size(); ++n){
+        _pimpl->_parents[n]._pimpl->_children_modified = true;
+    }
     return _pimpl->_mem->mutable_host_data<void>();
 }
 
@@ -151,6 +160,10 @@ const void *Tensor::_device_data(){
 }
 
 void *Tensor::_mutable_device_data(){
+    _pimpl->_children_modified = true;
+    for(int n = 0; n < _pimpl->_parents.size(); ++n){
+        _pimpl->_parents[n]._pimpl->_children_modified = true;
+    }
     return _pimpl->_mem->mutable_device_data<void>();
 }
 
@@ -171,7 +184,6 @@ void Tensor::compute_gradient(const Tensor root){
     dy_collector[root].push_back(functional::constant(1, root.shape()));
     // set root gradient.
     root._pimpl->_gradient = make_ptr(dy_collector[root][0]);
-    root._pimpl->_gradient->eval();
     //run computing all gradients.
     for(auto &var : v_list){
         if(var._pimpl->_algo != nullptr){
