@@ -81,13 +81,16 @@ bool Tensor::operator==(const Tensor &v) const{
 
 void Tensor::eval(){
     //compute all children.
-    if(_pimpl->_children_modified){
-        for(auto t : _pimpl->_compute_list){
-            if(t._pimpl->_algo != nullptr){
-                t._pimpl->_algo->Compute();
+    for(auto t : _pimpl->_compute_list){
+        if(t._pimpl->_algo != nullptr &&
+           t._pimpl->_children_modified
+          ){
+            t._pimpl->_algo->Compute();
+            t._pimpl->_children_modified = false;
+            for(int n = 0; n < t._pimpl->_parents.size(); ++n){
+                t._pimpl->_parents[n]._pimpl->_children_modified = true;
             }
         }
-        _pimpl->_children_modified = false;
     }
 }
 
