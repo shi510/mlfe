@@ -81,15 +81,14 @@ int main(int argc, char *argv[]){
 The fully connected NN can be implemented by using matrix multiplication.  
 The cost function is softmax cross entropy.  
 The trainable variables of w and b are optimized by gradient descent method.  
-We set the learning rate to 1e-1.  
+The first parameter of create_gradient_descent_optimizer is learning rate and the last is momentum.  
 Initializing the trainable variables is important, but in this example, we just initialize w and b to zero.  
 ```c++
     auto w = fn::create_variable({h * w, cls});
     auto b = fn::create_variable({cls});
     auto logit = fn::matmul(x, w) + b;
     auto loss = fn::softmax_cross_entropy(logit, onehot);
-    auto sgd_opt = fn::create_gradient_descent(/* learning rate = */ 0.1,
-                                               /* momentum = */ 0);
+    auto sgd_opt = fn::create_gradient_descent_optimizer(1e-1, 0);
     std::fill(w.begin<T>(), w.end<T>(), 0);
     std::fill(b.begin<T>(), b.end<T>(), 0);
 ```
