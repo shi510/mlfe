@@ -5,8 +5,10 @@
 namespace mlfe{
 namespace functional{
 
-opt::optimizer_ptr create_gradient_descent(double lr, double momentum);
+opt::optimizer_ptr create_gradient_descent_optimizer(double lr, 
+                                                     double momentum
+                                                     );
 
 } // end namespace functional
 } // end namespace mlfe
-#endif // end #ifndef __GRADIENT_DESCENT_HPP__
+#endif // end #ifndef __GRADIENT_DESCENT_H__

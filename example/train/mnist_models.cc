@@ -13,7 +13,7 @@ namespace fn = functional;
 AutoEncoder::AutoEncoder(const int batch, 
                          const double lr, 
                          const double mm) 
-    : sgd(fn::create_gradient_descent(lr, mm)){
+    : sgd(fn::create_gradient_descent_optimizer(lr, mm)){
     build(batch);
     rng = std::mt19937(std::random_device()());
 }
@@ -107,7 +107,7 @@ void AutoEncoder::update(){
 }
 
 Lenet::Lenet(const int batch, const double lr, const double mm) 
-    : sgd(fn::create_gradient_descent(lr, mm)){
+    : sgd(fn::create_gradient_descent_optimizer(lr, mm)){
     build(batch);
 }
 

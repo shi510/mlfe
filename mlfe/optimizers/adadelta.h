@@ -3,8 +3,13 @@
 #include "optimizer.h"
 
 namespace mlfe{
-namespace optimizer{
+namespace functional{
 
-} // end namespace optimizer
+opt::optimizer_ptr create_adadelta_optimizer(double lr,
+                                             double momentum,
+                                             double eps = 1e-8
+                                             );
+
+} // end namespace functional
 } // end namespace mlfe
 #endif // end #ifndef __ADADELTA_H__

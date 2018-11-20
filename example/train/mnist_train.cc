@@ -35,7 +35,7 @@ void train_simple_mnist(const std::string train_path,
     constexpr int cls = 10;
     Tensor x = fn::create_variable({batch, 28 * 28});
     Tensor y = fn::create_variable({batch, cls});
-    auto sgd = fn::create_gradient_descent(lr, mm);
+    auto sgd = fn::create_gradient_descent_optimizer(lr, mm);
     std::mt19937 rng;
     std::uniform_real_distribution<float> dist(0.1);
 
@@ -116,8 +116,8 @@ void train_lenet(const std::string train_path,
     Lenet lenet(batch, lr, mm);
     std::vector<float> onehot;
     std::vector<float> x, y;
-    x.resize(64 * 28 * 28);
-    y.resize(64);
+    x.resize(batch * 28 * 28);
+    y.resize(batch);
     onehot.resize(batch * 10);
 
     auto train_db = mlfe::SimpleDBReader(train_path);
@@ -153,7 +153,7 @@ void train_lenet(const std::string train_path,
                     auto s = logit.begin() + b * 10;
                     auto e = logit.begin() + (b + 1) * 10;
                     auto pos = std::max_element(s, e);
-                    int infer = std::distance(logit.begin() + b * 10, pos);
+                    int infer = std::distance(s, pos);
                     if(y.data()[b] == infer){
                         corrent += 1;
                     }
@@ -202,8 +202,8 @@ void train_ae(const std::string train_path,
             origin = 0;
             Visualize(&visual, recon_val);
             Visualize(&origin, input_test);
-            cv::resize(visual, resized, cv::Size(28 * 4 * 10, 28 * 4));
-            cv::resize(origin, origin_resized, cv::Size(28 * 4 * 10, 28 * 4));
+            cv::resize(visual, resized, visual.size() * 4);
+            cv::resize(origin, origin_resized, origin.size() * 4);
             cv::imshow("original", origin_resized);
             cv::imshow("reconstruction", resized);
             cv::waitKey(1);
