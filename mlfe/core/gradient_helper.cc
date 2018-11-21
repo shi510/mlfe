@@ -49,4 +49,19 @@ using GHRR = GradientHelperRegisterer;
 GHRR::GradientHelperRegisterer(std::string name, HelperCreator creator){
     GHR::Get()->Register(name, creator);
 }
+
+class IdentityGrad : public GradientHelper{
+public:
+    IdentityGrad(const OpDesignContext *odc)
+    : GradientHelper(odc){}
+    
+    VecTensor compute_gradient(Tensor y, Tensor dy) override{
+        VecTensor in_grads;
+        in_grads.push_back(dy);
+        return in_grads;
+    }
+};
+
+REGIST_GRADIENT_HELPER(Identity, IdentityGrad)
+
 } // end namespace mlfe;

@@ -144,4 +144,40 @@ OpAlgoRegisterer::OpAlgoRegisterer(OpAlgoSchema oas){
     OpAlgoRegistry::Get()->Register(oas.Name(), oas);
 }
 
+template <class Tp>
+class Identity : public OpAlgo{
+public:
+    Identity(OpAlgoContext *oac) : OpAlgo(oac, "Identity"){}
+    
+    void Compute() override{}
+};
+
+REGIST_OP_ALGO(Identity)
+    .Input("X", type::float32::string)
+    .Output("Y", type::float32::string)
+    .Device("Any")
+    .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
+        using T = Identity<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
+template <class Tp>
+class IdentityGrad : public OpAlgo{
+public:
+    IdentityGrad(OpAlgoContext *oac) : OpAlgo(oac){}
+    
+    void Compute() override{}
+};
+
+REGIST_OP_GRAD_ALGO(Identity)
+    .Input("X", type::float32::string)
+    .Output("dX", type::float32::string)
+    .Device("Any")
+    .CreatorFn([](OpAlgoContext *oac) ->std::shared_ptr<OpAlgo>{
+        using T = IdentityGrad<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
 } // end namespace mlfe;

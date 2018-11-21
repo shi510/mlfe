@@ -235,6 +235,9 @@ Tensor::AssignOpFunctor::AssignOpFunctor(Tensor t, OpAlgoContext ctx){
     else if(reg->Has(full_op_name + dev_name)){
         t._pimpl->_algo = reg->GetOpAlgo(full_op_name + dev_name, &ctx);
     }
+    else if(reg->Has(full_op_name + "Any")){
+        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + "Any", &ctx);
+    }
     else{
         throw std::string(op_name) + " is not supported.";
     }
@@ -245,8 +248,11 @@ namespace functional{
 
 Tensor create_variable(std::vector<int> shape){
     Tensor var;
+    OpAlgoContext ctx("Identity");
     var.reshape(shape);
     var._pimpl->_mem = create_memory(var.size() * var.type().size);
+    var._pimpl->_ctx = ctx;
+    Tensor::AssignOpFunctor(var, ctx);
     return var;
 }
 
