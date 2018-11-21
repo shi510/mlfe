@@ -275,12 +275,9 @@ public:
 
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        Tensor x1 = y.get_children()[0];
-        Tensor x2 = y.get_children()[1];
-        Tensor dx1 = functional::mul(x2, dy);
-        Tensor dx2 = functional::mul(x1, dy);
-        in_grads.push_back(dx1);
-        in_grads.push_back(dx2);
+        for(int n = 0; n < y.get_children().size(); ++n){
+            in_grads.push_back(dy);
+        }
         return in_grads;
     }
 };
