@@ -58,7 +58,7 @@ void Tensor::add_child(Tensor c){
     _pimpl->_children.push_back(c);
     //c.add_parent(*this);
     c._pimpl->_parents.push_back(*this);
-    if(c._pimpl->_exec_order > _pimpl->_exec_order){
+    if(c._pimpl->_exec_order >= _pimpl->_exec_order){
         _pimpl->_exec_order = c._pimpl->_exec_order + 1;
     }
 }
