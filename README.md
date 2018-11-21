@@ -24,7 +24,7 @@ auto one = fn::create_variable({2, 2});
 auto two = fn::constant(2, {2, 2});
 std::fill(one.begin<float>(), one.end<float>(), 1);
 // same result with std::fill.
-// acceessing address pointer directly.
+// accessing address pointer directly.
 for(int n = 0; n < one.size(); ++n){
     one.mutable_data<float>()[n] = 1;
 }
@@ -80,17 +80,18 @@ int main(int argc, char *argv[]){
 ```
 The fully connected NN can be implemented by using matrix multiplication.  
 The cost function is softmax cross entropy.  
-The trainable variables of w and b are optimized by gradient descent method.  
+The trainable variables of weight and bias are optimized by gradient descent method.  
 The first parameter of create_gradient_descent_optimizer is learning rate and the last is momentum.  
-Initializing the trainable variables is important, but in this example, we just initialize w and b to zero.  
+Initializing the trainable variable is important.  
+But in this example, we just initialize weight and bias to zero.  
 ```c++
-    auto w = fn::create_variable({h * w, cls});
-    auto b = fn::create_variable({cls});
-    auto logit = fn::matmul(x, w) + b;
+    auto weight = fn::create_variable({h * w, cls});
+    auto bias = fn::create_variable({cls});
+    auto logit = fn::matmul(x, weight) + bias;
     auto loss = fn::softmax_cross_entropy(logit, onehot);
     auto sgd_opt = fn::create_gradient_descent_optimizer(1e-1, 0);
-    std::fill(w.begin<T>(), w.end<T>(), 0);
-    std::fill(b.begin<T>(), b.end<T>(), 0);
+    std::fill(weight.begin<T>(), weight.end<T>(), 0);
+    std::fill(bias.begin<T>(), bias.end<T>(), 0);
 ```
 
 An original mnist file can convert into simpledb and can read using simpledb reader.  
@@ -107,20 +108,29 @@ Second, we should transform the label data to one-hot form.
 If the label is 5, the one-hot form represents [0, 0, 0, 0, 0, 1, 0, 0, 0, 0].  
 ```c++
     for(int n = 0; n < iter; ++n){
+        // read mnist data from simpledb.
         train_db.read<T>(batch, {img, label});
+        // normalize to [0, 1).
         for(auto &val : img){
             val /= 256;
         }
+        // copy normalized host data to our model's input x.
         std::copy(img.begin(), img.end(), x.begin<T>());
+        // initialize onehot vector to zero.
         std::fill(onehot.begin<T>(), onehot.end<T>(), 0);
+        // transform label to onehot form.
         for(int k = 0; k < batch; ++k){
             const int val = label.data()[k];
             onehot.mutable_data<T>()[k * cls + val] = 1;
         }
+        // evaluate loss.
         loss.eval();
+        // evaluate all gradients associated with loss variable.
         loss.backprop();
-        sgd_opt.apply(w, w.grad());
-        sgd_opt.apply(b, b.grad());
+        // update weight -= lr * gradient of weight.
+        sgd_opt.apply(weight, weight.grad());
+        // update weight -= lr * gradient of bias.
+        sgd_opt.apply(bias, bias.grad());
     }
 ```
 After 1000 iterations are finished, the variables will close to the optimal solution.  
