@@ -59,8 +59,8 @@ public:
         auto x1 = y.get_children()[0];
         auto x2 = y.get_children()[1];
         auto two = functional::constant(2, x1.shape());
-        Tensor dx1 = fn::mul(two, fn::sub(x1, x2));
-        Tensor dx2 = fn::negative(fn::mul(two, fn::sub(x1, x2)));
+        Tensor dx1 = fn::mul(dy, fn::mul(two, fn::sub(x1, x2)));
+        Tensor dx2 = fn::mul(dy, fn::negative(fn::mul(two, fn::sub(x1, x2))));
         in_grads.push_back(dx1);
         in_grads.push_back(dx2);
         return in_grads;
