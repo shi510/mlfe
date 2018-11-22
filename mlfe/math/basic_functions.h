@@ -82,22 +82,6 @@ void shift_a_b(const int size,
                T b
               );
 
-template <typename T>
-void OneHotCuda(const int batch,
-                const int classes,
-                const T *label,
-                T *onehot
-               );
-
-template <typename T>
-void AccuracyCuda(const int batch,
-                  const int classes,
-                  const int top_k,
-                  const T *prob,
-                  const T *label,
-                  T *accuracy
-                 );
-
 template <class T, class Dev>
 void bernoulli_distribution(const int size,
                             const T prob,
