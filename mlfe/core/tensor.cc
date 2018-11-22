@@ -44,10 +44,6 @@ Tensor::Tensor(std::vector<int> shape)
 
 Tensor::~Tensor(){}
 
-std::string Variable::name() const{
-    return *_name + "_" + std::to_string(_id->Id());
-}
-
 void Tensor::add_parent(Tensor p){
     _pimpl->_parents.push_back(p);
     //p.add_child(*this);
@@ -92,37 +88,6 @@ void Tensor::eval(){
             }
         }
     }
-}
-
-unsigned int Variable::UniqueID::_next_gen = 0;
-
-void Tensor::add_attr(Attribution attr){
-    _pimpl->_attrs.SetAttr(attr);
-}
-
-template <>
-bool Tensor::get_attr<bool>(std::string name){
-    return _pimpl->_attrs.GetAttr<bool>(name);
-}
-
-template <>
-int Tensor::get_attr<int>(std::string name){
-    return _pimpl->_attrs.GetAttr<int>(name);
-}
-
-template <>
-double Tensor::get_attr<double>(std::string name){
-    return _pimpl->_attrs.GetAttr<double>(name);
-}
-
-template <>
-float Tensor::get_attr<float>(std::string name){
-    return _pimpl->_attrs.GetAttr<float>(name);
-}
-
-template <>
-std::vector<int> Tensor::get_attr<std::vector<int>>(std::string name){
-    return _pimpl->_attrs.GetAttr<std::vector<int>>(name);
 }
 
 OpAlgoContext Tensor::get_context() const{
@@ -267,10 +232,6 @@ Tensor reshape(Tensor x, std::vector<int> shape){
     y.reshape(shape);
     Tensor::AssignOpFunctor(y, ctx);
     return y;
-}
-
-void fill(Tensor to, const Tensor from){
-    copy(from.get_memory(), to.get_memory());
 }
 
 } // end namespace functional

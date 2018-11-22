@@ -19,8 +19,6 @@ Tensor create_variable(std::vector<int> shape);
 
 Tensor reshape(Tensor x, std::vector<int> shape);
 
-void fill(Tensor to, const Tensor from);
-
 } // end namespace functional
 
 class Tensor final : public Variable{
@@ -54,11 +52,6 @@ public:
     std::vector<Tensor> get_children() const;
 
     int get_exec_order() const;
-
-    void add_attr(Attribution attr);
-
-    template <typename T>
-    T get_attr(std::string name);
 
     OpAlgoContext get_context() const;
 
@@ -115,11 +108,6 @@ private:
 };
 
 template <typename T>
-T Tensor::get_attr(std::string name){
-    throw std::string("Tensor::get_attr : accessed unsupported type.");
-}
-
-template <typename T>
 Tensor::iterator<T> Tensor::begin(){
     return iterator<T>(mutable_data<T>());
 }
@@ -158,21 +146,6 @@ template <typename T>
 inline T *Tensor::mutable_device_data(){
     return static_cast<T *>(_mutable_device_data());
 }
-
-template <>
-bool Tensor::get_attr<bool>(std::string name);
-
-template <>
-int Tensor::get_attr<int>(std::string name);
-
-template <>
-double Tensor::get_attr<double>(std::string name);
-
-template <>
-float Tensor::get_attr<float>(std::string name);
-
-template <>
-std::vector<int> Tensor::get_attr<std::vector<int>>(std::string name);
 
 template <typename T>
 class Tensor::iterator{

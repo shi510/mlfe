@@ -27,24 +27,29 @@ void Shape::clear(){
 
 Variable::Variable() : ti(type::float32()){
     _name = std::make_shared<std::string>("Variable");
-    _id = std::make_shared<UniqueID>();
     _shape = std::make_shared<class Shape>();
     _size = 0;
 }
 
 Variable::Variable(std::string name) : ti(type::float32()){
     _name = std::make_shared<std::string>(name);
-    _id = std::make_shared<UniqueID>();
     _shape = std::make_shared<class Shape>();
     _size = 0;
 }
 
 Variable::Variable(std::vector<int> shape) : ti(type::float32()){
     _name = std::make_shared<std::string>("Variable");
-    _id = std::make_shared<UniqueID>();
     _shape = std::make_shared<class Shape>(shape);
     _size = std::accumulate(_shape->dims().begin(),
         _shape->dims().end(), 1, std::multiplies<int>());
+}
+
+std::string Variable::name() const{
+    return *_name;
+}
+
+void Variable::set_name(std::string name){
+    *_name = name;
 }
 
 int Variable::size() const{

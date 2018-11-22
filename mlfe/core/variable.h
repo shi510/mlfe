@@ -37,9 +37,7 @@ public:
 
     std::string name() const;
 
-    void set_name(std::string name){
-        *_name = name;
-    }
+    void set_name(std::string name);
 
     int size() const;
 
@@ -54,22 +52,6 @@ public:
     type::TypeInfo type() const;
 
 private:
-    class UniqueID{
-    public:
-        UniqueID(){
-            _id = _next_gen;
-            _next_gen += 1;
-        }
-
-        unsigned int Id(){
-            return _id;
-        }
-    private:
-        unsigned int _id;
-        static unsigned int _next_gen;
-    };
-
-    std::shared_ptr<UniqueID> _id;
     std::shared_ptr<std::string> _name;
     std::shared_ptr<class Shape> _shape;
     type::TypeInfo ti;
