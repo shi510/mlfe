@@ -7,7 +7,6 @@
 #include "operators/math.h"
 #include "operators/pool.h"
 #include "operators/reshape.h"
-#include "operators/reduce.h"
 #include "operators/dropout.h"
 #include "operators/basic_arithmetics.h"
 #include "operators/matmul.h"
