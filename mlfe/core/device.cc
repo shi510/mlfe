@@ -25,6 +25,9 @@ enabled_device::enabled_device(){
 #elif defined(OPTION_USE_CUDA)
     _dev_name = "CUDA";
     _accel_name = "NONE";
+#elif defined(OPTION_USE_MKLDNN)
+    _dev_name = "CPU";
+    _accel_name = "MKLDNN";
 #else
     _dev_name = "CPU";
     _accel_name = "NONE";
@@ -71,6 +74,7 @@ private:
     bool is_mutated_device;
 };
 
+// for nvidia cuda device memory synchronization.
 #if defined(OPTION_USE_CUDNN) || defined(OPTION_USE_CUDA)
 
 void sync_d2h(void *to, 
@@ -131,6 +135,7 @@ device_memory::~device_memory(){
     }
 }
 
+// for cpu memory synchronization.
 #else
 
 void sync_d2h(void *to, 
