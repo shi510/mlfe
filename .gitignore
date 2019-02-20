@@ -1,4 +1,4 @@
-build
+build*
 data/mnist/*
 data/cifar/*
 !data/mnist/get_mnist.py
