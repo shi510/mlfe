@@ -24,6 +24,13 @@ if(USE_CUDA)
 endif()
 add_library(${the_library} ${LIB_TYPE} ${mlfe_source_files} ${mlfe_header_files})
 target_link_libraries(${the_library} ${mlfe_library_dependencies})
+if(USE_CUDNN)
+    target_compile_definitions(${the_library} PRIVATE OPTION_USE_CUDNN)
+elseif(USE_CUDA)
+    target_compile_definitions(${the_library} PRIVATE OPTION_USE_CUDA)
+elseif(USE_INTEL_MKLDNN)
+    target_compile_definitions(${the_library} PRIVATE OPTION_USE_MKLDNN)
+endif()
 mlfe_build_flatbuffers(flat_gen_headers
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
