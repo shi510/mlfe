@@ -186,9 +186,9 @@ Tensor::AssignOpFunctor::AssignOpFunctor(Tensor t, OpAlgoContext ctx){
     std::string full_op_name = "Name:" + op_name + "/Device:";
     std::string dev_name = dev->get_device_name();
     std::string with_accel = dev_name + "(" + dev->get_accelerator_name() + ")";
-    
+
     t._pimpl->_compute_list = visit_bfs(t);
-    std::reverse(t._pimpl->_compute_list.begin(), 
+    std::reverse(t._pimpl->_compute_list.begin(),
                  t._pimpl->_compute_list.end()
                 );
 

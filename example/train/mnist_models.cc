@@ -140,7 +140,7 @@ Lenet::LogitLoss Lenet::get_logit_loss(const std::vector<float> &x_val,
 void Lenet::build(const int batch){
     x = functional::create_variable({batch, 1, 28, 28});
     y = functional::create_variable({batch, 10});
-    logit = conv2d("conv1", x, 16, 5, 1, 0, 1e-1);
+    logit = fn::relu(conv2d("conv1", x, 16, 5, 1, 0, 1e-1));
     logit = maxpool("maxpool1", logit, 2, 2, 0);
     logit = fn::relu(conv2d("conv2", logit, 32, 5, 1, 0, 1e-1));
     logit = maxpool("maxpool2", logit, 2, 2, 0);
