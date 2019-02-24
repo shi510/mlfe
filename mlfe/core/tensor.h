@@ -53,7 +53,7 @@ public:
 
     int get_exec_order() const;
 
-    OpAlgoContext get_context() const;
+    OpAlgoContext & get_context() const;
 
     memory_ptr get_memory() const;
 

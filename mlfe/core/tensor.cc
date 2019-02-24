@@ -90,7 +90,7 @@ void Tensor::eval(){
     }
 }
 
-OpAlgoContext Tensor::get_context() const{
+OpAlgoContext & Tensor::get_context() const{
     return _pimpl->_ctx;
 }
 
