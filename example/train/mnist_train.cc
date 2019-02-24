@@ -11,15 +11,18 @@ namespace train_example{
 using namespace mlfe;
 namespace fn = functional;
 
-void Visualize(cv::Mat *img, std::vector<float> decode){
+void visualize(cv::Mat &img,
+               std::vector<float> decode
+               ){
     const int classes = 10;
     const int size = 28;
-    for(int n = 0; n < classes; ++n) {
-        cv::Mat cv_decode(size, size, CV_32FC1, decode.data() + n * size * size);
-        for(int r = 0; r < size; ++r) {
-            for(int c = 0; c < size; ++c) {
-                float val = cv_decode.at<float>(r, c);
-                img->at<float>(r, (c + n * size)) = cv_decode.at<float>(r, c);
+    for(int n = 0; n < classes; ++n){
+        const int offset = n * size * size;
+        cv::Mat cv_decode(size, size, CV_32FC1, decode.data() + offset);
+        for(int r = 0; r < size; ++r){
+            for(int c = 0; c < size; ++c){
+                const float val = cv_decode.at<float>(r, c);
+                img.at<float>(r, (c + n * size)) = val;
             }
         }
     }
@@ -88,12 +91,12 @@ void train_simple_mnist(const std::string train_path,
                 std::copy(x_val.begin(), x_val.end(), x.begin<float>());
                 std::copy(onehot.begin(), onehot.end(), y.begin<float>());
                 out.eval();
-                out_val.assign(out.data<float>(), out.data<float>() + out.size());
+                out_val.assign(out.begin<float>(), out.end<float>());
                 for(int k = 0; k < batch; ++k){
                     auto s = out_val.begin() + k * cls;
                     auto e = out_val.begin() + (k + 1) * cls;
                     auto pos = std::max_element(s, e);
-                    int infer = std::distance(out_val.begin() + k * cls, pos);
+                    int infer = std::distance(s, pos);
                     if(y_val.data()[k] == infer){
                         corrent += 1;
                     }
@@ -133,7 +136,12 @@ void train_lenet(const std::string train_path,
         lenet.forward(x, onehot);
         lenet.backward();
         lenet.update();
-        if(((n + 1) % 500) == 0) {
+        if(((n + 1) % 100) == 0){
+            std::cout << n + 1 << " - train set loss : ";
+            std::cout << lenet.loss.data<float>()[0] << std::endl;
+            
+        }
+        if(((n + 1) % 1000) == 0) {
             int test_iter = 10000. / float(batch) + 0.5;
             double loss_mean = 0.;
             int corrent = 0;
@@ -159,7 +167,6 @@ void train_lenet(const std::string train_path,
                     }
                 }
             }
-            std::cout << "Iter : " << n + 1 << " : " << std::endl;
             std::cout << "     Loss over test 10K images : ";
             std::cout << loss_mean / test_iter << std::endl;
             std::cout << "  Accracy over test 10K images : ";
@@ -200,13 +207,17 @@ void train_ae(const std::string train_path,
             auto recon_val = ae.recon(input_test);
             visual = 0;
             origin = 0;
-            Visualize(&visual, recon_val);
-            Visualize(&origin, input_test);
+            visualize(visual, recon_val);
+            visualize(origin, input_test);
             cv::resize(visual, resized, visual.size() * 4);
             cv::resize(origin, origin_resized, origin.size() * 4);
             cv::imshow("original", origin_resized);
             cv::imshow("reconstruction", resized);
             cv::waitKey(1);
+        }
+        if(((n + 1) % 100) == 0){
+            std::cout << n + 1 << " - train set loss : ";
+            std::cout<<ae.loss.data<float>()[0]<<std::endl;
         }
         if(((n + 1) % 1000) == 0) {
             int test_iter = 10000. / batch + 0.5;
@@ -217,7 +228,7 @@ void train_ae(const std::string train_path,
                 auto loss_val = ae.get_loss(input);
                 loss_mean += loss_val[0];
             }
-            std::cout << n + 1 << " - loss : ";
+            std::cout << n + 1 << " - test set loss : ";
             std::cout << loss_mean / test_iter << std::endl;
             visual = 0;
         }
