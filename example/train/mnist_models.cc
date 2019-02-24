@@ -47,7 +47,7 @@ std::vector<float> AutoEncoder::get_loss(const std::vector<float> &x_val){
 }
 
 void AutoEncoder::build(const int batch){
-    x = functional::create_variable({64, 28 * 28});
+    x = fn::create_variable({64, 28 * 28});
     encode = encoder(x);
     decode = decoder(encode);
     decode_with_sigmoid = fn::sigmoid(decode);
@@ -83,8 +83,8 @@ Tensor AutoEncoder::fc_relu(const std::string name,
         return dist(rng);
     };
     int in = x.size() / x.shape()[0];
-    Tensor w = functional::create_variable({in, out});
-    Tensor b = functional::create_variable({out});
+    Tensor w = fn::create_variable({in, out});
+    Tensor b = fn::create_variable({out});
     Tensor fc = fn::add(fn::matmul(x, w), b);
     if(is_act){
         fc = fn::relu(fc);
@@ -138,13 +138,13 @@ Lenet::LogitLoss Lenet::get_logit_loss(const std::vector<float> &x_val,
 }
 
 void Lenet::build(const int batch){
-    x = functional::create_variable({batch, 1, 28, 28});
-    y = functional::create_variable({batch, 10});
+    x = fn::create_variable({batch, 1, 28, 28});
+    y = fn::create_variable({batch, 10});
     logit = fn::relu(conv2d("conv1", x, 16, 5, 1, 0, 1e-1));
     logit = maxpool("maxpool1", logit, 2, 2, 0);
     logit = fn::relu(conv2d("conv2", logit, 32, 5, 1, 0, 1e-1));
     logit = maxpool("maxpool2", logit, 2, 2, 0);
-    logit = functional::reshape(logit, {batch, 4 * 4 * 32});
+    logit = fn::reshape(logit, {batch, 4 * 4 * 32});
     logit = fc_relu("fc1", logit, 128, 1e-1, true);
     logit = fc_relu("fc2", logit, 10, 1e-2, false);
     loss = fn::mean(fn::softmax_cross_entropy(logit, y));
@@ -163,8 +163,8 @@ mlfe::Tensor Lenet::fc_relu(const std::string name,
         return dist(rng);
     };
     int in = x.size() / x.shape()[0];
-    Tensor w = functional::create_variable({in, out});
-    Tensor b = functional::create_variable({out});
+    Tensor w = fn::create_variable({in, out});
+    Tensor b = fn::create_variable({out});
     Tensor fc = fn::add(fn::matmul(x, w), b);
     if(is_act){
         fc = fn::relu(fc);
@@ -190,10 +190,14 @@ mlfe::Tensor Lenet::conv2d(const std::string name,
         auto dist = std::normal_distribution<float>(0, std);
         return dist(rng);
     };
-    Tensor w = functional::create_variable({filter, x.shape()[1], kernel, kernel});
+    Tensor w = fn::create_variable({filter, x.shape()[1], kernel, kernel});
+    Tensor b = fn::create_variable({1, filter, 1, 1});
     Tensor y = fn::conv2d(x, w, {stride, stride}, {padding, padding});
+    y = fn::add(y, fn::broadcast(b, y.shape()));
     vars[name + "_w"] = w;
+    vars[name + "_b"] = b;
     std::generate(w.begin<float>(), w.end<float>(), kaiming_he_fn);
+    std::fill(b.begin<float>(), b.end<float>(), 0.1f);
     return y;
 }
 
