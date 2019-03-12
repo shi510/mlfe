@@ -1,7 +1,7 @@
 #include "mlfe/core/op_algo.h"
 #include "mlfe/core/device.h"
 #include "mlfe/utils/assert.h"
-#include "third_party/mkldnn/external/mklml_mac_2019.0.1.20180928/include/mkl_cblas.h"
+#include "third_party/mkldnn/include/mkldnn.hpp"
 
 namespace mlfe{
 namespace algorithm_mkl{
@@ -55,14 +55,14 @@ public:
         const int lda = trans_a ? m : k;
         const int ldb = trans_b ? k : n;
         const int ldc = n;
-
-        cblas_sgemm(CblasRowMajor,
-                    trans_a ? CblasTrans : CblasNoTrans,
-                    trans_b ? CblasTrans : CblasNoTrans,
-                    m, n, k,
-                    alpha, a_ptr, lda,
-                    b_ptr, ldb, beta,
-                    y_ptr, ldc);
+        
+        mkldnn_sgemm(trans_b ? "T" : "N",
+                     trans_a ? "T" : "N",
+                     &n, &m, &k,
+                     &alpha, b_ptr, &ldb,
+                     a_ptr, &lda, &beta,
+                     y_ptr, &ldc
+                     );
     }
 
 private:
