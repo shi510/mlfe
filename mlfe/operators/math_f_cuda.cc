@@ -1,6 +1,7 @@
 #include "../core/op_algo.h"
 #include "../math/blas.h"
 #include "../math/basic_functions.h"
+#include "../math/activations.h"
 #include "../device_context/cuda_context.h"
 #include "../core/device.h"
 

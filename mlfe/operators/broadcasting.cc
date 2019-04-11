@@ -1,6 +1,7 @@
 #include "broadcasting.h"
 #include "../core/op_algo.h"
 #include "../core/gradient_helper.h"
+#include <algorithm>
 
 namespace mlfe{
 namespace functional{
