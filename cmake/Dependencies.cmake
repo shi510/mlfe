@@ -82,7 +82,7 @@ if(USE_INTEL_MKLDNN)
         message(STATUS "Downloading intel mkl...")
         if(WIN32)
             execute_process(
-                COMMAND cmd ${INTEL_MKLDNN_ROOT}/scripts/prepare_mkl.bat
+                COMMAND ${INTEL_MKLDNN_ROOT}/scripts/prepare_mkl.bat
                 )
         else()
             execute_process(
