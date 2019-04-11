@@ -19,3 +19,6 @@
 [submodule "third_party/protobuf"]
 	path = third_party/protobuf
 	url = https://github.com/protocolbuffers/protobuf
+[submodule "third_party/NNPACK"]
+	path = third_party/NNPACK
+	url = https://github.com/Maratyszcza/NNPACK
