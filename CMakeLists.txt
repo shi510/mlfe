@@ -12,6 +12,7 @@ endif()
 option(BUILD_TEST "Build C++ test binaries (require gtest lib)" OFF)
 option(BUILD_EXAMPLE "Build mlfe EXAMPLE (require opencv)" OFF)
 option(USE_CUDA "NVIDIA CUDA USE" OFF)
+option(USE_CUDNN "NVIDIA CUDNN USE" OFF)
 option(USE_INTEL_MKLDNN "INTEL MKL-DNN Library USE" OFF)
 
 if(MSVC)
