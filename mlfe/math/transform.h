@@ -35,6 +35,16 @@ void MaxPoolGradient(
     const int stride_h, const int stride_w, const int pad_h, const int pad_w,
     float *dx);
 
+template <class T, class D>
+void broadcast(const float *x, float *y,
+               int Nx, int Cx, int Hx, int Wx,
+               int Ny, int Cy, int Hy, int Wy);
+
+template <class T, class D>
+void broadcast_gradient(const float *dy, float *dx,
+                        int Ny, int Cy, int Hy, int Wy,
+                        int Nx, int Cx, int Hx, int Wx);
+
 } /* namespace math */
 } /* namespace mlfe */
 #endif /* __TRANSFORM_HPP__ */
