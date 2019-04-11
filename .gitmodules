@@ -22,3 +22,6 @@
 [submodule "third_party/NNPACK"]
 	path = third_party/NNPACK
 	url = https://github.com/Maratyszcza/NNPACK
+[submodule "third_party/QNNPACK"]
+	path = third_party/QNNPACK
+	url = https://github.com/pytorch/QNNPACK
