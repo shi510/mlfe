@@ -5,3 +5,4 @@ data/cifar/*
 !data/cifar/get_cifar.py
 mlfe/flatbuffers/*
 !mlfe/flatbuffers/*.fbs
+.vscode

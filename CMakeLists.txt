@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(mlfe CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 include(cmake/Utils.cmake)
 
