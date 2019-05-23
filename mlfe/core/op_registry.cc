@@ -10,7 +10,7 @@ op_registry::reg_type & op_registry::get(){
 
 bool op_registry::regist(std::string name,
                          op_info info){
-	auto it = get().find(name);
+    auto it = get().find(name);
     if(it == get().end()){
         get()[name] = info;
         return true;
