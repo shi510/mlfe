@@ -5,35 +5,8 @@
 
 namespace mlfe{ namespace functional{
 
-REGIST_OP(ReLU)
-    .Input("X", "float32")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto y = odc->Output(0);
-        if (x.name() != y.name()){
-            y.reshape(x.shape(), x.type());
-        }
-    })
-    .Finish();
-
-REGIST_OP_GRAD(ReLU)
-    .Input("X", "float32")
-    .Input("Y", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto dx = odc->Output(0);
-        dx.reshape(x.shape(), x.type());
-    })
-    .Finish();
-
 class ReLUGradient : public GradientHelper{
 public:
-    ReLUGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor x = y.get_children()[0];
@@ -50,35 +23,8 @@ public:
 
 REGIST_GRADIENT_HELPER(ReLU, ReLUGradient)
 
-REGIST_OP(Sigmoid)
-    .Input("X", "float32")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto y = odc->Output(0);
-        if(x.name() != y.name()){
-            y.reshape(x.shape(), x.type());
-        }
-    })
-    .Finish();
-
-REGIST_OP_GRAD(Sigmoid)
-    .Input("X", "float32")
-    .Input("Y", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto dx = odc->Output(0);
-        dx.reshape(x.shape(), x.type());
-    })
-    .Finish();
-
 class SigmoidGradient : public GradientHelper{
 public:
-    SigmoidGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor x = y.get_children()[0];

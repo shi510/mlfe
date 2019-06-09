@@ -157,7 +157,7 @@ void Tensor::compute_gradient(const Tensor root){
         if(var._pimpl->_algo != nullptr){
             auto op_name = var._pimpl->_algo->get_name();
             auto helper = GradientHelperRegistry::Get();
-            auto op_grad = helper->GetHelper(op_name, nullptr);
+            auto op_grad = helper->GetHelper(op_name);
             //add all partial gradients and propagate down.
             auto dy = functional::add_n(dy_collector[var]);
             //calculate input's gradients.

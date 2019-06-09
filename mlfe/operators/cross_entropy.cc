@@ -5,34 +5,8 @@
 
 namespace mlfe{
 
-REGIST_OP(SigmoidCrossEntropy)
-    .Input("X", "float32")
-    .Input("Target", "float32")
-    .Output("Loss", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto loss = odc->Output(0);
-        loss.reshape({ x.shape()[0] }, type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(SigmoidCrossEntropy)
-    .Input("X", "float32")
-    .Input("Target", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto dx = odc->Output(0);
-        dx.reshape(x.shape(), type::float32());
-    })
-    .Finish();
-
 class SigmoidXEntropyGradient : public GradientHelper{
 public:
-    SigmoidXEntropyGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor logit = y.get_children()[0];
@@ -54,34 +28,8 @@ public:
 
 REGIST_GRADIENT_HELPER(SigmoidCrossEntropy, SigmoidXEntropyGradient)
 
-REGIST_OP(SoftmaxCrossEntropyWithLabel)
-    .Input("X", "float32")
-    .Input("Target", "float32")
-    .Output("Loss", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto loss = odc->Output(0);
-        loss.reshape({ x.shape()[0] }, type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(SoftmaxCrossEntropyWithLabel)
-    .Input("X", "float32")
-    .Input("Target", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto dx = odc->Output(0);
-        dx.reshape(x.shape(), type::float32());
-    })
-    .Finish();
-
 class SoftmaxCrossEntropyWithLabelGradient : public GradientHelper{
 public:
-    SoftmaxCrossEntropyWithLabelGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor logit = y.get_children()[0];

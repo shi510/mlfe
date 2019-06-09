@@ -1,11 +1,12 @@
 #include "gradient_helper.h"
+#include "mlfe/core/tensor.h"
 #include <numeric>
 #include <iostream>
 
 namespace mlfe{
 using GH = GradientHelper;
 
-GH::GradientHelper(const OpDesignContext *odc) : odc(odc){}
+GH::GradientHelper(){}
 
 using GHR = GradientHelperRegistry;
 
@@ -31,12 +32,12 @@ std::vector<std::string> GHR::GetAllOpName(){
     return op_names;
 }
 
-GHR::HelperPtr GHR::GetHelper(std::string name, OpDesignContext *odc){
+GHR::HelperPtr GHR::GetHelper(std::string name){
     if(registry.count(name) <= 0){
         throw std::string("GradientHelperRegistry.GetHelper : "
             "Not found for ") + name;
     }
-    return registry[name](odc);
+    return registry[name]();
 }
 
 GHR *GHR::Get(){
@@ -52,8 +53,7 @@ GHRR::GradientHelperRegisterer(std::string name, HelperCreator creator){
 
 class IdentityGrad : public GradientHelper{
 public:
-    IdentityGrad(const OpDesignContext *odc)
-    : GradientHelper(odc){}
+    IdentityGrad(){}
     
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;

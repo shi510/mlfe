@@ -1,7 +1,6 @@
 #ifndef __OP_ALGO_HPP__
 #define __OP_ALGO_HPP__
 #include "../utils/types.h"
-#include "op_design.h"
 #include "device.h"
 #include "tensor.h"
 #include "attribute.h"

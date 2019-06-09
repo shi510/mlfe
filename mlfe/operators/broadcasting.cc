@@ -6,38 +6,8 @@
 namespace mlfe{
 namespace functional{
 
-REGIST_OP(Broadcasting)
-    .Input("X", "float32")
-    .Output("Y", "float32")
-    .Attr("broadcasting_shape", "int32s")
-    .ShapeInference([](OpDesignContext * odc){
-        using IntVec = std::vector<type::int32::T>;
-        auto x = odc->Input(0);
-        auto y = odc->Output(0);
-        auto shape = odc->GetAttr<IntVec>("broadcasting_shape");
-        auto x_shape = x.shape();
-        y.reshape(shape, type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(Broadcasting)
-    .Input("X", "float32")
-    .Input("Y", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto y = odc->Input(1);
-        auto dx = odc->Output(0);
-        dx.reshape(x.shape(), type::float32());
-    })
-    .Finish();
-
 class BroadcastingGradient : public GradientHelper{
 public:
-    BroadcastingGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using IntVec = std::vector<type::int32::T>;
         VecTensor in_grads;

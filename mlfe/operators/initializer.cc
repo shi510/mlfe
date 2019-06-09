@@ -1,37 +1,12 @@
 #include "initializer.h"
 #include "../core/op_algo.h"
 #include "../core/tensor.h"
-#include "../core/op_design.h"
 #include "../core/gradient_helper.h"
 
 namespace mlfe{
 
-REGIST_OP(Constant)
-    .Output("Y", "float32")
-    .Attr("value", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto y = odc->Output(0);
-        auto shape = odc->GetAttr<std::vector<int>>("shape");
-        y.reshape(shape);
-    })
-    .Finish();
-
-REGIST_OP(Normal)
-    .Output("Y", "float32")
-    .Attr("std", "float32")
-    .Attr("clip", "bool")
-    .ShapeInference([](OpDesignContext * odc){
-        auto y = odc->Output(0);
-        auto shape = odc->GetAttr<std::vector<int>>("shape");
-        y.reshape(shape);
-    })
-    .Finish();
-
 class ConstantGradient : public GradientHelper{
 public:
-    ConstantGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         in_grads.push_back(dy);
@@ -43,9 +18,6 @@ REGIST_GRADIENT_HELPER(Constant, ConstantGradient)
 
 class NormalGradient : public GradientHelper{
 public:
-    NormalGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         in_grads.push_back(dy);

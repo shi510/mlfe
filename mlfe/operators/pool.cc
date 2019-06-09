@@ -4,87 +4,8 @@
 
 namespace mlfe{ 
 
-// X Shape : N, C, H , W
-// Y Shape : N, C, H', W'
-REGIST_OP(MaxPool)
-    .Input("X", "float32")
-    .Output("IDX", "float32")
-    .Output("Y", "float32")
-    .Attr("filters_hw", "int32s")
-    .Attr("strides", "int32s")
-    .Attr("pads", "int32s")
-    .ShapeInference([](OpDesignContext * odc){
-        using IntVec = std::vector<type::int32::T>;
-        auto x = odc->Input(0);
-        auto idx = odc->Output(0);
-        auto y = odc->Output(1);
-        auto filters_hw = odc->GetAttr<IntVec>("filters_hw");
-        auto strides = odc->GetAttr<IntVec>("strides");
-        auto pads = odc->GetAttr<IntVec>("pads");
-        auto x_shape = x.shape();
-        int out_h = (x_shape[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
-        int out_w = (x_shape[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
-        idx.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
-        y.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(MaxPool)
-    .Input("X", "float32")
-    .Input("IDX", "float32")
-    .Input("Y", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto dx = odc->Output(0);
-        dx.reshape(x.shape(), type::float32());
-    })
-    .Finish();
-
-// X Shape : N, C, H , W
-// Y Shape : N, C, H', W'
-REGIST_OP(AvgPool)
-    .Input("X", "float32")
-    .Output("IDX", "float32")
-    .Output("Y", "float32")
-    .Attr("filters_hw", "int32s")
-    .Attr("strides", "int32s")
-    .Attr("pads", "int32s")
-    .ShapeInference([](OpDesignContext * odc){
-        using IntVec = std::vector<type::int32::T>;
-        auto x = odc->Input(0);
-        auto idx = odc->Output(0);
-        auto y = odc->Output(1);
-        auto filters_hw = odc->GetAttr<IntVec>("filters_hw");
-        auto strides = odc->GetAttr<IntVec>("strides");
-        auto pads = odc->GetAttr<IntVec>("pads");
-        auto x_shape = x.shape();
-        int out_h = (x_shape[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
-        int out_w = (x_shape[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
-        idx.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
-        y.reshape({ x_shape[0], x_shape[1], out_h, out_w }, type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(AvgPool)
-    .Input("X", "float32")
-    .Input("IDX", "float32")
-    .Input("Y", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x = odc->Input(0);
-        auto dx = odc->Output(0);
-        dx.reshape(x.shape(), type::float32());
-    })
-    .Finish();
-
 class MaxPoolGradient : public GradientHelper{
 public:
-    MaxPoolGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using Ints = std::vector<type::int32::T>;
         VecTensor in_grads;
@@ -112,9 +33,6 @@ REGIST_GRADIENT_HELPER(MaxPool, MaxPoolGradient)
 
 class AvgPoolGradient : public GradientHelper{
 public:
-    AvgPoolGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using IntVec = std::vector<type::int32::T>;
         VecTensor in_grads;

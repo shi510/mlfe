@@ -8,32 +8,8 @@
 namespace mlfe{
 namespace functional{
 
-REGIST_OP(Negative)
-    .Input("X", "float32")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x1 = odc->Input(0);
-        auto y = odc->Output(0);
-        y.reshape(x1.shape(), type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(Negative)
-    .Input("X", "float32")
-    .Input("dY", "float32")
-    .Output("dX", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto dy = odc->Input(1);
-        auto dx = odc->Output(0);
-        dx.reshape(dy.shape(), type::float32());
-    })
-    .Finish();
-
 class NegativeGradient : public GradientHelper{
 public:
-    NegativeGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         auto dx = functional::negative(dy);
@@ -44,42 +20,8 @@ public:
 
 REGIST_GRADIENT_HELPER(Negative, NegativeGradient)
 
-REGIST_OP(ElementwiseAdd)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x1 = odc->Input(0);
-        auto x2 = odc->Input(1);
-        auto y = odc->Output(0);
-        if(x1.size() != x2.size()){
-            throw std::string("ElementwiseAdd : "
-                "the Shape of A and B is not same.");
-        }
-        y.reshape(x1.shape(), type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(ElementwiseAdd)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Input("dY", "float32")
-    .Output("dX1", "float32")
-    .Output("dX2", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto dy = odc->Input(1);
-        auto dx1 = odc->Output(0);
-        auto dx2 = odc->Output(1);
-        dx1.reshape(dy.shape(), type::float32());
-        dx2.reshape(dy.shape(), type::float32());
-    })
-    .Finish();
-
 class ElementwiseAddGradient : public GradientHelper{
 public:
-    ElementwiseAddGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         in_grads.push_back(dy);
@@ -90,42 +32,8 @@ public:
 
 REGIST_GRADIENT_HELPER(ElementwiseAdd, ElementwiseAddGradient)
 
-REGIST_OP(ElementwiseSub)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x1 = odc->Input(0);
-        auto x2 = odc->Input(1);
-        auto y = odc->Output(0);
-        if(x1.size() != x2.size()){
-            throw std::string("ElementwiseSub : "
-                "the Shape of A and B is not same.");
-        }
-        y.reshape(x1.shape(), type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(ElementwiseSub)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Input("dY", "float32")
-    .Output("dX1", "float32")
-    .Output("dX2", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto dy = odc->Input(1);
-        auto dx1 = odc->Output(0);
-        auto dx2 = odc->Output(1);
-        dx1.reshape(dy.shape(), type::float32());
-        dx2.reshape(dy.shape(), type::float32());
-    })
-    .Finish();
-
 class ElementwiseSubGradient : public GradientHelper{
 public:
-    ElementwiseSubGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         auto dx1 = dy;
@@ -138,42 +46,8 @@ public:
 
 REGIST_GRADIENT_HELPER(ElementwiseSub, ElementwiseSubGradient)
 
-REGIST_OP(ElementwiseMul)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x1 = odc->Input(0);
-        auto x2 = odc->Input(1);
-        auto y = odc->Output(0);
-        if(x1.size() != x2.size()){
-            throw std::string("ElementwiseMul : "
-                "the Shape of A and B is not same.");
-        }
-        y.reshape(x1.shape(), type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(ElementwiseMul)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Input("dY", "float32")
-    .Output("dX1", "float32")
-    .Output("dX2", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto dy = odc->Input(2);
-        auto dx1 = odc->Output(0);
-        auto dx2 = odc->Output(1);
-        dx1.reshape(dy.shape(), type::float32());
-        dx2.reshape(dy.shape(), type::float32());
-    })
-    .Finish();
-
 class ElementwiseMulGradient : public GradientHelper{
 public:
-    ElementwiseMulGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor x1 = y.get_children()[0];
@@ -188,42 +62,8 @@ public:
 
 REGIST_GRADIENT_HELPER(ElementwiseMul, ElementwiseMulGradient)
 
-REGIST_OP(ElementwiseDiv)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x1 = odc->Input(0);
-        auto x2 = odc->Input(1);
-        auto y = odc->Output(0);
-        if(x1.size() != x2.size()){
-            throw std::string("ElementwiseDiv : "
-                "the Shape of A and B is not same.");
-        }
-        y.reshape(x1.shape(), type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(ElementwiseDiv)
-    .Input("X1", "float32")
-    .Input("X2", "float32")
-    .Input("dY", "float32")
-    .Output("dX1", "float32")
-    .Output("dX2", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto dy = odc->Input(2);
-        auto dx1 = odc->Output(0);
-        auto dx2 = odc->Output(1);
-        dx1.reshape(dy.shape(), type::float32());
-        dx2.reshape(dy.shape(), type::float32());
-    })
-    .Finish();
-
 class ElementwiseDivGradient : public GradientHelper{
 public:
-    ElementwiseDivGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         auto x1 = y.get_children()[0];
@@ -239,40 +79,8 @@ public:
 
 REGIST_GRADIENT_HELPER(ElementwiseDiv, ElementwiseDivGradient)
 
-REGIST_OP(AddN)
-    .Input("Xs", "float32s")
-    .Output("Y", "float32")
-    .ShapeInference([](OpDesignContext * odc){
-        auto x1 = odc->Input(0);
-        auto c = odc->Output(0);
-        int num = odc->NumInput();
-        for(int n = 1; n < num; ++n){
-            if(x1.size() != odc->Input(n).size()){
-                throw std::string("AddN : "
-                    "the Shape of Inputs is not same.");
-            }
-        }
-        c.reshape(x1.shape(), type::float32());
-    })
-    .Finish();
-
-REGIST_OP_GRAD(AddN)
-    .Input("dY", "float32")
-    .Output("dXs", "float32s")
-    .ShapeInference([](OpDesignContext * odc){
-        auto dy = odc->Input(0);
-        for(int n = 0; n < odc->NumOutput(); ++n){
-            Tensor d = odc->Output(n);
-            d.reshape(dy.shape(), type::float32());
-        }
-    })
-    .Finish();
-
 class AddNGradient : public GradientHelper{
 public:
-    AddNGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         for(int n = 0; n < y.get_children().size(); ++n){
@@ -286,9 +94,6 @@ REGIST_GRADIENT_HELPER(AddN, AddNGradient)
 
 class MatrixVectorAddGradient : public GradientHelper{
 public:
-    MatrixVectorAddGradient(const OpDesignContext *odc)
-        : GradientHelper(odc){}
-
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
         Tensor mat = y.get_children()[0];
