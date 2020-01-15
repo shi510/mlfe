@@ -1,6 +1,6 @@
-#include "../core/op_algo.h"
-#include "../math/activations.h"
-#include "../device_context/cpu_context.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/math/activations.h"
+#include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{
 namespace algorithm_cpu{

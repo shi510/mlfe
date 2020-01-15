@@ -1,6 +1,6 @@
 #ifndef __ACTIVATIONS_OP_HPP__
 #define __ACTIVATIONS_OP_HPP__
-#include "../core/tensor.h"
+#include "mlfe/core/tensor.h"
 
 namespace mlfe{ namespace functional{
 

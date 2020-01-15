@@ -1,4 +1,4 @@
-#include "../core/op_algo.h"
+#include "mlfe/core/op_algo.h"
 #include "third_party/mkldnn/include/mkldnn.hpp"
 #include "third_party/mkldnn/src/common/stream.hpp"
 #include "third_party/mkldnn/src/common/event.hpp"

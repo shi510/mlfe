@@ -1,9 +1,9 @@
 #ifndef __SIMPLEDB_READER_HPP__
 #define __SIMPLEDB_READER_HPP__
 
-#include "../../core/tensor.h"
-#include "../../utils/thread_pool.h"
-#include "../../utils/db/data_base.h"
+#include "mlfe/core/tensor.h"
+#include "mlfe/utils/thread_pool.h"
+#include "mlfe/utils/db/data_base.h"
 
 namespace mlfe {
 

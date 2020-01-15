@@ -1,7 +1,7 @@
-#include "../core/op_algo.h"
-#include "../device_context/cpu_context.h"
-#include "../math/basic_functions.h"
-#include "../math/optimizers.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/device_context/cpu_context.h"
+#include "mlfe/math/basic_functions.h"
+#include "mlfe/math/optimizers.h"
 
 namespace mlfe{
 namespace algorithm_cpu{

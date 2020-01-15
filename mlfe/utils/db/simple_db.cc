@@ -1,5 +1,5 @@
 #include "simple_db.h"
-#include "../assert.h"
+#include "mlfe/utils/assert.h"
 #include <sstream>
 #include <vector>
 #include <iostream>

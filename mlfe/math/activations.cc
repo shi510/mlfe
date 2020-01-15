@@ -1,5 +1,5 @@
 #include "activations.h"
-#include "../device_context/cpu_context.h"
+#include "mlfe/device_context/cpu_context.h"
 #include <cmath>
 #include <algorithm>
 

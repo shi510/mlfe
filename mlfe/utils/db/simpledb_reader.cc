@@ -1,8 +1,8 @@
 #include "simpledb_reader.h"
-#include "../../math/blas.h"
-#include "../../utils/assert.h"
-#include "../../utils/db/simple_db.h"
-#include "../../flatbuffers/tensor_blob_fb_generated.h"
+#include "mlfe/math/blas.h"
+#include "mlfe/utils/assert.h"
+#include "mlfe/utils/db/simple_db.h"
+#include "mlfe/flatbuffers/tensor_blob_fb_generated.h"
 #include <vector>
 #include <algorithm>
 

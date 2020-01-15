@@ -1,6 +1,6 @@
-#include "../core/op_algo.h"
-#include "../math/activations.h"
-#include "../core/device.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/math/activations.h"
+#include "mlfe/core/device.h"
 #include <cudnn.h>
 
 namespace mlfe{

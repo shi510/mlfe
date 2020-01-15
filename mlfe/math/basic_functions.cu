@@ -1,7 +1,7 @@
 #include "basic_functions.h"
-#include <cub/block/block_reduce.cuh>
+#include <third_party/cub/cub/block/block_reduce.cuh>
 #include "blas.h"
-#include "../device_context/cuda_context.h"
+#include "mlfe/device_context/cuda_context.h"
 
 namespace mlfe{
 namespace math{

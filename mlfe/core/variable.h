@@ -1,6 +1,6 @@
 #ifndef __VARIABLE_HPP__
 #define __VARIABLE_HPP__
-#include "../utils/types.h"
+#include "mlfe/utils/types.h"
 #include <memory>
 #include <string>
 #include <vector>

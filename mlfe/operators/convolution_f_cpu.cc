@@ -1,9 +1,9 @@
-#include "../core/op_algo.h"
-#include "../core/device.h"
-#include "../math/blas.h"
-#include "../math/basic_functions.h"
-#include "../math/transform.h"
-#include "../device_context/cpu_context.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/device.h"
+#include "mlfe/math/blas.h"
+#include "mlfe/math/basic_functions.h"
+#include "mlfe/math/transform.h"
+#include "mlfe/device_context/cpu_context.h"
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace mlfe{

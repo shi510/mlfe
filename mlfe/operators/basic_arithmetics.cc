@@ -1,5 +1,5 @@
-#include "../core/op_algo.h"
-#include "../core/gradient_helper.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/gradient_helper.h"
 #include "basic_arithmetics.h"
 #include "matmul.h"
 #include "initializer.h"

@@ -1,6 +1,6 @@
 #ifndef __GRADIENT_CHECKER_H__
 #define __GRADIENT_CHECKER_H__
-#include "../core/tensor.h"
+#include "mlfe/core/tensor.h"
 #include <numeric>
 
 namespace mlfe{

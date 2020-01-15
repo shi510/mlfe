@@ -1,7 +1,7 @@
 #include "activations.h"
-#include "../core/op_algo.h"
-#include "../core/tensor.h"
-#include "../core/gradient_helper.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/tensor.h"
+#include "mlfe/core/gradient_helper.h"
 
 namespace mlfe{ namespace functional{
 

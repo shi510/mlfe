@@ -1,5 +1,5 @@
 #include "blas.h"
-#include "../device_context/cpu_context.h"
+#include "mlfe/device_context/cpu_context.h"
 #include <Eigen/Dense>
 
 namespace mlfe{ namespace math{

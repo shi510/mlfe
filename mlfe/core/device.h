@@ -1,6 +1,6 @@
 #ifndef __DEVICE_HPP__
 #define __DEVICE_HPP__
-#include "../utils/types.h"
+#include "mlfe/utils/types.h"
 #include <memory>
 #include <vector>
 

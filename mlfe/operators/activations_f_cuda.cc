@@ -1,6 +1,6 @@
-#include "../core/op_algo.h"
-#include "../math/activations.h"
-#include "../device_context/cuda_context.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/math/activations.h"
+#include "mlfe/device_context/cuda_context.h"
 
 namespace mlfe{
 namespace algorithm_cuda{

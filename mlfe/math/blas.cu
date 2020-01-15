@@ -1,11 +1,10 @@
 #include <cuda.h>
-#include <device_functions.h>
-#include <cublas_v2.h>
 #include <cuda_runtime.h>
-#include <cub/block/block_reduce.cuh>
+#include <cublas_v2.h>
+#include <third_party/cub/cub/block/block_reduce.cuh>
 #include "blas.h"
-#include "../device_context/cuda_context.h"
-#include "../core/device.h"
+#include "mlfe/device_context/cuda_context.h"
+#include "mlfe/core/device.h"
 
 namespace mlfe{ namespace math{
 

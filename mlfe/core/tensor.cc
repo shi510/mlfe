@@ -4,9 +4,9 @@
 #include "attribute.h"
 #include "graph.h"
 #include "gradient_helper.h"
-#include "../operators/initializer.h"
-#include "../operators/basic_arithmetics.h"
-#include "../utils/assert.h"
+#include "mlfe/operators/initializer.h"
+#include "mlfe/operators/basic_arithmetics.h"
+#include "mlfe/utils/assert.h"
 #include <algorithm>
 #include <sstream>
 

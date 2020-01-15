@@ -1,7 +1,7 @@
 #include "gradient_descent.h"
-#include "../core/tensor.h"
-#include "../core/op_algo.h"
-#include "../math/basic_functions.h"
+#include "mlfe/core/tensor.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/math/basic_functions.h"
 #include <unordered_map>
 
 namespace mlfe{

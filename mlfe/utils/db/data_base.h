@@ -2,7 +2,7 @@
 #define __DATA_BASE_HPP__
 #include <string>
 #include <fstream>
-#include "../file_io.h"
+#include "mlfe/utils/file_io.h"
 
 namespace mlfe{
 

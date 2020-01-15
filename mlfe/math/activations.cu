@@ -1,6 +1,6 @@
 #include "activations.h"
-#include "../device_context/cuda_context.h"
-#include <cub/block/block_reduce.cuh>
+#include "mlfe/device_context/cuda_context.h"
+#include <third_party/cub/cub/block/block_reduce.cuh>
 
 namespace mlfe{ namespace math{
 

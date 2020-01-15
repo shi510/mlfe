@@ -1,8 +1,8 @@
-#include "../core/op_algo.h"
-#include "../core/device.h"
-#include "../math/basic_functions.h"
-#include "../device_context/cuda_context.h"
-#include "../math/blas.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/device.h"
+#include "mlfe/math/basic_functions.h"
+#include "mlfe/device_context/cuda_context.h"
+#include "mlfe/math/blas.h"
 
 namespace mlfe{
 namespace algorithm_cuda{
