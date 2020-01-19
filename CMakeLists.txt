@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 2.8)
 project(mlfe CXX)
 
 set(CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-ignored-qualifiers")
 
 include(cmake/Utils.cmake)
 
 if(UNIX)
   option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
+  SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-ignored-qualifiers")
 endif()
 option(BUILD_TEST "Build C++ test binaries (require gtest lib)" OFF)
 option(BUILD_EXAMPLE "Build mlfe EXAMPLE (require opencv)" OFF)
