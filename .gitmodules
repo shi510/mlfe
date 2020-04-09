@@ -25,3 +25,6 @@
 [submodule "third_party/QNNPACK"]
 	path = third_party/QNNPACK
 	url = https://github.com/pytorch/QNNPACK
+[submodule "third_party/json"]
+	path = third_party/json
+	url = https://github.com/nlohmann/json
