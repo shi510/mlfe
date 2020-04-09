@@ -25,20 +25,26 @@ void Shape::clear(){
     _dims.clear();
 }
 
-Variable::Variable() : ti(type::float32()){
+Variable::Variable(const bool trainable)
+    : ti(type::float32()), __trainable(trainable)
+{
     _name = std::make_shared<std::string>("Variable");
     _shape = std::make_shared<class Shape>();
     _size = 0;
 }
 
-Variable::Variable(std::string name) : ti(type::float32()){
+Variable::Variable(std::string name, const bool trainable)
+    : ti(type::float32()), __trainable(trainable)
+{
     _name = std::make_shared<std::string>(name);
     _shape = std::make_shared<class Shape>();
     _size = 0;
 }
 
-Variable::Variable(std::vector<int> shape) : ti(type::float32()){
-    _name = std::make_shared<std::string>("Variable");
+Variable::Variable(std::vector<int> shape, const std::string name, const bool trainable)
+    : ti(type::float32()), __trainable(trainable)
+{
+    _name = std::make_shared<std::string>(name);
     _shape = std::make_shared<class Shape>(shape);
     _size = std::accumulate(_shape->dims().begin(),
         _shape->dims().end(), 1, std::multiplies<int>());
@@ -82,4 +88,15 @@ void Variable::reshape(std::vector<int> shape, type::TypeInfo ti){
 type::TypeInfo Variable::type() const{
     return ti;
 }
+
+void Variable::set_trainable(const bool trainable)
+{
+    __trainable = trainable;
+}
+
+bool Variable::trainable() const
+{
+    return __trainable;
+}
+
 } // end namespace mlfe;

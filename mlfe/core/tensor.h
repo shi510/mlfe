@@ -15,7 +15,7 @@ class OpAlgoContext;
 
 namespace functional{
 
-Tensor create_variable(std::vector<int> shape);
+Tensor create_variable(std::vector<int> shape, const bool trainable = false);
 
 Tensor reshape(Tensor x, std::vector<int> shape);
 
@@ -31,11 +31,13 @@ public:
 
     struct AssignOpFunctor;
 
-    Tensor();
+    Tensor(const bool trainable = false);
 
-    Tensor(std::string name);
+    Tensor(std::string name, const bool trainable = false);
 
-    explicit Tensor(std::vector<int> shape);
+    explicit Tensor(std::vector<int> shape,
+        const std::string name = "",
+        const bool trainable = false);
 
     Tensor(const Tensor &t) = default;
 
@@ -99,7 +101,7 @@ protected:
     void compute_gradient(const Tensor root);
 
 private:
-    friend Tensor functional::create_variable(std::vector<int>);
+    friend Tensor functional::create_variable(std::vector<int>, const bool trainable);
     friend Tensor functional::reshape(Tensor x, std::vector<int> shape);
     friend struct std::hash<Tensor>;
     friend struct AssignOpFunctor;

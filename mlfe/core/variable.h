@@ -27,11 +27,11 @@ private:
 
 class Variable{
 public:
-    Variable();
+    Variable(const bool trainable = false);
 
-    Variable(std::string name);
+    Variable(std::string name, const bool trainable = false);
 
-    Variable(std::vector<int> shape);
+    Variable(std::vector<int> shape, const std::string name = "", const bool trainable = false);
 
     Variable(const Variable &) = default;
 
@@ -51,11 +51,16 @@ public:
 
     type::TypeInfo type() const;
 
+    void set_trainable(const bool trainable);
+
+    bool trainable() const;
+
 private:
     std::shared_ptr<std::string> _name;
     std::shared_ptr<class Shape> _shape;
     type::TypeInfo ti;
     int _size;
+    bool __trainable;
 };
 } // end namespace mlfe
 #endif // end ifndef __VARIABLE_HPP__

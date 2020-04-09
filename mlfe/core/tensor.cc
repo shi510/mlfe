@@ -28,18 +28,21 @@ struct Tensor::impl{
     bool _children_modified;
 };
 
-Tensor::Tensor()
-    : _pimpl(std::make_shared<impl>()){
+Tensor::Tensor(const bool trainable)
+    : Variable(trainable), _pimpl(std::make_shared<impl>())
+{
 }
 
-Tensor::Tensor(std::string name)
-    : Variable(name),
-    _pimpl(std::make_shared<impl>()){
+Tensor::Tensor(std::string name, const bool trainable)
+    : Variable(name, trainable),
+    _pimpl(std::make_shared<impl>())
+{
 }
 
-Tensor::Tensor(std::vector<int> shape)
-    : Variable(shape),
-    _pimpl(std::make_shared<impl>()){
+Tensor::Tensor(std::vector<int> shape, const std::string name, const bool trainable)
+    : Variable(shape, name, trainable),
+    _pimpl(std::make_shared<impl>())
+{
 }
 
 Tensor::~Tensor(){}
@@ -211,9 +214,10 @@ Tensor::AssignOpFunctor::AssignOpFunctor(Tensor t, OpAlgoContext ctx){
 
 namespace functional{
 
-Tensor create_variable(std::vector<int> shape){
+Tensor create_variable(std::vector<int> shape, const bool trainable){
     Tensor var;
     OpAlgoContext ctx("Identity");
+    var.set_trainable(trainable);
     var.reshape(shape);
     var._pimpl->_mem = create_memory(var.size() * var.type().size);
     var._pimpl->_ctx = ctx;
