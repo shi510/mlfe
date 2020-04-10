@@ -188,6 +188,16 @@ public:
         return _ptr != rhs._ptr;
     }
 
+    this_type operator+(int n){
+        _ptr += n;
+        return *this;
+    }
+
+    this_type operator-(int n){
+        _ptr -= n;
+        return *this;
+    }
+
 private:
     pointer _ptr;
 };
@@ -229,6 +239,16 @@ public:
 
     bool operator!=(const this_type& rhs) const{
         return _ptr != rhs._ptr;
+    }
+
+    this_type operator+(int n){
+        _ptr += n;
+        return *this;
+    }
+
+    this_type operator-(int n){
+        _ptr -= n;
+        return *this;
     }
 
 private:
