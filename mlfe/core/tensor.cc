@@ -8,13 +8,16 @@
 #include "mlfe/operators/basic_arithmetics.h"
 #include "mlfe/utils/assert.h"
 #include <algorithm>
+#include <numeric>
 #include <sstream>
+#include <iostream>
 
 namespace mlfe{
 
 //TODO : use thread for _children_modified
 struct Tensor::impl{
-    impl() : _exec_order(0), _ctx("unknown"), _children_modified(true){}
+    impl() : _exec_order(0), _ctx("unknown"),
+        _children_modified(true), __ti(type::float32()){}
     std::vector<Tensor> _parents;
     std::vector<Tensor> _children;
     int _exec_order;
@@ -26,23 +29,32 @@ struct Tensor::impl{
     std::vector<Tensor> _compute_list;
     std::vector<std::shared_ptr<Tensor>> _backward_list;
     bool _children_modified;
+    std::string __name;
+    bool __trainable;
+    type::TypeInfo __ti;
+    std::vector<int> __shape;
+    int __size;
 };
 
 Tensor::Tensor(const bool trainable)
-    : Variable(trainable), _pimpl(std::make_shared<impl>())
+    : _pimpl(std::make_shared<impl>())
 {
+    set_trainable(trainable);
 }
 
 Tensor::Tensor(std::string name, const bool trainable)
-    : Variable(name, trainable),
-    _pimpl(std::make_shared<impl>())
+    : _pimpl(std::make_shared<impl>())
 {
+    set_trainable(trainable);
+    set_name(name);
 }
 
 Tensor::Tensor(std::vector<int> shape, const std::string name, const bool trainable)
-    : Variable(shape, name, trainable),
-    _pimpl(std::make_shared<impl>())
+    : _pimpl(std::make_shared<impl>())
 {
+    resize(shape);
+    set_trainable(trainable);
+    set_name(name);
 }
 
 Tensor::~Tensor(){}
@@ -99,6 +111,72 @@ OpAlgoContext & Tensor::get_context() const{
 
 memory_ptr Tensor::get_memory() const{
     return _pimpl->_mem;
+}
+
+std::string Tensor::name() const
+{
+    return _pimpl->__name;
+}
+
+void Tensor::set_name(std::string name)
+{
+    _pimpl->__name = name;
+}
+
+void Tensor::set_trainable(const bool trainable)
+{
+    _pimpl->__trainable = trainable;
+}
+
+bool Tensor::trainable() const
+{
+    return _pimpl->__trainable;
+}
+
+void Tensor::reshape(std::vector<int> shape)
+{
+    auto target_size = std::accumulate(shape.begin(),
+        shape.end(), 1, std::multiplies<int>());
+    if(target_size != _pimpl->__size)
+    {
+        std::cerr<<"element size is not match, ";
+        std::cerr<<target_size<<" != "<<_pimpl->__size<<std::endl;
+        return;
+    }
+    _pimpl->__shape = shape;
+}
+
+void Tensor::resize(std::vector<int> shape, type::TypeInfo ti)
+{
+    _pimpl->__shape = shape;
+    _pimpl->__size = std::accumulate(_pimpl->__shape.begin(),
+        _pimpl->__shape.end(), 1, std::multiplies<int>());
+    _pimpl->__ti = ti;
+}
+
+int Tensor::size() const
+{
+    return _pimpl->__size;
+}
+
+int Tensor::dims() const
+{
+    return _pimpl->__shape.size();
+}
+
+int Tensor::dim(int idx) const
+{
+    return _pimpl->__shape[idx];
+}
+
+std::vector<int> Tensor::shape() const
+{
+    return _pimpl->__shape;
+}
+
+type::TypeInfo Tensor::type() const
+{
+    return _pimpl->__ti;
 }
 
 void Tensor::backprop(){
@@ -218,7 +296,7 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
     Tensor var;
     OpAlgoContext ctx("Identity");
     var.set_trainable(trainable);
-    var.reshape(shape);
+    var.resize(shape);
     var._pimpl->_mem = create_memory(var.size() * var.type().size);
     var._pimpl->_ctx = ctx;
     Tensor::AssignOpFunctor(var, ctx);

@@ -1,7 +1,7 @@
 #ifndef __TENSOR_HPP__
 #define __TENSOR_HPP__
-#include "variable.h"
 #include "device.h"
+#include "mlfe/utils/types.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -10,7 +10,6 @@
 namespace mlfe{
 //forward declaration.
 class Tensor;
-class Attribution;
 class OpAlgoContext;
 
 namespace functional{
@@ -21,7 +20,8 @@ Tensor reshape(Tensor x, std::vector<int> shape);
 
 } // end namespace functional
 
-class Tensor final : public Variable{
+class Tensor final
+{
 public:
     template <typename T>
     class iterator;
@@ -58,6 +58,28 @@ public:
     OpAlgoContext & get_context() const;
 
     memory_ptr get_memory() const;
+
+    std::string name() const;
+
+    void set_name(std::string name);
+
+    void set_trainable(const bool trainable);
+
+    bool trainable() const;
+
+    void reshape(std::vector<int> shape);
+
+    void resize(std::vector<int> shape, type::TypeInfo ti = type::float32());
+
+    int size() const;
+
+    int dims() const;
+
+    int dim(int idx) const;
+
+    std::vector<int> shape() const;
+
+    type::TypeInfo type() const;
 
     template <typename T>
     iterator<T> begin();
