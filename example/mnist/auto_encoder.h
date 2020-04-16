@@ -15,26 +15,25 @@ auto auto_encoder(std::vector<int> input_shape)
 	auto encoder = [](Tensor in)
 		{
 			auto enc = dense(300)(in);
-			enc = relu()(enc);
+			enc = sigmoid()(enc);
 			enc = dense(150)(enc);
-			enc = relu()(enc);
+			enc = sigmoid()(enc);
 			enc = dense(50)(enc);
-			enc = relu()(enc);
-			enc = dense(10)(enc);	
+			enc = sigmoid()(enc);
+			enc = dense(10)(enc);
+			enc = sigmoid()(enc);
 			return enc;
 		};
 	auto decoder = [&in](Tensor enc, int out_size)
 		{
 			auto dec = dense(50)(enc);
-			dec = relu()(dec);
-			dec = dense(50)(dec);
-			dec = relu()(dec);
+			dec = sigmoid()(dec);
 			dec = dense(150)(dec);
-			dec = relu()(dec);
+			dec = sigmoid()(dec);
 			dec = dense(300)(dec);
-			dec = relu()(dec);
+			dec = sigmoid()(dec);
 			dec = dense(out_size)(dec);
-			// dec = sigmoid()(dec);
+			dec = sigmoid()(dec);
 			return model(in, dec);
 		};
 	

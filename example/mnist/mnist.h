@@ -18,11 +18,12 @@ void read_mnist_dataset(std::string folder_path,
 template <int _BatchSize>
 struct mnist_gen : public generator<mnist_gen<_BatchSize>>
 {
-	mnist_gen(std::vector<uint8_t> x, std::vector<uint8_t> y)
+	mnist_gen(std::vector<uint8_t> x, std::vector<uint8_t> y, bool y_is_x = false)
 	{
 		__data_size = y.size();
 		__x = x;
 		__y = y;
+		__y_is_x = y_is_x;
 	}
 
 	size_t size() const
@@ -52,12 +53,17 @@ struct mnist_gen : public generator<mnist_gen<_BatchSize>>
 					(float)iter_beg[n * img_size + i] / 255.f;
 			}
 		}
+		if (__y_is_x)
+		{
+			return std::make_tuple(x, x);
+		}
 		return std::make_tuple(x, y);
 	}
 
 	size_t __data_size;
 	std::vector<uint8_t> __x;
 	std::vector<uint8_t> __y;
+	bool __y_is_x;
 };
 	
 } // end namespace dataset

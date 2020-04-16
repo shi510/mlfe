@@ -41,14 +41,15 @@ int main(int argc, char *argv[])
 	dataset::read_mnist_dataset(argv[2],
 		train_x, train_y,
 		valid_x, valid_y);
-	dataset::mnist_gen<32> train_set(train_x, train_y), valid_set(valid_x, valid_y);
 
 	if(std::string(argv[1]) == "simple")
 	{
+		dataset::mnist_gen<32> train_set(train_x, train_y), valid_set(valid_x, valid_y);
 		train_simplenet(train_set, valid_set);
 	}
 	else if(std::string(argv[1]) == "autoencoder")
 	{
+		dataset::mnist_gen<32> train_set(train_x, train_y, true), valid_set(valid_x, valid_y, true);
 		train_autoencoder(train_set, valid_set);
 	}
 	else
@@ -80,8 +81,8 @@ void train_autoencoder(
 	dataset::mnist_gen<_BatchSize> valid_set)
 {
 	auto net = models::auto_encoder({_BatchSize, 28 * 28});
-	auto optm = functional::create_adam_optimizer(1e-4);
-	auto loss = functional::sigmoid_cross_entropy;
+	auto optm = functional::create_gradient_descent_optimizer(1e-2, 0.9);
+	auto loss = functional::squared_difference;
 	net.compile(optm, loss);
 	net.fit(train_set, valid_set, 3, _BatchSize);
 }
@@ -90,7 +91,7 @@ float categorical_accuracy(Tensor y_true, Tensor y_pred)
 {
 	const int batch_size = y_true.shape()[0];
 	const int classes = y_true.shape()[1];
-	float accuracy;
+	float accuracy = 0.f;
 	for(int b = 0; b < batch_size; ++b)
 	{
 		auto y_pred_pos = std::max_element(

@@ -1,7 +1,6 @@
 #pragma once
 #include "mlfe/core/tensor.h"
 #include "mlfe/core/graph.h"
-#include "mlfe/core/node.h"
 #include "mlfe/optimizers/optimizer.h"
 #include "mlfe/operators/math.h"
 #include <functional>
