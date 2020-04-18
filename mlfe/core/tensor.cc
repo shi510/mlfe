@@ -311,7 +311,8 @@ Tensor reshape(Tensor x, std::vector<int> shape){
     y._pimpl->_gradient = nullptr;
     y._pimpl->_ctx = x._pimpl->_ctx;
     y._pimpl->_mem = x._pimpl->_mem;
-    y.reshape(shape);
+    y._pimpl->__size = x.size();
+    y._pimpl->__shape = shape;
     Tensor::AssignOpFunctor(y, ctx);
     return y;
 }
