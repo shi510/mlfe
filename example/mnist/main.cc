@@ -5,6 +5,7 @@
 #include <mlfe/core/graph.h>
 #include "auto_encoder.h"
 #include "simple_net.h"
+#include "conv_net.h"
 #include "mnist.h"
 
 using namespace mlfe;
@@ -15,6 +16,11 @@ float categorical_accuracy(Tensor y_true, Tensor y_pred);
 
 template <int _BatchSize>
 void train_simplenet(
+	dataset::mnist_gen<_BatchSize> train_set,
+	dataset::mnist_gen<_BatchSize> valid_set);
+
+template <int _BatchSize>
+void train_convnet(
 	dataset::mnist_gen<_BatchSize> train_set,
 	dataset::mnist_gen<_BatchSize> valid_set);
 
@@ -33,7 +39,7 @@ int main(int argc, char *argv[])
 	if(argc < 3)
 	{
 		std::cout<<argv[0];
-		std::cout<<" [simple | autoencoder]";
+		std::cout<<" [simple | conv | autoencoder]";
 		std::cout<<" [mnist dataset folder]"<<std::endl;
 		return 1;
 	}
@@ -47,6 +53,11 @@ int main(int argc, char *argv[])
 		dataset::mnist_gen<32> train_set(train_x, train_y), valid_set(valid_x, valid_y);
 		train_simplenet(train_set, valid_set);
 	}
+	else if(std::string(argv[1]) == "conv")
+	{
+		dataset::mnist_gen<64> train_set(train_x, train_y), valid_set(valid_x, valid_y);
+		train_convnet(train_set, valid_set);
+	}
 	else if(std::string(argv[1]) == "autoencoder")
 	{
 		dataset::mnist_gen<32> train_set(train_x, train_y, true), valid_set(valid_x, valid_y, true);
@@ -57,6 +68,7 @@ int main(int argc, char *argv[])
 		std::cout<<"Wrong command, ";
 		std::cout<<"select one of the commands below."<<std::endl;
 		std::cout<<" - simple"<<std::endl;
+		std::cout<<" - conv"<<std::endl;
 		std::cout<<" - autoencoder"<<std::endl;
 	}
 
@@ -73,6 +85,18 @@ void train_simplenet(
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
 	net.fit(train_set, valid_set, 2, _BatchSize);
+}
+
+template <int _BatchSize>
+void train_convnet(
+	dataset::mnist_gen<_BatchSize> train_set,
+	dataset::mnist_gen<_BatchSize> valid_set)
+{
+	auto net = models::conv_net({_BatchSize, 1, 28, 28});
+	auto optm = functional::create_gradient_descent_optimizer(2e-2, 0.9);
+	auto loss = functional::softmax_cross_entropy;
+	net.compile(optm, loss, categorical_accuracy);
+	net.fit(train_set, valid_set, 5, _BatchSize);
 }
 
 template <int _BatchSize>
