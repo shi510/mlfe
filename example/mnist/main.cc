@@ -2,10 +2,7 @@
 #include <mlfe/operators.h>
 #include <mlfe/core/tensor.h>
 #include <mlfe/optimizers.h>
-#include <mlfe/core/graph.h>
-#include "auto_encoder.h"
-#include "simple_net.h"
-#include "conv_net.h"
+#include "net_models.h"
 #include "mnist.h"
 
 using namespace mlfe;
