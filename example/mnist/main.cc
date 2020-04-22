@@ -2,8 +2,8 @@
 #include <mlfe/operators.h>
 #include <mlfe/core/tensor.h>
 #include <mlfe/optimizers.h>
+#include "dataset/mnist.h"
 #include "net_models.h"
-#include "mnist.h"
 
 using namespace mlfe;
 using namespace mlfe::module;
