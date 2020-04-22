@@ -6,7 +6,8 @@ dist: bionic
 
 before_install:
   - chmod ugo+x ./.travis/build.sh
+  - chmod ugo+x ./.travis/install.sh
 install:
   - ./.travis/build.sh
 script:
-  -
+  - ./.travis/install.sh
