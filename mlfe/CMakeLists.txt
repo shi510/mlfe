@@ -39,6 +39,9 @@ mlfe_build_flatbuffers(flat_gen_headers
 add_dependencies(${the_library} gen_fb_target)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         DESTINATION include
-        FILES_MATCHING PATTERN "*.hpp")
+        FILES_MATCHING REGEX ".+\\.[hpp|h]")
+
+install(TARGETS ${the_library}
+        DESTINATION lib)
 
 set_target_properties(${the_library} PROPERTIES FOLDER "mlfe_library")
