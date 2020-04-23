@@ -15,8 +15,9 @@ dense::dense(int out_features, std::string name)
 
 void dense::build(std::vector<int> input_shape)
 {
-	auto random_fn = [this](){
-		auto dist = std::normal_distribution<float>(0, 0.1);
+	auto kaiming_he_fn = [&]() {
+		float std = std::sqrt(6.f / input_shape[1]);
+		auto dist = std::uniform_real<float>(-std, std);
 		return dist(__rng);
 	};
 	_w = add_variable(
@@ -29,10 +30,10 @@ void dense::build(std::vector<int> input_shape)
 		true);
 	std::fill(_b.mutable_data<float>(),
 		_b.mutable_data<float>() + _b.size(),
-		0);
+		0.1f);
 	std::generate(_w.mutable_data<float>(),
 		_w.mutable_data<float>() + _w.size(),
-		random_fn);
+		kaiming_he_fn);
 }
 
 Tensor dense::call(Tensor input)

@@ -29,8 +29,8 @@ void conv2d::build(std::vector<int> input_shape)
 	int in_elem = std::accumulate(input_shape.begin()+1,
 		input_shape.end(), 1, std::multiplies<int>());
 	auto kaiming_he_fn = [&]() {
-		float std = std::sqrt(2.f / (in_elem));
-		auto dist = std::normal_distribution<float>(0, std);
+		float std = std::sqrt(6.f / (in_elem));
+		auto dist = std::uniform_real<float>(-std, std);
 		return dist(__rng);
 	};
 	__w = add_variable("weights", { __out_channels, input_shape[1], __kernel, __kernel }, true);
