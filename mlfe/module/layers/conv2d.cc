@@ -30,7 +30,7 @@ void conv2d::build(std::vector<int> input_shape)
 		input_shape.end(), 1, std::multiplies<int>());
 	auto kaiming_he_fn = [&]() {
 		float std = std::sqrt(6.f / (in_elem));
-		auto dist = std::uniform_real<float>(-std, std);
+		auto dist = std::uniform_real_distribution<float>(-std, std);
 		return dist(__rng);
 	};
 	__w = add_variable("weights", { __out_channels, input_shape[1], __kernel, __kernel }, true);

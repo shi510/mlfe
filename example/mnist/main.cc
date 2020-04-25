@@ -112,7 +112,7 @@ float categorical_accuracy(Tensor y_true, Tensor y_pred)
 {
 	const int batch_size = y_true.shape()[0];
 	const int classes = y_true.shape()[1];
-	float accuracy = 0.f;
+	int correct = 0;
 	for(int b = 0; b < batch_size; ++b)
 	{
 		auto y_pred_pos = std::max_element(
@@ -123,8 +123,8 @@ float categorical_accuracy(Tensor y_true, Tensor y_pred)
 			y_pred_pos);
 		if(y_true.data<float>()[b * classes + class_id] == 1.f)
 		{
-			accuracy += 1.f;
+			correct += 1;
 		}
 	}
-	return accuracy / batch_size;
+	return float(correct) / float(batch_size);
 }

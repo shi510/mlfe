@@ -17,7 +17,7 @@ void dense::build(std::vector<int> input_shape)
 {
 	auto kaiming_he_fn = [&]() {
 		float std = std::sqrt(6.f / input_shape[1]);
-		auto dist = std::uniform_real<float>(-std, std);
+		auto dist = std::uniform_real_distribution<float>(-std, std);
 		return dist(__rng);
 	};
 	_w = add_variable(
