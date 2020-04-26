@@ -50,10 +50,6 @@ else()
   list(APPEND mlfe_library_dependencies flatbuffers)
 endif()
 
-if(BUILD_EXAMPLE)
-  find_package(OpenCV REQUIRED)
-endif()
-
 include(${PROJECT_SOURCE_DIR}/cmake/cudnn.cmake)
 
 if(USE_CUDA)
