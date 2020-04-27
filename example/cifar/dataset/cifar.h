@@ -2,6 +2,7 @@
 #define __CIFAR10_H__
 #include <vector>
 #include <string>
+#include <tuple>
 #include <mlfe/module/data_gen.h>
 
 namespace dataset{
