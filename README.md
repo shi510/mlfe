@@ -6,7 +6,73 @@
 MLFE is a framework for machine learning written by modern C++.  
 Initially this project was for studying on backpropagation algorithm of deep learning, but we decided to develop deeper for mobile platform.  
 So, our goal is to optimize a neural network on mobile platform by quantizing or compressing a neural network.  
-Currently, it supports C++ lang, but we are working now to support Rust lang and Go lang.  
+It supports only C++ lang now, but we are working to support Rust lang and Go lang.  
+
+## API is not stable.  
+Note that API is not stable currently, it will be removed or modified without notifications.  
+See examples or unit-test implementations for details.  
+Those will be updated along with the API changes.  
+
+## Keras-like API
+Keras API (TensorFlow) makes you build a neural network easily.  
+MLFE adopts Keras-like API.  
+To train MNIST dataset using Keras-like API, build a network first as below.  
+```c++
+namespace models
+{
+using namespace mlfe::module;
+using namespace mlfe::module::layers;
+
+model conv_net(std::vector<int> input_shape)
+{
+    auto in = input(input_shape)();
+    auto out = conv2d(16, 5, 1, 2)(in);
+    out = maxpool2d(2, 2, 0)(out);
+    out = relu()(out);
+    out = conv2d(24, 5, 1, 2)(out);
+    out = maxpool2d(2, 2, 0)(out);
+    out = relu()(out);
+    out = flatten()(out);
+    out = dense(128)(out);
+    out = relu()(out);
+    out = dense(10)(out);
+    return model(in, out);
+}
+
+} // end namespace models
+```
+
+Secondly, prepare your MNIST dataset.  
+It is implemented in examples/mnist/dataset/mnist.cc.  
+```c++
+std::vector<uint8_t> train_x; // 60000 train images.
+std::vector<uint8_t> train_y; // 60000 train labels. 
+std::vector<uint8_t> valid_x; // 10000 test images.
+std::vector<uint8_t> valid_y; // 10000 test labels.
+read_mnist_dataset("MNIST data path", train_x, train_y, valid_x, valid_y);
+```
+
+Thirdly, implement custom Generator class.  
+See mnist_gen class in examples/mnist/dataset/mnist.h.  
+The mnist_gen class is callable and returns a tuple by operator(int batch_idx).  
+```c++
+dataset::mnist_gen<64> train_set(train_x, train_y), valid_set(valid_x, valid_y);
+std::tuple<std::vector<uint8_t>, std::vector<uint8_t>> data_label = train_set(0);
+```
+
+Lastly, choose your optimizer and loss function.  
+Then, train your model by calling fit member function.  
+After 5 epochs, test-set accuracy is about 99%.  
+See examples/mnist/main.cc for more details.  
+```c++
+constexpr int B = 64;
+constexpr int EPOCHS = 5;
+auto net = models::conv_net({B, 1, 28, 28});
+auto optm = functional::create_gradient_descent_optimizer(2e-2, 0.9);
+auto loss = functional::softmax_cross_entropy;
+net.compile(optm, loss, categorical_accuracy);
+net.fit(train_set, valid_set, EPOCHS, _BatchSize);
+```
 
 ## Basic Example
 You can create a variable using create_variable function.  
@@ -45,7 +111,7 @@ result.backprop();
 one.grad();
 ```
 
-## Simple Neural Network for MNIST Dataset.
+## Simple Neural Network for MNIST Dataset using low-level API.
 
 To train mnist data, we build a simple neural network.  
 This code is in example/train/mnist_train.cc.
@@ -94,25 +160,25 @@ But in this example, we just initialize weight and bias to zero.
     std::fill(bias.begin<T>(), bias.end<T>(), 0);
 ```
 
-An original mnist file can convert into simpledb and can read using simpledb reader.  
-The simpledb is NoSQL key-value DB that we developed.
+Create std vectors to store image and label data batch.
 ```c++
-    auto train_db = SimbleDBReader(argv[1]);
     auto img = std::vector<T>(batch * h * w)
     auto label = std::vector<T>(batch);
 ```
 
-First, we should transform the input data value to [0, 1).  
-the range of mnist data value is [0, 255] and we divide by 256.  
-Second, we should transform the label data to one-hot form.  
+Normalize the image data value to [0, 1].  
+The range of image data is [0, 255], so it is divided by 255.  
+Transform the label data to one-hot form.  
 If the label is 5, the one-hot form represents [0, 0, 0, 0, 0, 1, 0, 0, 0, 0].  
 ```c++
     for(int n = 0; n < iter; ++n){
-        // read mnist data from simpledb.
-        train_db.read<T>(batch, {img, label});
+        // read mnist data.
+        // implement read_mnist_data_batch and read_mnist_label_batch.
+        read_mnist_data_batch(img);
+        read_mnist_label_batch(label);
         // normalize to [0, 1).
         for(auto &val : img){
-            val /= 256;
+            val /= 255.f;
         }
         // copy normalized host data to our model's input x.
         std::copy(img.begin(), img.end(), x.begin<T>());
