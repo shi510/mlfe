@@ -45,3 +45,4 @@ install(TARGETS ${the_library}
         DESTINATION lib)
 
 set_target_properties(${the_library} PROPERTIES FOLDER "mlfe_library")
+set_target_properties(${the_library} PROPERTIES DEBUG_POSTFIX "d")
