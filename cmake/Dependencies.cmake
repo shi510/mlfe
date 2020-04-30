@@ -50,6 +50,20 @@ else()
   list(APPEND mlfe_library_dependencies flatbuffers)
 endif()
 
+find_package(Protobuf "3.11.4")
+
+if(${PROTOBUF_FOUND} AND ${USE_INSTALLED_LIBRARY})
+  message(STATUS "Found Protobuf on your system : " ${Protobuf_INCLUDE_DIRS})
+  list(APPEND mlfe_include_dirs ${Protobuf_INCLUDE_DIRS})
+  list(APPEND mlfe_library_dependencies ${Protobuf_LIBRARIES})
+else()
+  message(STATUS "[Protobuf will be compiled which is in third party folder.]")
+  set(protobuf_BUILD_TESTS OFF CACHE BOOL "protobuf_BUILD_TESTS" FORCE)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/protobuf/cmake)
+  list(APPEND mlfe_include_dirs ${PROJECT_SOURCE_DIR}/third_party/protobuf/src)
+  list(APPEND mlfe_library_dependencies libprotobuf)
+endif()
+
 include(${PROJECT_SOURCE_DIR}/cmake/cudnn.cmake)
 
 if(USE_CUDA)

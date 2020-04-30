@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 
-project(mlfe CXX)
+project(mlfe VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -15,6 +15,7 @@ option(BUILD_EXAMPLE "Build mlfe EXAMPLE (require opencv)" OFF)
 option(USE_CUDA "NVIDIA CUDA USE" OFF)
 option(USE_CUDNN "NVIDIA CUDNN USE" OFF)
 option(USE_INTEL_MKLDNN "INTEL MKL-DNN Library USE" OFF)
+option(USE_INSTALLED_LIBRARY "Build with installed library on your system" OFF)
 
 if(MSVC)
     msvc_multi_threaded_static_turn(ON)
