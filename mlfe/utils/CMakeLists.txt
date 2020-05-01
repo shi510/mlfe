@@ -1,5 +1,5 @@
-file(GLOB util_srcs "*.cc")
-file(GLOB util_hdrs "*.h")
+file(GLOB_RECURSE util_srcs "*.cc")
+file(GLOB_RECURSE util_hdrs "*.h")
 list(APPEND mlfe_source_files ${util_srcs})
 list(APPEND mlfe_header_files ${util_hdrs})
 set(mlfe_source_files ${mlfe_source_files} PARENT_SCOPE)

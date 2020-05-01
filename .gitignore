@@ -6,3 +6,4 @@ data/cifar/*
 mlfe/flatbuffers/*
 !mlfe/flatbuffers/*.fbs
 .vscode
+*.pb*

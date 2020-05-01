@@ -53,7 +53,7 @@ function(generate_proto_cpp dep generated_srcs generated_hdrs proto_path)
     string(REPLACE ".proto" ".pb.cc" srcs ${proto_files})
     string(REPLACE ".proto" ".pb.h" hdrs ${proto_files})
     add_custom_command(OUTPUT ${srcs} ${hdrs}
-        COMMAND protoc --proto_path=${proto_path} --cpp_out=${proto_path} ${proto_files}
+        COMMAND ${Protobuf_PROTOC_EXECUTABLE} --proto_path=${proto_path} --cpp_out=${proto_path} ${proto_files}
         COMMENT "proto generate cpp for ${proto_files}"
     )
     add_custom_target(${dep} DEPENDS ${srcs} ${hdrs})

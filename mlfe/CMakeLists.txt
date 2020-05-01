@@ -23,6 +23,8 @@ if(USE_CUDA)
   cuda_add_library(cuda_objects STATIC ${mlfe_cuda_source_files})
   list(APPEND mlfe_library_dependencies cuda_objects)
 endif()
+generate_proto_cpp(proto_dep proto_src proto_hdr
+    ${PROJECT_SOURCE_DIR}/mlfe/utils/tensorboard/proto)
 add_library(${the_library} ${LIB_TYPE} ${mlfe_source_files} ${mlfe_header_files})
 target_link_libraries(${the_library} ${mlfe_library_dependencies})
 if(USE_CUDNN)
@@ -36,7 +38,9 @@ mlfe_build_flatbuffers(flat_gen_headers
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
         gen_fb_target)
+
 add_dependencies(${the_library} gen_fb_target)
+add_dependencies(${the_library} proto_dep)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         DESTINATION include
         FILES_MATCHING REGEX ".+\\.[hpp|h]")
