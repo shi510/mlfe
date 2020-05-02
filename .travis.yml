@@ -17,6 +17,7 @@ matrix:
 before_install:
   - chmod ugo+x ./.travis/build.sh
   - chmod ugo+x ./.travis/install.sh
+  - eval "${MATRIX_EVAL}"
 install:
   - ./.travis/build.sh
 script:
