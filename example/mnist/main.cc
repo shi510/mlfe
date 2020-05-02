@@ -2,6 +2,7 @@
 #include <mlfe/operators.h>
 #include <mlfe/core/tensor.h>
 #include <mlfe/optimizers.h>
+#include <mlfe/module/callbacks/tensorboard.h>
 #include "dataset/mnist.h"
 #include "net_models.h"
 
@@ -93,7 +94,7 @@ void train_convnet(
 	auto optm = functional::create_gradient_descent_optimizer(2e-2, 0.9);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
-	net.fit(train_set, valid_set, 5, _BatchSize);
+	net.fit(train_set, valid_set, 5, _BatchSize, {tensorboard("mnist_logs")});
 }
 
 template <int _BatchSize>

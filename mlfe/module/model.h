@@ -3,9 +3,13 @@
 #include "mlfe/core/graph.h"
 #include "mlfe/optimizers/optimizer.h"
 #include "mlfe/operators/math.h"
+#include "mlfe/module/callbacks/callback.h"
+#include "mlfe/utils/templates.h"
 #include <functional>
 #include <string>
+#include <map>
 #include <iostream>
+#include <algorithm>
 
 namespace mlfe
 {
@@ -48,20 +52,42 @@ public:
 		_Callable train_set,
 		_Callable valid_set,
 		const int epoch,
-		const int batch_size)
+		const int batch_size,
+		util::template_unpacker<callback> callbacks = {})
 	{
 		typedef typename std::remove_reference<
 			decltype(std::get<0>(train_set(0))[0])>::type _TypeX;
 		typedef typename std::remove_reference<
 			decltype(std::get<1>(train_set(0))[0])>::type _TypeY;
-
+		std::map<std::string, float> logs;
+		std::for_each(callbacks.params.begin(), callbacks.params.end(),
+			[this](std::shared_ptr<callback> cb) {cb->set_model(this); });
 		for (int n = 0; n < epoch; ++n)
 		{
 			std::cout << "epoch : " << n << std::endl;
+			std::for_each(callbacks.params.begin(), callbacks.params.end(),
+				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_train_begin(n, logs); });
 			auto [train_loss, train_acc] = __iter<_Callable, _TypeX, _TypeY>(
 				train_set, train_set.size() / batch_size, true);
+			if(__metric_fn)
+			{
+				logs["accuracy"] = train_acc;
+			}
+			logs["loss"] = train_loss;
+			std::for_each(callbacks.params.begin(), callbacks.params.end(),
+				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_epoch_end(n, logs); });
+
+			std::for_each(callbacks.params.begin(), callbacks.params.end(),
+				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_test_begin(n, logs); });
 			auto [valid_loss, valid_acc] = __iter<_Callable, _TypeX, _TypeY>(
 				valid_set, valid_set.size() / batch_size, false);
+			if(__metric_fn)
+			{
+				logs["accuracy"] = valid_acc;
+			}
+			logs["loss"] = valid_loss;
+			std::for_each(callbacks.params.begin(), callbacks.params.end(),
+				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_epoch_end(n, logs); });
 			std::cout << "train loss : " << train_loss << ", ";
 			std::cout << "valid loss : " << valid_loss << std::endl;
 			if(__metric_fn)
