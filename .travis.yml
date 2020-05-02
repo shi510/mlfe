@@ -4,6 +4,16 @@ language: cpp
 compiler: gcc
 dist: bionic
 
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
 before_install:
   - chmod ugo+x ./.travis/build.sh
   - chmod ugo+x ./.travis/install.sh
