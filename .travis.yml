@@ -18,6 +18,12 @@ before_install:
   - chmod ugo+x ./.travis/build.sh
   - chmod ugo+x ./.travis/install.sh
   - eval "${MATRIX_EVAL}"
+  - CMAKE_VERSION=3.17.2
+  - CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
+  - wget --no-check-certificate ${CMAKE_URL}
+  - tar -xf cmake-${CMAKE_VERSION}-Linux-x86_64
+  - export PATH=${PWD}/cmake-${CMAKE_VERSION}-Linux-x86_64/bin:${PATH}
+
 install:
   - ./.travis/build.sh
 script:
