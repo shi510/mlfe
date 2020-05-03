@@ -21,7 +21,7 @@ before_install:
   - CMAKE_VERSION=3.17.2
   - CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   - wget --no-check-certificate ${CMAKE_URL}
-  - tar -xf cmake-${CMAKE_VERSION}-Linux-x86_64
+  - tar -xf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz
   - export PATH=${PWD}/cmake-${CMAKE_VERSION}-Linux-x86_64/bin:${PATH}
 
 install:
