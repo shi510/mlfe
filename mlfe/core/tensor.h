@@ -2,6 +2,7 @@
 #define __TENSOR_HPP__
 #include "device.h"
 #include "mlfe/utils/types.h"
+#include "mlfe/core/graph.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -80,6 +81,8 @@ public:
     std::vector<int> shape() const;
 
     type::TypeInfo type() const;
+
+    std::shared_ptr<graph> get_graph() const;
 
     template <typename T>
     iterator<T> begin();

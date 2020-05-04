@@ -18,7 +18,7 @@ public:
         size = x1.size();
     }
     
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x1_ptr = x1.device_data<T>();
         auto x2_ptr = x2.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
@@ -50,7 +50,7 @@ using T = typename Tp::T;
 public:
     SquaredDifferenceGrad(OpAlgoContext *oac) : OpAlgo(oac){}
 
-    void Compute() override{}
+    void Compute(op_algo_runtime_context& rc) override{}
 
 private:
     Tensor x1;
@@ -84,7 +84,7 @@ public:
         size = x.size();
     }
     
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         T sum = T(0);
@@ -120,7 +120,7 @@ public:
         scale = T(1) / T(size);
     }
     
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
         T dy_val = dy_ptr[0];

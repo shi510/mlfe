@@ -35,7 +35,7 @@ public:
         cudnnSetActivationDescriptor(act_desc, CUDNN_ACTIVATION_RELU, CUDNN_PROPAGATE_NAN, 1e+4);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         const T alpha = T(1);
         const T beta = T(0);
         auto x_ptr = x.device_data<void>();
@@ -106,7 +106,7 @@ public:
         cudnnSetActivationDescriptor(act_desc, CUDNN_ACTIVATION_RELU, CUDNN_PROPAGATE_NAN, 1e+4);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         const T alpha = T(1);
         const T beta = T(0);
         auto x_ptr = x.device_data<void>();
@@ -180,7 +180,7 @@ public:
         cudnnSetActivationDescriptor(act_desc, CUDNN_ACTIVATION_SIGMOID, CUDNN_PROPAGATE_NAN, 0.0);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         const T alpha = T(1);
         const T beta = T(0);
         auto x_ptr = x.device_data<void>();
@@ -252,7 +252,7 @@ public:
         cudnnSetActivationDescriptor(act_desc, CUDNN_ACTIVATION_SIGMOID, CUDNN_PROPAGATE_NAN, 0.0);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         const T alpha = T(1);
         const T beta = T(0);
         auto x_ptr = x.device_data<void>();

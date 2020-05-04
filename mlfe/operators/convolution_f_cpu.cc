@@ -43,7 +43,7 @@ public:
         kernel_shape[1] = filters;
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         T4R x_t = T_MAP(
             x.mutable_device_data<T>(),
             x.shape()[0],
@@ -138,7 +138,7 @@ public:
         col_buf = create_memory(k * n * Tp::size);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto w_ptr = w.device_data<T>();
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
@@ -234,7 +234,7 @@ public:
         col_buf = create_memory(k * n * Tp::size);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto dy_ptr = dy.device_data<T>();
         auto dw_ptr = dw.mutable_device_data<T>();

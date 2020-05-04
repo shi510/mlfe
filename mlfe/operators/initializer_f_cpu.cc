@@ -16,7 +16,7 @@ public:
         size = y.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         math::set<T, CPUContext>(size, value, y.mutable_device_data<T>());
     }
 
@@ -47,7 +47,7 @@ public:
         dist = std::normal_distribution<T>(-std, std);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.mutable_device_data<T>();
         for(int n = 0; n < size; ++n){
             x_ptr[n] = dist(CPUContext::rng);

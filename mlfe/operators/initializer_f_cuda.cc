@@ -18,7 +18,7 @@ public:
         size = y.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         math::set<T, CUDAContext>(size,
                                   value, 
                                   y.mutable_device_data<T>()
@@ -51,7 +51,7 @@ public:
         size = y.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto y_ptr = y.mutable_device_data<T>();
         curandGenerateNormal(CUDAContext::rng, y_ptr, size, 0, std);
         if(clip){

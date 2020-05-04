@@ -19,7 +19,7 @@ public:
         
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         auto mask_ptr = mask.mutable_device_data<T>();
@@ -70,7 +70,7 @@ public:
         size = dy.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
         auto mask_ptr = mask.device_data<T>();

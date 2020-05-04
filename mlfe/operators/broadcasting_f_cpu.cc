@@ -13,7 +13,7 @@ public:
         x = y.get_children()[0];
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         int Nx, Cx, Hx, Wx;
@@ -107,7 +107,7 @@ public:
         dy = dx.get_children()[0];
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
         int Nx, Cx, Hx, Wx;

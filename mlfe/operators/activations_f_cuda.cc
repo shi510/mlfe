@@ -15,7 +15,7 @@ public:
         size = x.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         math::relu<T, CUDAContext>(
@@ -51,7 +51,7 @@ public:
         size = x.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
@@ -93,7 +93,7 @@ public:
         size = x.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         math::sigmoid<T, CUDAContext>(
@@ -129,7 +129,7 @@ public:
         size = y.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto y_ptr = y.device_data<T>();
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();

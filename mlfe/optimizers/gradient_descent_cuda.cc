@@ -27,7 +27,7 @@ public:
             );
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.mutable_device_data<T>();
         auto dx_ptr = x_grad.device_data<T>();
         auto mmt_hist_ptr = mmt_hist->mutable_device_data<T>();

@@ -17,7 +17,7 @@ public:
         size = y.size();
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
         for(int n = 0; n < size; ++n){
@@ -53,7 +53,7 @@ public:                                                              \
         x2 = y.get_children()[1];                                    \
         size = y.size();                                             \
     }                                                                \
-    void Compute() override{                                         \
+    void Compute(op_algo_runtime_context& rc) override{              \
         auto x1_ptr = x1.device_data<T>();                           \
         auto x2_ptr = x2.device_data<T>();                           \
         auto y_ptr = y.mutable_device_data<T>();                     \
@@ -98,7 +98,7 @@ public:
         }
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto y_ptr = y.mutable_device_data<T>();
         math::set<T, CPUContext>(size, 0, y_ptr);
         for(auto &x : xs){
@@ -140,7 +140,7 @@ public:
                                  multiplier->mutable_device_data<T>());
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto mat_ptr = mat.device_data<T>();
         auto vec_ptr = vec.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();

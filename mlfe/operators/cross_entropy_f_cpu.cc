@@ -23,7 +23,7 @@ public:
         size = m * n;
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto logit_ptr = logit.device_data<T>();
         auto label_ptr = label.device_data<T>();
         auto loss_ptr = loss.mutable_device_data<T>();
@@ -72,7 +72,7 @@ public:
         n = logit.shape()[1];
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto logit_ptr = logit.device_data<T>();
         auto label_ptr = label.device_data<T>();
         auto loss_grad_ptr = loss_grad.device_data<T>();
@@ -134,7 +134,7 @@ public:
             );
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = logit.device_data<T>();
         auto t_ptr = label.device_data<T>();
         auto loss_ptr = loss.mutable_device_data<T>();
@@ -228,7 +228,7 @@ public:
             );
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = logit.device_data<T>();
         auto t_ptr = label.device_data<T>();
         auto dy_ptr = loss_grad.mutable_device_data<T>();

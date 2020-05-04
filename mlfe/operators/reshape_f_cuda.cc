@@ -10,7 +10,7 @@ using T = typename Tp::T;
 public:
     Reshape(OpAlgoContext *oac) : OpAlgo(oac, "Reshape"){}
 
-    void Compute() override{}
+    void Compute(op_algo_runtime_context& rc) override{}
 private:
     Tensor x;
     Tensor y;
@@ -33,7 +33,7 @@ public:
     ReshapeGrad(OpAlgoContext *oac) 
         : OpAlgo(oac, "ReshapeGradient"){}
 
-    void Compute() override{}
+    void Compute(op_algo_runtime_context& rc) override{}
 
 private:
     Tensor dy;

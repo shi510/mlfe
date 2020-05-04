@@ -1,6 +1,7 @@
 #ifndef __GRAPH_H__
 #define __GRAPH_H__
 #include <vector>
+#include <memory>
 
 namespace mlfe{
 // forward declaration.
@@ -8,17 +9,17 @@ class Tensor;
 
 std::vector<Tensor> visit_bfs(const Tensor root);
 
-// Graph is only for saving node's infomation.
-// TODO:
-//   1. grant unique name to each node.
-//   2. save node info.
-//   3. save node value.
-class Graph{
+class graph{
 public:
-    
+	void set_training(const bool training);
+
+	bool training() const;
+
 private:
-    
+	bool __training;
 };
+
+std::shared_ptr<graph> get_default_graph();
 
 } // end namespace mlfe
 

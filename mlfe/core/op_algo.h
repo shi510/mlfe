@@ -14,11 +14,22 @@ namespace mlfe{
 
 class OpAlgoContext;
 
+class op_algo_runtime_context
+{
+public:
+    void set_training(bool training);
+
+    bool training() const;
+
+private:
+    bool __training;
+};
+
 class OpAlgo{
 public:
     OpAlgo(OpAlgoContext *oac, std::string name = "");
 
-    virtual void Compute() = 0;
+    virtual void Compute(op_algo_runtime_context& rc = op_algo_runtime_context()) = 0;
 
     std::string get_name() const{
         return name;

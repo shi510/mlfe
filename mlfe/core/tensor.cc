@@ -2,7 +2,6 @@
 #include "device.h"
 #include "op_algo.h"
 #include "attribute.h"
-#include "graph.h"
 #include "gradient_helper.h"
 #include "mlfe/operators/initializer.h"
 #include "mlfe/operators/basic_arithmetics.h"
@@ -34,12 +33,14 @@ struct Tensor::impl{
     type::TypeInfo __ti;
     std::vector<int> __shape;
     int __size;
+    std::shared_ptr<class graph> __g;
 };
 
 Tensor::Tensor(const bool trainable)
     : _pimpl(std::make_shared<impl>())
 {
     set_trainable(trainable);
+    _pimpl->__g = get_default_graph();
 }
 
 Tensor::Tensor(std::string name, const bool trainable)
@@ -47,6 +48,7 @@ Tensor::Tensor(std::string name, const bool trainable)
 {
     set_trainable(trainable);
     set_name(name);
+    _pimpl->__g = get_default_graph();
 }
 
 Tensor::Tensor(std::vector<int> shape, const std::string name, const bool trainable)
@@ -55,6 +57,7 @@ Tensor::Tensor(std::vector<int> shape, const std::string name, const bool traina
     resize(shape);
     set_trainable(trainable);
     set_name(name);
+    _pimpl->__g = get_default_graph();
 }
 
 Tensor::~Tensor(){}
@@ -92,11 +95,13 @@ bool Tensor::operator==(const Tensor &v) const{
 
 void Tensor::eval(){
     //compute all children.
+    op_algo_runtime_context rc;
+    rc.set_training(_pimpl->__g->training());
     for(auto t : _pimpl->_compute_list){
         if(t._pimpl->_algo != nullptr &&
            t._pimpl->_children_modified
           ){
-            t._pimpl->_algo->Compute();
+            t._pimpl->_algo->Compute(rc);
             t._pimpl->_children_modified = false;
             for(int n = 0; n < t._pimpl->_parents.size(); ++n){
                 t._pimpl->_parents[n]._pimpl->_children_modified = true;
@@ -177,6 +182,11 @@ std::vector<int> Tensor::shape() const
 type::TypeInfo Tensor::type() const
 {
     return _pimpl->__ti;
+}
+
+std::shared_ptr<graph> Tensor::get_graph() const
+{
+    return _pimpl->__g;
 }
 
 void Tensor::backprop(){
@@ -276,13 +286,13 @@ Tensor::AssignOpFunctor::AssignOpFunctor(Tensor t, OpAlgoContext ctx){
     ctx.add_output(t);
     t._pimpl->_ctx = ctx;
     if(reg->Has(full_op_name + with_accel)){
-        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + with_accel, &ctx);
+        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + with_accel, &t._pimpl->_ctx);
     }
     else if(reg->Has(full_op_name + dev_name)){
-        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + dev_name, &ctx);
+        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + dev_name, &t._pimpl->_ctx);
     }
     else if(reg->Has(full_op_name + "Any")){
-        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + "Any", &ctx);
+        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + "Any", &t._pimpl->_ctx);
     }
     else{
         throw std::string(op_name) + " is not supported.";

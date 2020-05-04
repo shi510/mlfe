@@ -63,7 +63,7 @@ public:
         ));
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         const float alpha = 1, beta = 0;
         ASSERT_SUCCESS(cudnnPoolingForward(
             _handle,
@@ -172,7 +172,7 @@ public:
         ));
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         const float alpha = 1, beta = 0;
         ASSERT_SUCCESS(cudnnPoolingBackward(
             _handle,

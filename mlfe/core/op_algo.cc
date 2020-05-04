@@ -3,6 +3,16 @@
 
 namespace mlfe{
 
+void op_algo_runtime_context::set_training(bool training)
+{
+    __training = training;
+}
+
+bool op_algo_runtime_context::training() const
+{
+    return __training;
+}
+
 OpAlgo::OpAlgo(OpAlgoContext *oac, std::string name){
     this->name = name;
 }
@@ -149,7 +159,7 @@ class Identity : public OpAlgo{
 public:
     Identity(OpAlgoContext *oac) : OpAlgo(oac, "Identity"){}
     
-    void Compute() override{}
+    void Compute(op_algo_runtime_context& rc) override{}
 };
 
 REGIST_OP_ALGO(Identity)
@@ -167,7 +177,7 @@ class IdentityGrad : public OpAlgo{
 public:
     IdentityGrad(OpAlgoContext *oac) : OpAlgo(oac){}
     
-    void Compute() override{}
+    void Compute(op_algo_runtime_context& rc) override{}
 };
 
 REGIST_OP_GRAD_ALGO(Identity)

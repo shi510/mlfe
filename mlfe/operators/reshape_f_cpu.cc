@@ -14,7 +14,7 @@ public:
     }
 
     // TODO : Do not use Copy.
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         //Device::Copy<Device::CPU>(x->GetDeviceMemory(), y->GetDeviceMemory());
     }
 
@@ -43,7 +43,7 @@ public:
     }
 
     // TODO : Do not use Copy.
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         //Device::Copy<Device::CPU>(dy->GetDeviceMemory(), dx->GetDeviceMemory());
     }
 

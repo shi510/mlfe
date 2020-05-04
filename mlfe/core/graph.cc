@@ -6,6 +6,22 @@
 
 namespace mlfe{
 
+void graph::set_training(const bool training)
+{
+    __training = training;
+}
+
+bool graph::training() const
+{
+    return __training;
+}
+
+std::shared_ptr<graph> get_default_graph()
+{
+    static std::shared_ptr<graph> g0 = std::make_shared<graph>();
+    return g0;
+}
+
 std::vector<Tensor> visit_bfs(const Tensor root){
     std::queue<Tensor> will_visit;
     std::vector<Tensor> visit_list;

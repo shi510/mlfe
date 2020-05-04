@@ -27,7 +27,7 @@ public:
         out_w = y.shape()[3];
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto idx_ptr = idx.mutable_device_data<int>();
         auto y_ptr = y.mutable_device_data<T>();
@@ -84,7 +84,7 @@ public:
         out_w = dy.shape()[3];
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto idx_ptr = idx.device_data<int>();
         auto dy_ptr = dy.device_data<T>();
