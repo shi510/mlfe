@@ -12,7 +12,6 @@ public:
     void apply(Tensor var, Tensor var_grad) override;
 
 private:
-    double _lr;
     double _b1;
     double _b2;
     double _eps;
@@ -21,7 +20,7 @@ private:
 };
 
 adam::adam(double lr, double beta1, double beta2, double eps)
-    : _lr(lr), _b1(beta1), _b2(beta2), _eps(eps){
+    : optimizer(lr), _b1(beta1), _b2(beta2), _eps(eps){
     auto dev = get_enabled_device();
     std::string op_name = "Adam";
     std::string full_op_name = "Name:" + op_name + "/Device:";
@@ -33,7 +32,7 @@ void adam::apply(Tensor var, Tensor var_grad){
     if(_reg_var.find(var) == _reg_var.end()){
         OpAlgoContext oac("Adam");
         oac.add_output(var);
-        oac.add_attr({"LearningRate", static_cast<float>(_lr)});
+        oac.add_attr({"LearningRate", static_cast<Tensor>(_lr)});
         oac.add_attr({"Beta1", static_cast<float>(_b1)});
         oac.add_attr({"Beta2", static_cast<float>(_b2)});
         oac.add_attr({"Epsilon", static_cast<float>(_eps)});

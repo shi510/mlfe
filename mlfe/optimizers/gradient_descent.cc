@@ -15,14 +15,13 @@ public:
     void apply(Tensor var, Tensor var_grad) override;
 
 private:
-    double _lr;
     double _mm;
     std::unordered_map<Tensor, algo_ptr> _reg_var;
     std::string _opt_name;
 };
 
 gradient_descent::gradient_descent(double lr, double momentum)
-    : _lr(lr), _mm(momentum){
+    : optimizer(lr), _mm(momentum){
     auto dev = get_enabled_device();
     std::string op_name = "GradientDescent";
     std::string full_op_name = "Name:" + op_name + "/Device:";
@@ -34,7 +33,7 @@ void gradient_descent::apply(Tensor var, Tensor var_grad){
     if(_reg_var.find(var) == _reg_var.end()){
         OpAlgoContext oac("GradientDescent");
         oac.add_output(var);
-        oac.add_attr({"LearningRate", static_cast<float>(_lr)});
+        oac.add_attr({"LearningRate", _lr});
         oac.add_attr({"MomentumRate", static_cast<float>(_mm)});
         oac.add_attr({"WeightDecay", static_cast<float>(0)});
         _reg_var[var] = OpAlgoRegistry::Get()->GetOpAlgo(_opt_name, &oac);

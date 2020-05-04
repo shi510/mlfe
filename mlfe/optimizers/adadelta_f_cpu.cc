@@ -13,7 +13,7 @@ public:
     AdaDelta(OpAlgoContext *oac) : OpAlgo(oac){
         x = oac->get_output(0);
         dx = x.grad();
-        lr = oac->get_attr<T>("LearningRate");
+        lr = oac->get_attr<Tensor>("LearningRate");
         mr = oac->get_attr<T>("MomentumRate");
         eps = oac->get_attr<T>("Epsilon");
         size = x.size();
@@ -45,7 +45,7 @@ public:
             dx_ptr,
             grad_hist_ptr,
             acc_hist_ptr,
-            T(lr),
+            T(lr.data<T>()[0]),
             T(mr),
             T(eps)
             );
@@ -55,10 +55,10 @@ private:
     Tensor x;
     Tensor dx;
     Tensor y;
+    Tensor lr;
     memory_ptr grad_hist;
     memory_ptr acc_hist;
     int size;
-    T lr;
     T mr;
     T eps;
 };

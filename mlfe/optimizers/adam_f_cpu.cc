@@ -13,7 +13,7 @@ public:
     Adam(OpAlgoContext *oac) : OpAlgo(oac){
         x = oac->get_output(0);
         dx = x.grad();
-        lr = oac->get_attr<T>("LearningRate");
+        lr = oac->get_attr<Tensor>("LearningRate");
         beta1 = oac->get_attr<T>("Beta1");
         beta2 = oac->get_attr<T>("Beta2");
         eps = oac->get_attr<T>("Epsilon");
@@ -46,7 +46,7 @@ public:
             dx_ptr,
             m_hist_ptr,
             v_hist_ptr,
-            T(lr),
+            T(lr.data<T>()[0]),
             T(beta1),
             T(beta2),
             T(eps)
@@ -57,10 +57,10 @@ private:
     Tensor x;
     Tensor dx;
     Tensor y;
+    Tensor lr;
     memory_ptr m_hist;
     memory_ptr v_hist;
     int size;
-    T lr;
     T beta1;
     T beta2;
     T eps;

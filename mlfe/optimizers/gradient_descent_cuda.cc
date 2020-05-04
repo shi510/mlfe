@@ -14,9 +14,10 @@ public:
     GradientDescent(OpAlgoContext *oac) : OpAlgo(oac){
         x = oac->get_output(0);
         x_grad = x.grad();
-        lr = oac->get_attr<T>("LearningRate");
+        lr = oac->get_attr<Tensor>("LearningRate");
         mr = oac->get_attr<T>("MomentumRate");
         wd = oac->get_attr<T>("WeightDecay");
+        wd = T(5e-4);
         size = x.size();
         mmt_hist = create_memory(size * Tp::size);
 
@@ -37,7 +38,7 @@ public:
             x_ptr,
             dx_ptr,
             mmt_hist_ptr,
-            static_cast<float>(lr),
+            static_cast<float>(lr.data<T>()[0]),
             static_cast<float>(mr),
             static_cast<float>(wd)
             );
@@ -46,9 +47,9 @@ public:
 private:
     Tensor x;
     Tensor x_grad;
+    Tensor lr;
     memory_ptr mmt_hist;
     int size;
-    T lr;
     T mr;
     T wd;
 };
