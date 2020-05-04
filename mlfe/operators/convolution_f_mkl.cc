@@ -101,7 +101,7 @@ public:
         }
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         for(auto &op : net){
             op.get()->execute(&e);
         }
@@ -233,7 +233,7 @@ public:
         }
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         for(auto &op : net){
             op.get()->execute(&e);
         }
@@ -367,7 +367,7 @@ public:
         }
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         for(auto &op : net){
             op.get()->execute(&e);
         }

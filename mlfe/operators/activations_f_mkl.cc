@@ -55,7 +55,7 @@ public:
         algo = std::make_shared<fwd_algo>(relu_prim_desc, *x_mem, *y_mem);
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         algo->get()->execute(&e);
     }
 
@@ -147,7 +147,7 @@ public:
                                           );
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         algo->get()->execute(&e);
     }
 
@@ -224,7 +224,7 @@ public:
         algo = std::make_shared<fwd_algo>(sigmoid_prim_desc, *x_mem, *y_mem);
     }
     
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         algo->get()->execute(&e);
     }
     
@@ -315,7 +315,7 @@ public:
                                           );
     }
     
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         algo->get()->execute(&e);
     }
 

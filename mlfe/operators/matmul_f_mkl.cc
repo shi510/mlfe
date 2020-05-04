@@ -46,7 +46,7 @@ public:
         }
     }
 
-    void Compute() override{
+    void Compute(op_algo_runtime_context& rc) override{
         auto a_ptr = a.device_data<T>();
         auto b_ptr = b.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
