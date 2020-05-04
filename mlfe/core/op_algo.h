@@ -29,7 +29,13 @@ class OpAlgo{
 public:
     OpAlgo(OpAlgoContext *oac, std::string name = "");
 
-    virtual void Compute(op_algo_runtime_context& rc = op_algo_runtime_context()) = 0;
+    virtual void Compute(op_algo_runtime_context& rc) = 0;
+
+    virtual void Compute()
+    {
+        op_algo_runtime_context rc;
+        Compute(rc);
+    }
 
     std::string get_name() const{
         return name;

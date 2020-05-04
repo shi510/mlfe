@@ -1,4 +1,3 @@
-#pragma once
 #include "mlfe/module/callbacks/tensorboard.h"
 #include "mlfe/module/model.h"
 #include <limits>
