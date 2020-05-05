@@ -71,7 +71,7 @@ auto net = models::conv_net({B, 1, 28, 28});
 auto optm = functional::create_gradient_descent_optimizer(2e-2, 0.9);
 auto loss = functional::softmax_cross_entropy;
 net.compile(optm, loss, categorical_accuracy);
-net.fit(train_set, valid_set, EPOCHS, _BatchSize);
+net.fit(train_set, valid_set, EPOCHS, B);
 ```
 
 ## Basic Example

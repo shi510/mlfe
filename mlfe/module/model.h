@@ -98,6 +98,11 @@ public:
 		}
 	}
 
+	std::shared_ptr<opt::optimizer> get_optimizer() const
+	{
+		return __optim;
+	}
+
 private:
 	template <typename _Callable, typename _TypeX, typename _TypeY>
 	std::tuple<float, float> __iter(_Callable &data_set, const int iter, const bool train)
@@ -109,6 +114,7 @@ private:
 			auto [x, y] = data_set(n);
 			std::copy(x.begin(), x.end(), __input.begin<_TypeX>());
 			std::copy(y.begin(), y.end(), __true.begin<_TypeY>());
+			__loss.get_graph()->set_training(train);
 			__loss.eval();
 			if (train)
 			{
