@@ -3,6 +3,7 @@
 #include <mlfe/core/tensor.h>
 #include <mlfe/optimizers.h>
 #include <mlfe/core/graph.h>
+#include <mlfe/module/module.h>
 #include <algorithm>
 #include "dataset/cifar.h"
 #include "net_models.h"
@@ -62,7 +63,7 @@ void train_convnet(
 	auto optm = functional::create_gradient_descent_optimizer(5e-3, 0.9);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
-	net.fit(train_set, valid_set, 100, _BatchSize);
+	net.fit(train_set, valid_set, 100, _BatchSize, { reduce_lr("valid_loss", 1) });
 }
 
 

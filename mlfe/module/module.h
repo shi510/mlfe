@@ -13,5 +13,6 @@
 
 // include callbacks
 #include "mlfe/module/callbacks/tensorboard.h"
+#include "mlfe/module/callbacks/reduce_lr.h"
 // include model
 #include "mlfe/module/model.h"
