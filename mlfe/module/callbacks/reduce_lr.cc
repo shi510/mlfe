@@ -19,7 +19,7 @@ reduce_lr::reduce_lr(std::string monitor,
 	__best = std::numeric_limits<float>::max();
 }
 
-void reduce_lr::on_epoch_end(const int epoch,
+void reduce_lr::on_train_begin(const int epoch,
 	const std::map<std::string, float>& logs)
 {
 	auto it = logs.find(__monitor);

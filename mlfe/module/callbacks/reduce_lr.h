@@ -13,7 +13,7 @@ public:
 		double factor = 1e-1,
 		double min_lr = 1e-4);
 
-	void on_epoch_end(const int epoch,
+	void on_train_begin(const int epoch,
 		const std::map<std::string, float>& logs) override;
 
 private:
