@@ -73,6 +73,47 @@ auto loss = functional::softmax_cross_entropy;
 net.compile(optm, loss, categorical_accuracy);
 net.fit(train_set, valid_set, EPOCHS, B);
 ```
+## Tensorboard
+MLFE supports tensorboard.  
+You can customize callback for tensorboard.  
+```c++
+class custom_histo_weights : public callback
+{
+public:
+	custom_histo_weights(std::string log_dir)
+	{
+		__writer = std::make_shared<util::summary_writer>(log_dir + "/hist/tfevents.pb");
+	}
+
+	void on_epoch_end(const int epoch,
+		const std::map<std::string, float>& logs) override
+	{
+		for (auto& var : __m->get_train_variables())
+		{
+			auto pos1 = var.name().find("dense");
+			auto pos2 = var.name().find("weights");
+			if (pos1 != std::string::npos && pos2 != std::string::npos)
+			{
+				std::vector<float> w(var.size());
+				std::copy(var.cbegin<float>(), var.cend<float>(), w.begin());
+				__writer->add_histogram(var.name(), epoch, w);
+			}
+		}
+	}
+
+private:
+	std::shared_ptr<util::summary_writer> __writer;
+};
+```
+The model class will call on_epoch_end function at every end of epoch.  
+See the example in examples/cifar/main.cc for more details.  
+```c++
+net.fit(train_set, valid_set, 100, _BatchSize,
+    { reduce_lr("valid/loss", 3), tensorboard("cifar10_logs"),
+        custom_histo_weights("cifar10_logs") });
+```
+![tensorboard_scalar](https://raw.githubusercontent.com/shi510/mlfe/master/figures/fig_tensorboard_scalar.jpg)
+![tensorboard_histogram](https://raw.githubusercontent.com/shi510/mlfe/master/figures/fig_tensorboard_histo.jpg)
 
 ## Basic Example
 You can create a variable using create_variable function.  
@@ -203,4 +244,5 @@ After 1000 iterations are finished, the variables will close to the optimal solu
 This model performs about 90% acccuracy on MNIST 10K test images.  
 The following figure shows visualization of the w variable, the Red colour represents negative value, the Blue colour represents positive value.
 
-![visualization weights](http://artoa.hanbat.ac.kr/simple_mnist_weights.jpg)
+<!-- ![visualization weights](http://artoa.hanbat.ac.kr/simple_mnist_weights.jpg) -->
+![visualization weights](https://raw.githubusercontent.com/shi510/mlfe/master/figures/fig_mnist_weights.jpg)
