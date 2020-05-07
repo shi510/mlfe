@@ -19,19 +19,21 @@ using tensorflow::HistogramProto;
 
 summary_writer::summary_writer(std::string log_file)
 {
+	__file_path = log_file;
 	__bucket_limits = NULL;
 	if(!std::filesystem::exists(log_file))
 	{
 		std::filesystem::create_directories(
 			std::filesystem::path(log_file).parent_path());
 	}
-	
-	__f = std::ofstream(log_file,
-			std::ios::out | std::ios::trunc | std::ios::binary);
 }
+
 summary_writer::~summary_writer()
 {
-	__f.close();
+	if(__f.is_open())
+	{
+		__f.close();
+	}
 	if(__bucket_limits != NULL)
 	{
 		delete __bucket_limits;
@@ -40,7 +42,7 @@ summary_writer::~summary_writer()
 }
 
 int summary_writer::add_histogram(const std::string& tag,
-	int step, std::vector<float>& values)
+	const int step, const std::vector<float>& values)
 {
 	if(__bucket_limits == NULL)
 	{
@@ -92,7 +94,8 @@ int summary_writer::add_histogram(const std::string& tag,
 	return add_event(step, summary);
 }
 
-int summary_writer::add_scalar(const std::string& tag, int step, float value)
+int summary_writer::add_scalar(const std::string& tag, const int step,
+	const float value)
 {
 	auto summary = new Summary();
 	auto v = summary->add_value();
@@ -137,11 +140,22 @@ int summary_writer::write(Event& event)
 	uint32_t len_crc = masked_crc32c((char*)&buf_len, sizeof(uint64_t));  // NOLINT
 	uint32_t data_crc = masked_crc32c(buf.c_str(), buf.size());
 
-	__f.write((char*)&buf_len, sizeof(uint64_t));  // NOLINT
-	__f.write((char*)&len_crc, sizeof(uint32_t));  // NOLINT
-	__f.write(buf.c_str(), buf.size());
-	__f.write((char*)&data_crc, sizeof(uint32_t));  // NOLINT
-	__f.flush();
+	__f.open(__file_path,
+		std::ios::out | std::ios::app | std::ios::binary);
+	if(!__f.is_open())
+	{
+		std::cout<<"Fail to open "<<__file_path<<std::endl;
+	}
+	else
+	{
+		__f.write((char*)&buf_len, sizeof(uint64_t));  // NOLINT
+		__f.write((char*)&len_crc, sizeof(uint32_t));  // NOLINT
+		__f.write(buf.c_str(), buf.size());
+		__f.write((char*)&data_crc, sizeof(uint32_t));  // NOLINT
+		__f.flush();
+		__f.close();
+	}
+
 	return 0;
 }
 

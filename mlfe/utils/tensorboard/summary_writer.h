@@ -20,9 +20,10 @@ public:
 
 	~summary_writer();
 
-	int add_scalar(const std::string& tag, int step, float value);
+	int add_scalar(const std::string& tag, const int step, const float value);
 
-	int add_histogram(const std::string& tag, int step, std::vector<float>& value);
+	int add_histogram(const std::string& tag, const int step,
+		const std::vector<float>& value);
 
 private:
 	int generate_default_buckets();
@@ -31,6 +32,7 @@ private:
 
 	int write(Event& event);
 
+	std::string __file_path;
 	std::ofstream __f;
 	std::vector<double>* __bucket_limits;
 };
