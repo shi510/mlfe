@@ -12,13 +12,11 @@ public:
         Tensor logit = y.get_children()[0];
         Tensor label = y.get_children()[1];
         Tensor logit_grad = functional::create_variable(logit.shape());
-        Tensor label_grad = functional::create_variable(label.shape());
         OpAlgoContext ctx("SigmoidCrossEntropyGradient");
         logit_grad.add_child(logit);
         logit_grad.add_child(label);
         logit_grad.add_child(y);
         logit_grad.add_child(dy);
-        label_grad.add_child(dy);
         Tensor::AssignOpFunctor(logit_grad, ctx);
         in_grads.push_back(logit_grad);
         in_grads.push_back(dy);
@@ -35,13 +33,11 @@ public:
         Tensor logit = y.get_children()[0];
         Tensor label = y.get_children()[1];
         Tensor logit_grad = functional::create_variable(logit.shape());
-        Tensor label_grad = functional::create_variable(label.shape());
         OpAlgoContext ctx("SoftmaxCrossEntropyWithLabelGradient");
         logit_grad.add_child(logit);
         logit_grad.add_child(label);
         logit_grad.add_child(y);
         logit_grad.add_child(dy);
-        label_grad.add_child(dy);
         Tensor::AssignOpFunctor(logit_grad, ctx);
         in_grads.push_back(logit_grad);
         in_grads.push_back(dy);

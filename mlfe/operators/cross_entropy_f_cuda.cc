@@ -199,7 +199,7 @@ template <class Tp>
 class SoftmaxCrossEntropyWithLabelGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
-    SoftmaxCrossEntropyWithLabelGrad(OpAlgoContext *oac) : OpAlgo(oac){
+    SoftmaxCrossEntropyWithLabelGrad(OpAlgoContext *oac) : OpAlgo(oac, "SoftmaxCrossEntropyWithLabelGrad"){
         logit_grad = oac->get_output(0);
         logit = logit_grad.get_children()[0];
         label = logit_grad.get_children()[1];
