@@ -16,7 +16,7 @@ namespace mlfe{
 //TODO : use thread for _children_modified
 struct Tensor::impl{
     impl() : _exec_order(0), _ctx("unknown"),
-        _children_modified(true), __ti(type::float32()){}
+        _children_modified(true), __ti(type::float32()), __stop_grad(false){}
     std::vector<Tensor> _parents;
     std::vector<Tensor> _children;
     int _exec_order;
@@ -30,6 +30,7 @@ struct Tensor::impl{
     bool _children_modified;
     std::string __name;
     bool __trainable;
+    bool __stop_grad;
     type::TypeInfo __ti;
     std::vector<int> __shape;
     int __size;
@@ -133,6 +134,11 @@ void Tensor::set_trainable(const bool trainable)
     _pimpl->__trainable = trainable;
 }
 
+void Tensor::stop_gradient(bool stop_grad)
+{
+    _pimpl->__stop_grad = stop_grad;
+}
+
 bool Tensor::trainable() const
 {
     return _pimpl->__trainable;
@@ -193,8 +199,11 @@ void Tensor::backprop(){
     if(_pimpl->_backward_list.empty()){
         compute_gradient(*this);
     }
+    op_algo_runtime_context rc;
+    rc.set_training(_pimpl->__g->training());
+
     for(auto &var : _pimpl->_backward_list){
-        var->eval();
+        var->_pimpl->_algo->Compute(rc);
     }
 }
 
@@ -239,8 +248,11 @@ void Tensor::compute_gradient(const Tensor root){
     std::sort(v_list.begin(), v_list.end(), [](Tensor v1, Tensor v2){
         return v1.get_exec_order() > v2.get_exec_order();
     });
+
     // root gradient is 1.
-    dy_collector[root].push_back(functional::constant(1, root.shape()));
+    auto one = functional::constant(1, root.shape());
+    one.eval();
+    dy_collector[root].push_back(one);
     // set root gradient.
     root._pimpl->_gradient = make_ptr(dy_collector[root][0]);
     //run computing all gradients.
@@ -264,7 +276,9 @@ void Tensor::compute_gradient(const Tensor root){
                 Tensor x_grad = input_grad[n];
                 dy_collector[x].push_back(x_grad);
                 x._pimpl->_gradient = make_ptr(x_grad);
-                root._pimpl->_backward_list.push_back(x._pimpl->_gradient);
+                if(dy._pimpl->_algo != x._pimpl->_gradient->_pimpl->_algo &&
+                    !x._pimpl->__stop_grad)
+                    root._pimpl->_backward_list.push_back(x._pimpl->_gradient);
             }
         }
     }

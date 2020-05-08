@@ -66,6 +66,8 @@ public:
 
     void set_trainable(const bool trainable);
 
+    void stop_gradient(bool stop_grad);
+
     bool trainable() const;
 
     void reshape(std::vector<int> shape);
