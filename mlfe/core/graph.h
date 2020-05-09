@@ -1,15 +1,14 @@
-#ifndef __GRAPH_H__
-#define __GRAPH_H__
+#pragma once
+#include "mlfe/core/node.h"
 #include <vector>
 #include <memory>
 
 namespace mlfe{
-// forward declaration.
-class Tensor;
 
-std::vector<Tensor> visit_bfs(const Tensor root);
+std::vector<node> topological_sort(const node& r);
 
-class graph{
+class graph
+{
 public:
 	void set_training(const bool training);
 
@@ -22,5 +21,3 @@ private:
 std::shared_ptr<graph> get_default_graph();
 
 } // end namespace mlfe
-
-#endif // end #ifndef __GRAPH_H__

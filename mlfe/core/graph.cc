@@ -1,8 +1,5 @@
 #include "graph.h"
-#include "op_algo.h"
-#include "tensor.h"
 #include <queue>
-#include <unordered_set>
 
 namespace mlfe{
 
@@ -22,24 +19,22 @@ std::shared_ptr<graph> get_default_graph()
     return g0;
 }
 
-std::vector<Tensor> visit_bfs(const Tensor root){
-    std::queue<Tensor> will_visit;
-    std::vector<Tensor> visit_list;
-    std::unordered_set<Tensor> visited;
+std::vector<node> topological_sort(const node& r)
+{
+    std::queue<node> will_visit;
+    std::vector<node> visit_list;
 
-    will_visit.push(root);
+    will_visit.push(r);
     while(!will_visit.empty()){
         auto v = will_visit.front();
-        if(visited.find(v) == visited.end()){
-            visited.insert(v);
-            visit_list.push_back(v);
-            for(auto &c : v.get_children()){
-                will_visit.push(c);
-            }
+        for(auto &c : v.get_inputs()){
+            will_visit.push(c);
         }
+        visit_list.push_back(v);
         will_visit.pop();
     }
     return visit_list;
 }
+
 
 } // end namespace mlfe
