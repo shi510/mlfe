@@ -19,6 +19,33 @@ void train_convnet(
 	dataset::cifar10_gen<_BatchSize> train_set,
 	dataset::cifar10_gen<_BatchSize> valid_set);
 
+class custom_histo_weights : public callback
+{
+public:
+	custom_histo_weights(std::string log_dir)
+	{
+		__writer = std::make_shared<util::summary_writer>(log_dir + "/hist/tfevents.pb");
+	}
+
+	void on_epoch_end(const int epoch,
+		const std::map<std::string, float>& logs) override
+	{
+		for (auto& var : __m->get_train_variables())
+		{
+			auto pos1 = var.name().find("dense");
+			auto pos2 = var.name().find("weights");
+			if (pos1 != std::string::npos && pos2 != std::string::npos)
+			{
+				std::vector<float> w(var.size());
+				std::copy(var.cbegin<float>(), var.cend<float>(), w.begin());
+				__writer->add_histogram(var.name(), epoch, w);
+			}
+		}
+	}
+
+private:
+	std::shared_ptr<util::summary_writer> __writer;
+};
 
 int main(int argc, char *argv[])
 {
@@ -63,7 +90,9 @@ void train_convnet(
 	auto optm = functional::create_gradient_descent_optimizer(5e-3, 0.9);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
-	net.fit(train_set, valid_set, 100, _BatchSize, { reduce_lr("valid_loss", 1) });
+	net.fit(train_set, valid_set, 100, _BatchSize,
+		{ reduce_lr("valid/loss", 3), tensorboard("cifar10_logs"),
+			custom_histo_weights("cifar10_logs") });
 }
 
 
