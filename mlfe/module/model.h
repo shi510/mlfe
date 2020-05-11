@@ -69,23 +69,26 @@ public:
 				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_train_begin(n, logs); });
 			auto [train_loss, train_acc] = __iter<_Callable, _TypeX, _TypeY>(
 				train_set, train_set.size() / batch_size, true);
+			std::for_each(callbacks.params.begin(), callbacks.params.end(),
+				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_train_end(n, logs); });
 			if(__metric_fn)
 			{
-				logs["accuracy"] = train_acc;
+				logs["train/accuracy"] = train_acc;
 			}
-			logs["loss"] = train_loss;
-			std::for_each(callbacks.params.begin(), callbacks.params.end(),
-				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_epoch_end(n, logs); });
+			logs["train/loss"] = train_loss;
 
 			std::for_each(callbacks.params.begin(), callbacks.params.end(),
 				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_test_begin(n, logs); });
 			auto [valid_loss, valid_acc] = __iter<_Callable, _TypeX, _TypeY>(
 				valid_set, valid_set.size() / batch_size, false);
+			std::for_each(callbacks.params.begin(), callbacks.params.end(),
+				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_test_end(n, logs); });
 			if(__metric_fn)
 			{
-				logs["accuracy"] = valid_acc;
+				logs["valid/accuracy"] = valid_acc;
 			}
-			logs["loss"] = valid_loss;
+			logs["valid/loss"] = valid_loss;
+			logs["vars/learning_rate"] = __optim->get_learning_rate();
 			std::for_each(callbacks.params.begin(), callbacks.params.end(),
 				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_epoch_end(n, logs); });
 			std::cout << "train loss : " << train_loss << ", ";
@@ -103,6 +106,11 @@ public:
 		return __optim;
 	}
 
+	std::vector<Tensor> get_train_variables() const
+	{
+		return __train_vars;
+	}
+
 private:
 	template <typename _Callable, typename _TypeX, typename _TypeY>
 	std::tuple<float, float> __iter(_Callable &data_set, const int iter, const bool train)
@@ -115,8 +123,11 @@ private:
 			std::copy(x.begin(), x.end(), __input.begin<_TypeX>());
 			std::copy(y.begin(), y.end(), __true.begin<_TypeY>());
 			__loss.get_graph()->set_training(train);
-			__loss.eval();
-			if (train)
+			if (!train)
+			{
+				__loss.eval();
+			}
+			else
 			{
 				__loss.backprop();
 				for (auto &var : __train_vars)
