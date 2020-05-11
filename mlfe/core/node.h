@@ -30,7 +30,7 @@ public:
 
 	bool has_task() const;
 
-	void run() const;
+	void run();
 
 private:
 	struct pimpl;

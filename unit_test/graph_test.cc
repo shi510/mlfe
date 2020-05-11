@@ -16,7 +16,7 @@ TEST(graph_test, topology1)
 {
 	std::string results;
 	node n1, n2, n3, n4, n5;
-	auto check_for = [&results](const node& n, std::string answer)
+	auto check_for = [&results](node& n, std::string answer)
 	{
 		results.clear();
 		n.run();
@@ -56,7 +56,7 @@ TEST(graph_test, topology2)
 {
 	std::string results;
 	node n0, n1, n2, n3, n4, n5, n6, n7, n8;
-	auto check_for = [&results](const node& n, std::string answer)
+	auto check_for = [&results](node& n, std::string answer)
 	{
 		results.clear();
 		n.run();
@@ -105,7 +105,7 @@ TEST(graph_test, topology3)
 {
 	std::string results;
 	node n1, n2, n3;
-	auto check_for = [&results](const node& n, std::string answer)
+	auto check_for = [&results](node& n, std::string answer)
 	{
 		results.clear();
 		n.run();

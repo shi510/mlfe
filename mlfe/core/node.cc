@@ -69,7 +69,7 @@ bool node::has_task() const
 	return !__pimpl->t.empty();
 }
 
-void node::run() const
+void node::run()
 {
 	__pimpl->t.run();
 }
