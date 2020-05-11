@@ -199,11 +199,9 @@ void Tensor::backprop(){
     if(_pimpl->_backward_list.empty()){
         compute_gradient(*this);
     }
-    op_algo_runtime_context rc;
-    rc.set_training(_pimpl->__g->training());
 
     for(auto &var : _pimpl->_backward_list){
-        var->_pimpl->_algo->Compute(rc);
+        var->eval();
     }
 }
 
