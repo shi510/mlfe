@@ -13,7 +13,7 @@ using T = typename Tp::T;
 public:
     Negative(OpAlgoContext *oac) : OpAlgo(oac, "Negative"){
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         size = y.size();
     }
 
@@ -49,8 +49,8 @@ public:                                                              \
     Elementwise##Name(OpAlgoContext *oac)                            \
         : OpAlgo(oac, "Elementwise" # Name){                         \
         y = oac->get_output(0);                                      \
-        x1 = y.get_children()[0];                                    \
-        x2 = y.get_children()[1];                                    \
+        x1 = oac->get_input(0);                                      \
+        x2 = oac->get_input(1);                                      \
         size = y.size();                                             \
     }                                                                \
     void Compute(op_algo_runtime_context& rc) override{              \
@@ -92,9 +92,9 @@ public:
     AddN(OpAlgoContext *oac) : OpAlgo(oac, "AddN"){
         y = oac->get_output(0);
         size = y.size();
-        _num_inputs = y.get_children().size();
+        _num_inputs = oac->num_inputs();
         for(int n = 0; n < _num_inputs; ++n){
-            xs.push_back(y.get_children()[n]);
+            xs.push_back(oac->get_input(n));
         }
     }
 
@@ -131,8 +131,8 @@ public:
     MatrixVectorAdd(OpAlgoContext *oac) 
         : OpAlgo(oac, "MatrixVectorAdd"){
         y = oac->get_output(0);
-        mat = y.get_children()[0];
-        vec = y.get_children()[1];
+        mat = oac->get_input(0);
+        vec = oac->get_input(1);
         m = mat.shape()[0];
         n = mat.shape()[1];
         multiplier = create_memory(m * Tp::size);

@@ -9,22 +9,22 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using Ints = std::vector<type::int32::T>;
         VecTensor in_grads;
-        Tensor x = y.get_children()[0];
+        auto y_ctx = y.get_context();
+        Tensor x = y_ctx.get_input(0);
         Tensor idx = y.get_context().get_attr<Tensor>("idx");
         Tensor dx = functional::create_variable(x.shape());
-        auto y_ctx = y.get_context();
         OpAlgoContext ctx("MaxPoolGradient");
-
-        dx.add_child(x);
-        dx.add_child(y);
-        dx.add_child(dy);
-        
-        ctx.add_attr({"kernel", y_ctx.get_attr<Ints>("kernel")});
-        ctx.add_attr({"stride", y_ctx.get_attr<Ints>("stride")});
-        ctx.add_attr({"padding", y_ctx.get_attr<Ints>("padding")});
-        ctx.add_attr({"idx", idx});
-        Tensor::AssignOpFunctor(dx, ctx);
-        in_grads.push_back(dx);
+        ctx.add_input(x);
+        ctx.add_input(y);
+        ctx.add_input(dy);
+        ctx.add_output(dx);
+        ctx.add_attr({ "kernel", y_ctx.get_attr<Ints>("kernel") });
+        ctx.add_attr({ "stride", y_ctx.get_attr<Ints>("stride") });
+        ctx.add_attr({ "padding", y_ctx.get_attr<Ints>("padding") });
+        ctx.add_attr({ "idx", idx });
+        dx.set_context(ctx);
+        x.set_backprop_node(dx.get_node());
+        x.set_gradient(dx);
         return in_grads;
     }
 };
@@ -55,13 +55,13 @@ Tensor pool_max(Tensor x,
     Tensor y = create_variable({x.shape()[0], x.shape()[1], out_h, out_w});
     Tensor idx = create_variable({x.shape()[0], x.shape()[1], out_h, out_w});
     OpAlgoContext ctx("MaxPool");
-    y.add_child(x);
+    ctx.add_input(x);
+    ctx.add_output(y);
     ctx.add_attr({"kernel", kernel});
     ctx.add_attr({"stride", stride});
     ctx.add_attr({"padding", padding});
     ctx.add_attr({"idx", idx});
-    Tensor::AssignOpFunctor(y, ctx);
-
+    y.set_context(ctx);
     return y;
 }
 

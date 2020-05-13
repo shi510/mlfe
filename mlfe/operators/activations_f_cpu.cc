@@ -11,7 +11,7 @@ using T = typename Tp::T;
 public:
     ReLU(OpAlgoContext *oac) : OpAlgo(oac, "ReLU"){
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         size = x.size();
     }
 
@@ -46,8 +46,8 @@ using T = typename Tp::T;
 public:
     ReLUGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        x = dx.get_children()[0];
-        dy = dx.get_children()[2];
+        x = oac->get_input(0);
+        dy = oac->get_input(2);
         size = x.size();
     }
 
@@ -90,7 +90,7 @@ using T = typename Tp::T;
 public:
     Sigmoid(OpAlgoContext *oac) : OpAlgo(oac, "Sigmoid"){
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         size = x.size();
     }
 
@@ -125,8 +125,8 @@ using T = typename Tp::T;
 public:
     SigmoidGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        y = dx.get_children()[1];
-        dy = dx.get_children()[2];
+        y = oac->get_input(1);
+        dy = oac->get_input(2);
         size = y.size();
     }
 

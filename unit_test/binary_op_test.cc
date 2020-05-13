@@ -49,6 +49,8 @@ TEST(binary_op, add_grad){
     });
     result.eval();
     result.backprop();
+    x1.get_backprop_node().run();
+    x2.get_backprop_node().run();
     std::copy(x1.grad().begin<T>(), x1.grad().end<T>(), analytical_x1.begin());
     std::copy(x2.grad().begin<T>(), x2.grad().end<T>(), analytical_x2.begin());
     auto numerical = numerical_gradient(grad_eps, result, x1);
@@ -109,6 +111,8 @@ TEST(binary_op, sub_grad){
     });
     result.eval();
     result.backprop();
+    x1.get_backprop_node().run();
+    x2.get_backprop_node().run();
     std::copy(x1.grad().begin<T>(), x1.grad().end<T>(), analytical_x1.begin());
     std::copy(x2.grad().begin<T>(), x2.grad().end<T>(), analytical_x2.begin());
     auto numerical = numerical_gradient(grad_eps, result, x1);
@@ -169,6 +173,8 @@ TEST(binary_op, mul_grad){
     });
     result.eval();
     result.backprop();
+    x1.get_backprop_node().run();
+    x2.get_backprop_node().run();
     std::copy(x1.grad().begin<T>(), x1.grad().end<T>(), analytical_x1.begin());
     std::copy(x2.grad().begin<T>(), x2.grad().end<T>(), analytical_x2.begin());
     auto numerical = numerical_gradient(grad_eps, result, x1);
@@ -235,6 +241,8 @@ TEST(binary_op, div_grad){
     });
     result.eval();
     result.backprop();
+    x1.get_backprop_node().run();
+    x2.get_backprop_node().run();
     std::copy(x1.grad().begin<T>(), x1.grad().end<T>(), analytical_x1.begin());
     std::copy(x2.grad().begin<T>(), x2.grad().end<T>(), analytical_x2.begin());
     auto numerical = numerical_gradient(grad_eps, result, x1);
@@ -424,6 +432,8 @@ TEST(binary_op, matmul_grad){
         });
         c.eval();
         c.backprop();
+        a.get_backprop_node().run();
+        b.get_backprop_node().run();
         std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin());
         std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin());
         auto numerical = numerical_gradient(grad_eps, c, a);
@@ -461,6 +471,8 @@ TEST(binary_op, matmul_grad){
         });
         c.eval();
         c.backprop();
+        a.get_backprop_node().run();
+        b.get_backprop_node().run();
         std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin());
         std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin());
         auto numerical = numerical_gradient(grad_eps, c, a);
@@ -498,6 +510,8 @@ TEST(binary_op, matmul_grad){
         });
         c.eval();
         c.backprop();
+        a.get_backprop_node().run();
+        b.get_backprop_node().run();
         std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin());
         std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin());
         auto numerical = numerical_gradient(grad_eps, c, a);
@@ -535,6 +549,8 @@ TEST(binary_op, matmul_grad){
         });
         c.eval();
         c.backprop();
+        a.get_backprop_node().run();
+        b.get_backprop_node().run();
         std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin());
         std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin());
         auto numerical = numerical_gradient(grad_eps, c, a);
@@ -602,6 +618,8 @@ TEST(binary_op, squared_difference_grad){
     });
     c.eval();
     c.backprop();
+    a.get_backprop_node().run();
+    b.get_backprop_node().run();
     std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin());
     std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin());
     auto numerical = numerical_gradient(grad_eps, c, a);
@@ -749,6 +767,8 @@ TEST(binary_op, conv2d_k3_s1_p0_grad){
     });
     y.eval();
     y.backprop();
+    x.get_backprop_node().run();
+    w.get_backprop_node().run();
     std::copy(x.grad().cbegin<T>(), x.grad().cend<T>(), analytical_x.begin());
     std::copy(w.grad().cbegin<T>(), w.grad().cend<T>(), analytical_w.begin());
     auto numerical = numerical_gradient<float>(grad_eps, y, x);
@@ -861,6 +881,7 @@ TEST(binary_op, pool2d_max_k2_s2_p0_grad){
 
     y.eval();
     y.backprop();
+    x.get_backprop_node().run();
 
     EXPECT_EQ(x.grad().data<T>()[0], 0);
     EXPECT_EQ(x.grad().data<T>()[1], 0);
@@ -1075,6 +1096,7 @@ TEST(binary_op, broadcast_one_by_n_grad){
         try{
             y.eval();
             y.backprop();
+            x.get_backprop_node().run();
         }
         catch(std::string &e){
             std::cout<<e<<std::endl;

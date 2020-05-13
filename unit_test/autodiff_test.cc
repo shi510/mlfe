@@ -7,6 +7,7 @@ namespace autodiff_test{
 using namespace mlfe;
 namespace fn = functional;
 
+// mean((one + 2) * (one +  2) * three)
 template <typename T>
 struct case0{
     case0(){
@@ -20,6 +21,10 @@ struct case0{
 
     void backprop(){
         y.backprop();
+        cube_of_3.get_backprop_node().run();
+        plus_1_2.get_backprop_node().run();
+        three.get_backprop_node().run();
+        one.get_backprop_node().run();
     }
 
     Tensor one;
@@ -63,7 +68,6 @@ TEST(autodiff_test, case0_eval_check){
 TEST(autodiff_test, case0_grad_check){
     autodiff_test::case0<float> tcase;
     float answer;
-
     tcase.backprop();
     // the gradient of root of computation graph is one.
     answer = 1.f;
@@ -201,53 +205,65 @@ TEST(autodiff_test, case1_eval_check){
 TEST(autodiff_test, case1_grad_check){
     using T = float;
     autodiff_test::case1<T> tcase;
+
+    tcase.mean.get_backprop_node().run();
     EXPECT_EQ(tcase.mean.grad().data<T>()[0], 1);
 
+    tcase.add_n.get_backprop_node().run();
     EXPECT_EQ(tcase.add_n.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.add_n.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.add_n.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.add_n.grad().data<T>()[3], 0.25);
 
+    tcase.mul3.get_backprop_node().run();
     EXPECT_EQ(tcase.mul3.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.mul3.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.mul3.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.mul3.grad().data<T>()[3], 0.25);
 
+    tcase.mul2.get_backprop_node().run();
     EXPECT_EQ(tcase.mul2.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.mul2.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.mul2.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.mul2.grad().data<T>()[3], 0.25);
 
+    tcase.mul1.get_backprop_node().run();
     EXPECT_EQ(tcase.mul1.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.mul1.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.mul1.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.mul1.grad().data<T>()[3], 0.25);
 
+    tcase.sq3.get_backprop_node().run();
     EXPECT_EQ(tcase.sq3.grad().data<T>()[0], 0.125);
     EXPECT_EQ(tcase.sq3.grad().data<T>()[1], 0.125);
     EXPECT_EQ(tcase.sq3.grad().data<T>()[2], 0.125);
     EXPECT_EQ(tcase.sq3.grad().data<T>()[3], 0.125);
 
+    tcase.sq2.get_backprop_node().run();
     EXPECT_EQ(tcase.sq2.grad().data<T>()[0], -0.25);
     EXPECT_EQ(tcase.sq2.grad().data<T>()[1], -0.25);
     EXPECT_EQ(tcase.sq2.grad().data<T>()[2], -0.25);
     EXPECT_EQ(tcase.sq2.grad().data<T>()[3], -0.25);
 
+    tcase.sq1.get_backprop_node().run();
     EXPECT_EQ(tcase.sq1.grad().data<T>()[0], -0.375);
     EXPECT_EQ(tcase.sq1.grad().data<T>()[1], -0.375);
     EXPECT_EQ(tcase.sq1.grad().data<T>()[2], -0.375);
     EXPECT_EQ(tcase.sq1.grad().data<T>()[3], -0.375);
 
+    tcase.x3.get_backprop_node().run();
     EXPECT_EQ(tcase.x3.grad().data<T>()[0], -1);
     EXPECT_EQ(tcase.x3.grad().data<T>()[1], -1.75);
     EXPECT_EQ(tcase.x3.grad().data<T>()[2], -2.5);
     EXPECT_EQ(tcase.x3.grad().data<T>()[3], -3.25);
 
+    tcase.x2.get_backprop_node().run();
     EXPECT_EQ(tcase.x2.grad().data<T>()[0], 0.5);
     EXPECT_EQ(tcase.x2.grad().data<T>()[1], -0.5);
     EXPECT_EQ(tcase.x2.grad().data<T>()[2], -1.5);
     EXPECT_EQ(tcase.x2.grad().data<T>()[3], -2.5);
 
+    tcase.x1.get_backprop_node().run();
     EXPECT_EQ(tcase.x1.grad().data<T>()[0], 3);
     EXPECT_EQ(tcase.x1.grad().data<T>()[1], 2.25);
     EXPECT_EQ(tcase.x1.grad().data<T>()[2], 1.5);
@@ -258,6 +274,20 @@ namespace autodiff_test{
 using namespace mlfe;
 namespace fn = functional;
 
+//                   mean
+//                    |
+//                  add_n
+//                    |
+//           /-----------------\
+//          /         |         \
+//        mul        mul        mul
+//        |  \        | \        | \
+//        |   -1.5    |  -1.0    |  0.5
+//        |           |          |
+//     sq_diff     sq_diff     sq_diff
+//     /  |           |  \       |  \
+//    5    \          |   3     /    1
+//          \---------x--------/
 template <typename T>
 struct case2{
     case2(){
@@ -337,43 +367,52 @@ TEST(autodiff_test, case2_eval_check){
 TEST(autodiff_test, case2_grad_check){
     using T = float;
     autodiff_test::case2<T> tcase;
+    tcase.mean.get_backprop_node().run();
     EXPECT_EQ(tcase.mean.grad().data<T>()[0], 1);
 
+    tcase.add_n.get_backprop_node().run();
     EXPECT_EQ(tcase.add_n.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.add_n.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.add_n.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.add_n.grad().data<T>()[3], 0.25);
 
+    tcase.mul3.get_backprop_node().run();
     EXPECT_EQ(tcase.mul3.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.mul3.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.mul3.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.mul3.grad().data<T>()[3], 0.25);
 
+    tcase.mul2.get_backprop_node().run();
     EXPECT_EQ(tcase.mul2.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.mul2.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.mul2.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.mul2.grad().data<T>()[3], 0.25);
 
+    tcase.mul1.get_backprop_node().run();
     EXPECT_EQ(tcase.mul1.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.mul1.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.mul1.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.mul1.grad().data<T>()[3], 0.25);
 
+    tcase.sq3.get_backprop_node().run();
     EXPECT_EQ(tcase.sq3.grad().data<T>()[0], 0.125);
     EXPECT_EQ(tcase.sq3.grad().data<T>()[1], 0.125);
     EXPECT_EQ(tcase.sq3.grad().data<T>()[2], 0.125);
     EXPECT_EQ(tcase.sq3.grad().data<T>()[3], 0.125);
 
+    tcase.sq2.get_backprop_node().run();
     EXPECT_EQ(tcase.sq2.grad().data<T>()[0], -0.25);
     EXPECT_EQ(tcase.sq2.grad().data<T>()[1], -0.25);
     EXPECT_EQ(tcase.sq2.grad().data<T>()[2], -0.25);
     EXPECT_EQ(tcase.sq2.grad().data<T>()[3], -0.25);
 
+    tcase.sq1.get_backprop_node().run();
     EXPECT_EQ(tcase.sq1.grad().data<T>()[0], -0.375);
     EXPECT_EQ(tcase.sq1.grad().data<T>()[1], -0.375);
     EXPECT_EQ(tcase.sq1.grad().data<T>()[2], -0.375);
     EXPECT_EQ(tcase.sq1.grad().data<T>()[3], -0.375);
 
+    tcase.x.get_backprop_node().run();
     EXPECT_EQ(tcase.x.grad().data<T>()[0], 4);
     EXPECT_EQ(tcase.x.grad().data<T>()[1], 2);
     EXPECT_EQ(tcase.x.grad().data<T>()[2], 0);
@@ -446,31 +485,37 @@ TEST(autodiff_test, case3_grad_check){
     using T = float;
     autodiff_test::case3<T> tcase;
 
+    tcase.mean.get_backprop_node().run();
     EXPECT_EQ(tcase.mean.grad().data<T>()[0], 1);
 
+    tcase.add.get_backprop_node().run();
     EXPECT_EQ(tcase.add.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.add.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.add.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.add.grad().data<T>()[3], 0.25);
 
+    tcase.mul.get_backprop_node().run();
     EXPECT_EQ(tcase.mul.grad().data<T>()[0], 0.25);
     EXPECT_EQ(tcase.mul.grad().data<T>()[1], 0.25);
     EXPECT_EQ(tcase.mul.grad().data<T>()[2], 0.25);
     EXPECT_EQ(tcase.mul.grad().data<T>()[3], 0.25);
 
     // d_add/d_sq + (d_add/d_mul)*(d_mul/d_sq) = 0.25 + 0.25 * x1
+    tcase.sq.get_backprop_node().run();
     EXPECT_EQ(tcase.sq.grad().data<T>()[0], 0.75);
-    EXPECT_EQ(tcase.sq.grad().data<T>()[1], 1.0);
+    EXPECT_EQ(tcase.sq.grad().data<T>()[1], 1);
     EXPECT_EQ(tcase.sq.grad().data<T>()[2], 1.5);
-    EXPECT_EQ(tcase.sq.grad().data<T>()[3], 2.0);
+    EXPECT_EQ(tcase.sq.grad().data<T>()[3], 2);
 
     // sq.grad() * d_sq/d_x2
+    tcase.x2.get_backprop_node().run();
     EXPECT_EQ(tcase.x2.grad().data<T>()[0], 13.5);
     EXPECT_EQ(tcase.x2.grad().data<T>()[1], 20);
     EXPECT_EQ(tcase.x2.grad().data<T>()[2], 36);
     EXPECT_EQ(tcase.x2.grad().data<T>()[3], 48);
 
     // sq.grad() * d_sq/d_x1 + mul.grad() * sq
+    tcase.x1.get_backprop_node().run();
     EXPECT_EQ(tcase.x1.grad().data<T>()[0], 6.75);
     EXPECT_EQ(tcase.x1.grad().data<T>()[1], 5);
     EXPECT_EQ(tcase.x1.grad().data<T>()[2], 0);

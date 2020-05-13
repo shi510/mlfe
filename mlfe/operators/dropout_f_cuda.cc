@@ -12,7 +12,7 @@ using T = typename Tp::T;
 public:
     Dropout(OpAlgoContext *oac) : OpAlgo(oac, "Dropout"){
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         mask = oac->get_attr<Tensor>("mask");
         prob = oac->get_attr<Tensor>("prob");
         size = x.size();
@@ -62,7 +62,7 @@ using T = typename Tp::T;
 public:
     DropoutGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        dy = dx.get_children()[1];
+        dy = oac->get_input(1);
         mask = oac->get_attr<Tensor>("mask");
         prob = oac->get_attr<Tensor>("prob");
         size = dy.size();

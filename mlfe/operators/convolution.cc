@@ -9,25 +9,29 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using IntVec = std::vector<type::int32::T>;
         VecTensor in_grads;
-        Tensor x = y.get_children()[0];
-        Tensor w = y.get_children()[1];
+        auto ctx = y.get_context();
+        Tensor x = ctx.get_input(0);
+        Tensor w = ctx.get_input(1);
         Tensor dx = functional::create_variable(x.shape());
         Tensor dw = functional::create_variable(w.shape());
         OpAlgoContext ctx_x_grad("Conv2DGradientInputGradient");
         OpAlgoContext ctx_w_grad("Conv2DGradientFilterGradient");
-        OpAlgoContext ctx = y.get_context();
-        ctx_x_grad.add_attr({"strides", ctx.get_attr<IntVec>("strides")});
-        ctx_x_grad.add_attr({"pads", ctx.get_attr<IntVec>("pads")});
-        ctx_w_grad.add_attr({"strides", ctx.get_attr<IntVec>("strides")});
-        ctx_w_grad.add_attr({"pads", ctx.get_attr<IntVec>("pads")});
-        dx.add_child(w);
-        dx.add_child(dy);
-        dw.add_child(x);
-        dw.add_child(dy);
-        Tensor::AssignOpFunctor(dx, ctx_x_grad);
-        Tensor::AssignOpFunctor(dw, ctx_w_grad);
-        in_grads.push_back(dx);
-        in_grads.push_back(dw);
+        ctx_x_grad.add_attr({ "strides", ctx.get_attr<IntVec>("strides") });
+        ctx_x_grad.add_attr({ "pads", ctx.get_attr<IntVec>("pads") });
+        ctx_x_grad.add_input(w);
+        ctx_x_grad.add_input(dy);
+        ctx_x_grad.add_output(dx);
+        ctx_w_grad.add_attr({ "strides", ctx.get_attr<IntVec>("strides") });
+        ctx_w_grad.add_attr({ "pads", ctx.get_attr<IntVec>("pads") });
+        ctx_w_grad.add_input(x);
+        ctx_w_grad.add_input(dy);
+        ctx_w_grad.add_output(dw);
+        dx.set_context(ctx_x_grad);
+        dw.set_context(ctx_w_grad);
+        x.set_backprop_node(dx.get_node());
+        x.set_gradient(dx);
+        w.set_backprop_node(dw.get_node());
+        w.set_gradient(dw);
         return in_grads;
     }
 };
@@ -47,10 +51,10 @@ Tensor conv2d(Tensor x,
     OpAlgoContext ctx("Convolution");
     ctx.add_attr({"strides", strides});
     ctx.add_attr({"pads", pads});
-    y.add_child(x);
-    y.add_child(w);
-    Tensor::AssignOpFunctor(y, ctx);
-    
+    ctx.add_input(x);
+    ctx.add_input(w);
+    ctx.add_output(y);
+    y.set_context(ctx);
     return y;
 }
 

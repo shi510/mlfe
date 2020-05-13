@@ -47,8 +47,8 @@ public:
             };
         };
         y = oac->get_output(0);
-        x = y.get_children()[0];
-        w = y.get_children()[1];
+        x = oac->get_input(0);
+        w = oac->get_input(1);
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
 
         x_memory = make_smem(make_mem_prim_desc(x.shape(), data_order::nchw),
@@ -173,8 +173,8 @@ public:
         auto strides = oac->get_attr<IntVec>("strides");
         auto padding = oac->get_attr<IntVec>("pads");
         dx = oac->get_output(0);
-        w = dx.get_children()[0];
-        dy = dx.get_children()[1];
+        w = oac->get_input(0);
+        dy = oac->get_input(1);
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
 
         dx_memory = make_smem(make_mem_prim_desc(dx.shape(), data_order::nchw),
@@ -306,8 +306,8 @@ public:
         auto strides = oac->get_attr<IntVec>("strides");
         auto padding = oac->get_attr<IntVec>("pads");
         dw = oac->get_output(0);
-        x = dw.get_children()[0];
-        dy = dw.get_children()[1];
+        x = oac->get_input(0);
+        dy = oac->get_input(1);
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
 
         x_memory = make_smem(make_mem_prim_desc(x.shape(), data_order::nchw),

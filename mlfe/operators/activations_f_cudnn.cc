@@ -17,7 +17,7 @@ public:
         };
         std::vector<int> shape(4);
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x.shape().size(); ++n){
             shape[n] = x.shape()[n];
@@ -86,9 +86,9 @@ public:
         };
         std::vector<int> shape(4);
         x_grad = oac->get_output(0);
-        x = x_grad.get_children()[0];
-        y = x_grad.get_children()[1];
-        y_grad = x_grad.get_children()[2];
+        x = oac->get_input(0);
+        y = oac->get_input(1);
+        y_grad = oac->get_input(2);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x.shape().size(); ++n){
             shape[n] = x.shape()[n];
@@ -162,7 +162,7 @@ public:
         };
         std::vector<int> shape(4);
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x.shape().size(); ++n){
             shape[n] = x.shape()[n];
@@ -232,9 +232,9 @@ public:
         };
         std::vector<int> shape(4);
         x_grad = oac->get_output(0);
-        x = x_grad.get_children()[0];
-        y = x_grad.get_children()[1];
-        y_grad = x_grad.get_children()[2];
+        x = oac->get_input(0);
+        y = oac->get_input(1);
+        y_grad = oac->get_input(2);
         std::fill(shape.begin(), shape.end(), 1);
         for(int n = 0; n < x.shape().size(); ++n){
             shape[n] = x.shape()[n];

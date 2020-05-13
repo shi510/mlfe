@@ -11,9 +11,9 @@ class MatMul : public OpAlgo{
 using T = typename Tp::T;
 public:
     MatMul(OpAlgoContext *oac) : OpAlgo(oac, "MatMul"){
+        a = oac->get_input(0);
+        b = oac->get_input(1);
         y = oac->get_output(0);
-        a = y.get_children()[0];
-        b = y.get_children()[1];
         trans_a = oac->get_attr<bool>("trans_a");
         trans_b = oac->get_attr<bool>("trans_b");
         if(trans_a && !trans_b){

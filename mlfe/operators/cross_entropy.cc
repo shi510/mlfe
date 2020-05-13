@@ -9,17 +9,22 @@ class SigmoidXEntropyGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        Tensor logit = y.get_children()[0];
-        Tensor label = y.get_children()[1];
+        auto ctx_y = y.get_context();
+        Tensor logit = ctx_y.get_input(0);
+        Tensor label = ctx_y.get_input(1);
         Tensor logit_grad = functional::create_variable(logit.shape());
-        OpAlgoContext ctx("SigmoidCrossEntropyGradient");
-        logit_grad.add_child(logit);
-        logit_grad.add_child(label);
-        logit_grad.add_child(y);
-        logit_grad.add_child(dy);
-        Tensor::AssignOpFunctor(logit_grad, ctx);
-        in_grads.push_back(logit_grad);
-        in_grads.push_back(dy);
+        Tensor label_grad = functional::create_variable(label.shape());
+        OpAlgoContext ctx_logit_grad("SigmoidCrossEntropyGradient");
+        ctx_logit_grad.add_input(logit);
+        ctx_logit_grad.add_input(label);
+        ctx_logit_grad.add_input(y);
+        ctx_logit_grad.add_input(dy);
+        ctx_logit_grad.add_output(logit_grad);
+        logit_grad.set_context(ctx_logit_grad);
+        logit.set_backprop_node(logit_grad.get_node());
+        logit.set_gradient(logit_grad);
+        label_grad.set_backprop_node(dy.get_node());
+        label_grad.set_gradient(dy);
         return in_grads;
     }
 };
@@ -30,17 +35,21 @@ class SoftmaxCrossEntropyWithLabelGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        Tensor logit = y.get_children()[0];
-        Tensor label = y.get_children()[1];
+        auto ctx_y = y.get_context();
+        Tensor logit = ctx_y.get_input(0);
+        Tensor label = ctx_y.get_input(1);
         Tensor logit_grad = functional::create_variable(logit.shape());
         OpAlgoContext ctx("SoftmaxCrossEntropyWithLabelGradient");
-        logit_grad.add_child(logit);
-        logit_grad.add_child(label);
-        logit_grad.add_child(y);
-        logit_grad.add_child(dy);
-        Tensor::AssignOpFunctor(logit_grad, ctx);
-        in_grads.push_back(logit_grad);
-        in_grads.push_back(dy);
+        ctx.add_input(dy);
+        ctx.add_input(logit);
+        ctx.add_input(label);
+        ctx.add_input(y);
+        ctx.add_output(logit_grad);
+        logit_grad.set_context(ctx);
+        logit.set_backprop_node(logit_grad.get_node());
+        label.set_backprop_node(dy.get_node());
+        logit.set_gradient(logit_grad);
+        label.set_gradient(dy);
         return in_grads;
     }
 };
@@ -50,22 +59,22 @@ REGIST_GRADIENT_HELPER(SoftmaxCrossEntropyWithLabel, SoftmaxCrossEntropyWithLabe
 namespace functional{
 
 Tensor softmax_cross_entropy(Tensor logit, Tensor label){
-    Tensor xent = create_variable({logit.shape()[0]});
+    Tensor y = create_variable({ logit.shape()[0] });
     OpAlgoContext ctx("SoftmaxCrossEntropyWithLabel");
-    xent.add_child(logit);
-    xent.add_child(label);
-    Tensor::AssignOpFunctor(xent, ctx);
-
-    return xent;
+    ctx.add_input(logit);
+    ctx.add_input(label);
+    ctx.add_output(y);
+    y.set_context(ctx);
+    return y;
 }
 
 Tensor sigmoid_cross_entropy(Tensor logit, Tensor label){
     Tensor xent = create_variable({logit.shape()[0]});
     OpAlgoContext ctx("SigmoidCrossEntropy");
-    xent.add_child(logit);
-    xent.add_child(label);
-    Tensor::AssignOpFunctor(xent, ctx);
-
+    ctx.add_input(logit);
+    ctx.add_input(label);
+    ctx.add_output(xent);
+    xent.set_context(ctx);
     return xent;
 }
 

@@ -154,6 +154,28 @@ OpAlgoRegisterer::OpAlgoRegisterer(OpAlgoSchema oas){
     OpAlgoRegistry::Get()->Register(oas.Name(), oas);
 }
 
+std::shared_ptr<OpAlgo> find_op(OpAlgoContext& ctx)
+{
+    std::shared_ptr<OpAlgo> op = nullptr;
+    auto reg = OpAlgoRegistry::Get();
+    auto dev = get_enabled_device();
+    std::string op_name = ctx.get_op_name();
+    std::string full_op_name = "Name:" + op_name + "/Device:";
+    std::string dev_name = dev->get_device_name();
+    std::string with_accel = dev_name + "(" + dev->get_accelerator_name() + ")";
+
+    if(reg->Has(full_op_name + with_accel)){
+        op = reg->GetOpAlgo(full_op_name + with_accel, &ctx);
+    }
+    else if(reg->Has(full_op_name + dev_name)){
+        op = reg->GetOpAlgo(full_op_name + dev_name, &ctx);
+    }
+    else if(reg->Has(full_op_name + "Any")){
+        op = reg->GetOpAlgo(full_op_name + "Any", &ctx);
+    }
+    return op;
+}
+
 template <class Tp>
 class Identity : public OpAlgo{
 public:

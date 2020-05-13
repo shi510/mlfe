@@ -27,7 +27,7 @@ public:
             }
         };
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
 
         auto x_mem_prim_desc = mem_prim_desc({
@@ -86,8 +86,8 @@ using T = typename Tp::T;
 public:
     ReLUGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        x = dx.get_children()[0];
-        dy = dx.get_children()[2];
+        x = oac->get_input(0);
+        dy = oac->get_input(2);
         using mem_desc = mkldnn::memory::desc;
         using mem_prim_desc = mkldnn::memory::primitive_desc;
         using fwd_desc = eltwise_forward::desc;
@@ -196,7 +196,7 @@ public:
             }
         };
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
         
         auto x_mem_prim_desc = mem_prim_desc({
@@ -255,8 +255,8 @@ using T = typename Tp::T;
 public:
     SigmoidGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        x = dx.get_children()[0];
-        dy = dx.get_children()[2];
+        x = oac->get_input(0);
+        dy = oac->get_input(2);
         using mem_desc = mkldnn::memory::desc;
         using mem_prim_desc = mkldnn::memory::primitive_desc;
         using fwd_desc = eltwise_forward::desc;

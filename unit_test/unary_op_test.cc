@@ -3,6 +3,7 @@
 #include <mlfe/operators.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
+#include <numeric>
 
 using namespace mlfe;
 namespace fn = functional;
@@ -37,6 +38,7 @@ TEST(unary_op, negative_grad){
     });
     result.eval();
     result.backprop();
+    var.get_backprop_node().run();
     std::copy(var.grad().begin<T>(), var.grad().end<T>(), analytical.begin());
     auto numerical = numerical_gradient(grad_eps, result, var);
     
@@ -84,6 +86,7 @@ TEST(unary_op, sigmoid_grad){
     });
     result.eval();
     result.backprop();
+    var.get_backprop_node().run();
     std::copy(var.grad().begin<T>(), var.grad().end<T>(), analytical.begin());
     auto numerical = numerical_gradient(grad_eps, result, var);
     
@@ -124,6 +127,7 @@ TEST(unary_op, relu_grad){
     });
     result.eval();
     result.backprop();
+    var.get_backprop_node().run();
     std::copy(var.grad().begin<T>(), var.grad().end<T>(), analytical.begin());
     auto numerical = numerical_gradient(grad_eps, result, var);
     
@@ -131,5 +135,47 @@ TEST(unary_op, relu_grad){
         auto diff = std::abs(analytical.data()[n] - numerical.data<T>()[n]);
         EXPECT_LE(diff, pass_eps);
         EXPECT_GE(diff, -pass_eps);
+    }
+}
+
+TEST(unary_op, mean) {
+    using T = float;
+    auto x = fn::create_variable({ 5 });
+    auto y = fn::mean(x);
+    T answer = 0.f;
+    std::fill(x.begin<float>(), x.end<float>(), 0.2f);
+    for (int n = 0; n < x.size(); ++n)
+    {
+        answer += 0.2f;
+    }
+    answer /= x.size();
+    y.eval();
+    EXPECT_EQ(y.size(), 1);
+    EXPECT_EQ(y.data<T>()[0], answer);
+}
+
+TEST(unary_op, mean_grad) {
+    using T = float;
+    constexpr T grad_eps = 1e-4;
+    constexpr T pass_eps = 1e-3;
+    auto x = fn::create_variable({ 5 });
+    auto y = fn::mean(x);
+    auto analytical = std::vector<T>(x.size());
+    std::mt19937 rng;
+    std::normal_distribution<T> dist(-1, 1);
+
+    std::generate(x.begin<T>(), x.end<T>(), [&]() {return dist(rng);});
+    y.eval();
+    y.backprop();
+    x.get_backprop_node().run();
+    std::copy(x.grad().begin<T>(), x.grad().end<T>(), analytical.begin());
+    auto numerical = numerical_gradient(grad_eps, y, x);
+
+    for (int n = 0; n < x.size(); ++n) {
+        //auto diff = std::abs(analytical.data()[n] - numerical.data<T>()[n]);
+        //std::cout<< analytical.data()[n] <<", "<< numerical.data<T>()[n] <<std::endl;
+        //EXPECT_LE(diff, pass_eps);
+        //EXPECT_GE(diff, -pass_eps);
+        EXPECT_NEAR(analytical.data()[n], numerical.data<T>()[n], pass_eps);
     }
 }

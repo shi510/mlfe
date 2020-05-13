@@ -1,4 +1,5 @@
 #include "mlfe/module/model.h"
+#include <algorithm>
 
 namespace mlfe
 {
@@ -24,13 +25,31 @@ void model::compile(
 	__loss.set_name("loss");
 	__output.set_name("output");
 	__true.set_name("true");
-	for (auto& var : visit_bfs(__loss))
+
+	// make computation graph for gradient nodes.
+	__loss.backprop();
+	// collect all nodes related to trainable variables.
+	for (auto back_node : topological_sort(__loss.get_node()))
 	{
-		if (var.trainable())
+		if(back_node.has_attr("trainable"))
 		{
-			__train_vars.push_back(var);
+			if(*back_node.get_attr("trainable").data<bool>())
+			{
+				auto train_v = back_node.get_attr("tensor").data<Tensor>();
+				auto list = topological_sort(train_v->get_backprop_node());
+				__train_seq.insert(__train_seq.end(), list.begin(), list.end());
+				__train_vars.push_back(*train_v);
+			}
 		}
 	}
+	// remove duplicated nodes.
+	std::sort(__train_seq.begin(), __train_seq.end(), [](node a, node b) {
+		return a.get_name() > b.get_name();
+		});
+	__train_seq.erase(std::unique(__train_seq.begin(), __train_seq.end()), __train_seq.end());
+	std::sort(__train_seq.begin(), __train_seq.end(), [](node a, node b) {
+		return a.get_order() < b.get_order();
+		});
 }
 
 } // end namespace module

@@ -13,8 +13,8 @@ using T = typename Tp::T;
 public:
     SquaredDifference(OpAlgoContext *oac) : OpAlgo(oac, "SquaredDifference"){
         y = oac->get_output(0);
-        x1 = y.get_children()[0];
-        x2 = y.get_children()[1];
+        x1 = oac->get_input(0);
+        x2 = oac->get_input(1);
         size = x1.size();
     }
     
@@ -80,7 +80,7 @@ class ReduceMean : public OpAlgo{
 public:
     ReduceMean(OpAlgoContext *oac) : OpAlgo(oac, "ReduceMean"){
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         size = x.size();
     }
     
@@ -114,8 +114,8 @@ class ReduceMeanGrad : public OpAlgo{
     using T = typename Tp::T;
 public:
     ReduceMeanGrad(OpAlgoContext *oac) : OpAlgo(oac, "ReduceMeanGradient"){
+        dy = oac->get_input(0);
         dx = oac->get_output(0);
-        dy = dx.get_children()[0];
         size = dx.size();
         scale = T(1) / T(size);
     }

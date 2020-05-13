@@ -33,7 +33,7 @@ public:
 	template <typename T>
 	std::vector<T> operator()(std::vector<T> x, std::vector<int> shape)
 	{
-		if (x.size() != __input.size() || shape.size() != __input.dims())
+		if(x.size() != __input.size() || shape.size() != __input.dims())
 		{
 			std::cout << "x.size() != __input.size() || ";
 			std::cout << "shape.size() != __input.dims()" << std::endl;
@@ -62,7 +62,7 @@ public:
 		std::map<std::string, float> logs;
 		std::for_each(callbacks.params.begin(), callbacks.params.end(),
 			[this](std::shared_ptr<callback> cb) {cb->set_model(this); });
-		for (int n = 0; n < epoch; ++n)
+		for(int n = 0; n < epoch; ++n)
 		{
 			std::cout << "epoch : " << n << std::endl;
 			std::for_each(callbacks.params.begin(), callbacks.params.end(),
@@ -123,14 +123,16 @@ private:
 			std::copy(x.begin(), x.end(), __input.begin<_TypeX>());
 			std::copy(y.begin(), y.end(), __true.begin<_TypeY>());
 			__loss.get_graph()->set_training(train);
-			if (!train)
+			if(!train)
 			{
 				__loss.eval();
 			}
 			else
 			{
-				__loss.backprop();
-				for (auto &var : __train_vars)
+				for_each(__train_seq.begin(), __train_seq.end(), [](node n) {
+					n.run_without_dependencies();
+					});
+				for(auto& var : __train_vars)
 				{
 					__optim->apply(var, var.grad());
 				}
@@ -151,6 +153,7 @@ private:
 	Tensor __true;
 	LossFn __loss_fn;
 	MetricFn __metric_fn;
+	std::vector<node> __train_seq;
 	std::vector<Tensor> __train_vars;
 	std::shared_ptr<opt::optimizer> __optim;
 };

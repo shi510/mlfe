@@ -29,8 +29,8 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         y = oac->get_output(0);
-        x = y.get_children()[0];
-        w = y.get_children()[1];
+        x = oac->get_input(0);
+        w = oac->get_input(1);
         strides = oac->get_attr<std::vector<int>>("strides");
         pads = oac->get_attr<std::vector<int>>("pads");
 
@@ -159,8 +159,8 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         dx = oac->get_output(0);
-        w = dx.get_children()[0];
-        dy = dx.get_children()[1];
+        w = oac->get_input(0);
+        dy = oac->get_input(1);
         strides = oac->get_attr<IntVec>("strides");
         pads = oac->get_attr<IntVec>("pads");
 
@@ -287,8 +287,8 @@ public:
                     CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
             };
             dw = oac->get_output(0);
-            x = dw.get_children()[0];
-            dy = dw.get_children()[1];
+            x = oac->get_input(0);
+            dy = oac->get_input(1);
             strides = oac->get_attr<IntVec>("strides");
             pads = oac->get_attr<IntVec>("pads");
 
@@ -427,8 +427,8 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         y = oac->get_output(0);
-        x = y.get_children()[0];
-        w = y.get_children()[1];
+        x = oac->get_input(0);
+        w = oac->get_input(1);
         strides = oac->get_attr<std::vector<int>>("strides");
         pads = oac->get_attr<std::vector<int>>("pads");
 
@@ -558,8 +558,8 @@ public:
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         dx = oac->get_output(0);
-        w = dx.get_children()[0];
-        dy = dx.get_children()[1];
+        w = oac->get_input(0);
+        dy = oac->get_input(1);
         strides = oac->get_attr<IntVec>("strides");
         pads = oac->get_attr<IntVec>("pads");
 
@@ -687,8 +687,8 @@ public:
                     CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
             };
             dw = oac->get_output(0);
-            x = dw.get_children()[0];
-            dy = dw.get_children()[1];
+            x = oac->get_input(0);
+            dy = oac->get_input(1);
             strides = oac->get_attr<IntVec>("strides");
             pads = oac->get_attr<IntVec>("pads");
 

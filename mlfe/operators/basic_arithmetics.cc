@@ -12,8 +12,11 @@ class NegativeGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
+        auto ctx_y = y.get_context();
+        auto x = ctx_y.get_input(0);
         auto dx = functional::negative(dy);
-        in_grads.push_back(dx);
+        x.set_backprop_node(dx.get_node());
+        x.set_gradient(dx);
         return in_grads;
     }
 };
@@ -24,8 +27,10 @@ class ElementwiseAddGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        in_grads.push_back(dy);
-        in_grads.push_back(dy);
+        y.get_context().get_input(0).set_backprop_node(dy.get_node());
+        y.get_context().get_input(0).set_gradient(dy);
+        y.get_context().get_input(1).set_backprop_node(dy.get_node());
+        y.get_context().get_input(1).set_gradient(dy);
         return in_grads;
     }
 };
@@ -36,10 +41,13 @@ class ElementwiseSubGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        auto dx1 = dy;
+        auto x1 = y.get_context().get_input(0);
+        auto x2 = y.get_context().get_input(1);
         auto dx2 = functional::negative(dy);
-        in_grads.push_back(dx1);
-        in_grads.push_back(dx2);
+        x1.set_backprop_node(dy.get_node());
+        x1.set_gradient(dy);
+        x2.set_backprop_node(dx2.get_node());
+        x2.set_gradient(dx2);
         return in_grads;
     }
 };
@@ -50,12 +58,14 @@ class ElementwiseMulGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        Tensor x1 = y.get_children()[0];
-        Tensor x2 = y.get_children()[1];
+        Tensor x1 = y.get_context().get_input(0);
+        Tensor x2 = y.get_context().get_input(1);
         Tensor dx1 = functional::mul(x2, dy);
         Tensor dx2 = functional::mul(x1, dy);
-        in_grads.push_back(dx1);
-        in_grads.push_back(dx2);
+        x1.set_backprop_node(dx1.get_node());
+        x1.set_gradient(dx1);
+        x2.set_backprop_node(dx2.get_node());
+        x2.set_gradient(dx2);
         return in_grads;
     }
 };
@@ -66,13 +76,15 @@ class ElementwiseDivGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        auto x1 = y.get_children()[0];
-        auto x2 = y.get_children()[1];
+        Tensor x1 = y.get_context().get_input(0);
+        Tensor x2 = y.get_context().get_input(1);
         auto one = functional::constant(1, x2.shape());
         auto dx1 = functional::div(one, x2);
         auto dx2 = functional::negative(functional::div(y, x2));
-        in_grads.push_back(dx1);
-        in_grads.push_back(dx2);
+        x1.set_backprop_node(dx1.get_node());
+        x1.set_gradient(dx1);
+        x2.set_backprop_node(dx2.get_node());
+        x2.set_gradient(dx2);
         return in_grads;
     }
 };
@@ -83,8 +95,10 @@ class AddNGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        for(int n = 0; n < y.get_children().size(); ++n){
-            in_grads.push_back(dy);
+        auto ctx_y = y.get_context();
+        for(int n = 0; n < ctx_y.num_inputs(); ++n){
+            ctx_y.get_input(n).set_backprop_node(dy.get_node());
+            ctx_y.get_input(n).set_gradient(dy);
         }
         return in_grads;
     }
@@ -96,12 +110,15 @@ class MatrixVectorAddGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        Tensor mat = y.get_children()[0];
-        Tensor vec = y.get_children()[1];
-        Tensor one = functional::constant(1, {y.shape()[0], 1});
+        auto ctx = y.get_context();
+        Tensor mat = ctx.get_input(0);
+        Tensor vec = ctx.get_input(1);
+        Tensor one = functional::constant(1, { y.shape()[0], 1 });
         Tensor dvec = functional::matmul(dy, one, true);
-        in_grads.push_back(dy);
-        in_grads.push_back(dvec);
+        mat.set_backprop_node(dy.get_node());
+        mat.set_gradient(dy);
+        vec.set_backprop_node(dvec.get_node());
+        vec.set_gradient(dvec);
         return in_grads;
     }
 };
@@ -137,11 +154,11 @@ Tensor Div<double>(Tensor a, double b){
 }
 
 Tensor negative(Tensor x){
-    OpAlgoContext cxt("Negative");
+    OpAlgoContext ctx("Negative");
     Tensor y = create_variable(x.shape());
-    auto x_shape = x.shape();
-    y.add_child(x);
-    Tensor::AssignOpFunctor(y, cxt);
+    ctx.add_input(x);
+    ctx.add_output(y);
+    y.set_context(ctx);
     return y;
 }
 
@@ -161,12 +178,13 @@ Tensor add(Tensor x1, Tensor x2){
         min_shape = x1_shape;
     }
     y = functional::create_variable(max_shape);
-    y.add_child(x1);
-    y.add_child(x2);
     if(max_dim == 4 && min_dim == 1){
         if(max_shape[1] == min_shape[0]){
             OpAlgoContext cxt("BatchedMatrixVectorAdd");
-            Tensor::AssignOpFunctor(y, cxt);
+            cxt.add_input(x1);
+            cxt.add_input(x2);
+            cxt.add_output(y);
+            y.set_context(cxt);
         }
         else{
             std::string err = "Can not add with ";
@@ -179,7 +197,10 @@ Tensor add(Tensor x1, Tensor x2){
     else if(max_dim == 2 && min_dim == 1){
         if(max_shape[1] == min_shape[0]){
             OpAlgoContext cxt("MatrixVectorAdd");
-            Tensor::AssignOpFunctor(y, cxt);
+            cxt.add_input(x1);
+            cxt.add_input(x2);
+            cxt.add_output(y);
+            y.set_context(cxt);
         }
         else{
             std::string err = "Can not add with ";
@@ -191,7 +212,10 @@ Tensor add(Tensor x1, Tensor x2){
     }
     else if(max_dim == min_dim){
         OpAlgoContext cxt("ElementwiseAdd");
-        Tensor::AssignOpFunctor(y, cxt);
+        cxt.add_input(x1);
+        cxt.add_input(x2);
+        cxt.add_output(y);
+        y.set_context(cxt);
     }
 
     return y;
@@ -199,39 +223,43 @@ Tensor add(Tensor x1, Tensor x2){
 
 Tensor sub(Tensor x1, Tensor x2){
     Tensor y = functional::create_variable(x1.shape());
-    OpAlgoContext cxt("ElementwiseSub");
-    y.add_child(x1);
-    y.add_child(x2);
-    Tensor::AssignOpFunctor(y, cxt);
+    OpAlgoContext ctx("ElementwiseSub");
+    ctx.add_input(x1);
+    ctx.add_input(x2);
+    ctx.add_output(y);
+    y.set_context(ctx);
     return y;
 }
 
 Tensor mul(Tensor x1, Tensor x2){
     Tensor y = functional::create_variable(x1.shape());
-    OpAlgoContext cxt("ElementwiseMul");
-    y.add_child(x1);
-    y.add_child(x2);
-    Tensor::AssignOpFunctor(y, cxt);
+    OpAlgoContext ctx("ElementwiseMul");
+    ctx.add_input(x1);
+    ctx.add_input(x2);
+    ctx.add_output(y);
+    y.set_context(ctx);
     return y;
 }
 
 Tensor div(Tensor x1, Tensor x2){
     Tensor y = functional::create_variable(x1.shape());
-    OpAlgoContext cxt("ElementwiseDiv");
-    y.add_child(x1);
-    y.add_child(x2);
-    Tensor::AssignOpFunctor(y, cxt);
+    OpAlgoContext ctx("ElementwiseDiv");
+    ctx.add_input(x1);
+    ctx.add_input(x2);
+    ctx.add_output(y);
+    y.set_context(ctx);
     return y;
 }
 
 Tensor add_n(std::vector<Tensor> xs){
     if(xs.size() >= 2){
         Tensor y = functional::create_variable(xs[0].shape());
-        OpAlgoContext cxt("AddN");
+        OpAlgoContext ctx("AddN");
         for(auto &x : xs){
-            y.add_child(x);
+            ctx.add_input(x);
         }
-        Tensor::AssignOpFunctor(y, cxt);
+        ctx.add_output(y);
+        y.set_context(ctx);
         return y;
     }
     else if(xs.size() == 1){

@@ -11,12 +11,16 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using IntVec = std::vector<type::int32::T>;
         VecTensor in_grads;
-        Tensor x = y.get_children()[0];
+        auto ctx_y = y.get_context();
+        auto x = ctx_y.get_input(0);
         Tensor dx = functional::create_variable(x.shape());
         OpAlgoContext ctx_x_grad("BroadcastingGradient");
-        dx.add_child(dy);
-        Tensor::AssignOpFunctor(dx, ctx_x_grad);
-        in_grads.push_back(dx);
+        ctx_x_grad.add_input(dy);
+        ctx_x_grad.add_input(y);
+        ctx_x_grad.add_output(dx);
+        dx.set_context(ctx_x_grad);
+        x.set_backprop_node(dx.get_node());
+        x.set_gradient(dx);
         return in_grads;
     }
 };
@@ -55,10 +59,10 @@ Tensor broadcast(Tensor x,
     check_broadcasting(x.shape(), shape);
     Tensor y = create_variable(shape);
     OpAlgoContext ctx("Broadcasting");
-    ctx.add_attr({"broadcasting_shape", shape});
-    y.add_child(x);
-    Tensor::AssignOpFunctor(y, ctx);
-
+    ctx.add_input(x);
+    ctx.add_output(y);
+    ctx.add_attr({ "broadcasting_shape", shape });
+    y.set_context(ctx);
     return y;
 }
 

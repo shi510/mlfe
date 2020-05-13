@@ -25,6 +25,8 @@ Tensor layer::add_variable(
 	Tensor var = create_variable(shape, trainable);
 	var.set_name(var_name);
 	_vars[var_name] = var;
+	var.get_node().add_attr("trainable", trainable);
+	var.get_node().set_name(var_name);
 	return var;
 }
 

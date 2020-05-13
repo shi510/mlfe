@@ -21,7 +21,7 @@ public:
 				CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
 		};
 		y = oac->get_output(0);
-		x = y.get_children()[0];
+		x = oac->get_input(0);
 		_scales_ptr = create_memory(x.shape()[1] * sizeof(T));
 		_biases_ptr = create_memory(x.shape()[1] * sizeof(T));
 		_running_mean_ptr = create_memory(x.shape()[1] * sizeof(T));
@@ -138,8 +138,8 @@ public:
 				CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
 		};
 		dx = oac->get_output(0);
-		dy = dx.get_children()[0];
-		x = dx.get_children()[1];
+		dy = oac->get_input(0);
+		x = oac->get_input(1);
 		_scales_ptr = oac->get_attr<memory_ptr>("scales");
 		_biases_ptr = oac->get_attr<memory_ptr>("biases");
 		_running_mean_ptr = oac->get_attr<memory_ptr>("running_mean");

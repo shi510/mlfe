@@ -13,8 +13,8 @@ using T = typename Tp::T;
 public:
     SigmoidCrossEntropy(OpAlgoContext *oac) : OpAlgo(oac, "SigmoidCrossEntropy"){
         loss = oac->get_output(0);
-        logit = loss.get_children()[0];
-        label = loss.get_children()[1];
+        logit = oac->get_input(0);
+        label = oac->get_input(1);
 
         m = logit.shape()[0];
         n = logit.shape()[1];
@@ -57,9 +57,9 @@ using T = typename Tp::T;
 public:
     SigmoidCrossEntropyGrad(OpAlgoContext *oac) : OpAlgo(oac, "SigmoidCrossEntropyGradient"){
         logit_grad = oac->get_output(0);
-        logit = logit_grad.get_children()[0];
-        label = logit_grad.get_children()[1];
-        loss_grad = logit_grad.get_children()[3];
+        logit = oac->get_input(0);
+        label = oac->get_input(1);
+        loss_grad = oac->get_input(3);
         m = logit.shape()[0];
         n = logit.shape()[1];
     }
@@ -106,8 +106,8 @@ public:
     SoftmaxCrossEntropyWithLabel(OpAlgoContext *oac) 
         : OpAlgo(oac, "SoftmaxCrossEntropyWithLabel"){
         loss = oac->get_output(0);
-        logit = loss.get_children()[0];
-        label = loss.get_children()[1];
+        logit = oac->get_input(0);
+        label = oac->get_input(1);
         m = logit.shape()[0];
         n = logit.shape()[1];
         size = m * n;
@@ -201,9 +201,9 @@ using T = typename Tp::T;
 public:
     SoftmaxCrossEntropyWithLabelGrad(OpAlgoContext *oac) : OpAlgo(oac, "SoftmaxCrossEntropyWithLabelGrad"){
         logit_grad = oac->get_output(0);
-        logit = logit_grad.get_children()[0];
-        label = logit_grad.get_children()[1];
-        loss_grad = logit_grad.get_children()[3];
+        loss_grad = oac->get_input(0);
+        logit = oac->get_input(1);
+        label = oac->get_input(2);
         m = logit.shape()[0];
         n = logit.shape()[1];
         size = m * n;

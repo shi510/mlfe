@@ -1,8 +1,9 @@
-#ifndef __ATTRIBUTE_HPP__
-#define __ATTRIBUTE_HPP__
+#pragma once
 #include <memory>
 #include <map>
 #include <string>
+#include <functional>
+#include <unordered_map>
 
 namespace mlfe{
 class Attribution;
@@ -72,5 +73,79 @@ private:
     PairAttr attr;
 };
 
+class attribute final
+{
+    template <typename T1, typename T2>
+    using umap = std::unordered_map<T1, T2>;
+
+public:
+    class item;
+    
+    void add(std::string name, item attr_val);
+    
+    item get(std::string key);
+
+    bool has(std::string key) const;
+
+private:
+    umap<std::string, item> _attrs;
+};
+
+class attribute::item final
+{
+    using destructor_fn = std::function<void(void *)>;
+
+public:
+    item();
+
+    template <typename T>
+    item(T val);
+
+    template <typename T>
+    void assign(T val);
+
+    template <typename T>
+    T *data() const;
+
+private:
+    void init();
+
+    template <class T>
+    static void destruct(void *ptr);
+
+    void set(void *val_ptr, destructor_fn fn);
+
+    void *get() const;
+
+private:
+    class impl;
+    std::shared_ptr<impl> _pimpl;
+};
+
+template <typename T>
+attribute::item::item(T val)
+{
+    init();
+    assign(val);
+}
+
+template <typename T>
+void attribute::item::assign(T val)
+{
+    T *ptr = new T(val);
+    set(static_cast<void *>(ptr), destruct<T>);
+}
+
+template <typename T>
+T *attribute::item::data() const
+{
+    return static_cast<T *>(get());
+}
+
+template <class T>
+static void attribute::item::destruct(void *ptr)
+{
+    delete static_cast<T *>(ptr);
+}
+
 } // end namespace mlfe
-#endif // end ifndef __ATTRIBUTE_HPP__

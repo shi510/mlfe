@@ -144,6 +144,8 @@ struct OpAlgoRegisterer{
     OpAlgoRegisterer(OpAlgoSchema oas);
 };
 
+std::shared_ptr<OpAlgo> find_op(OpAlgoContext& oc);
+
 #define REGIST_OP_ALGO(Name, ...)                           \
     _REGIST_OP_ALGO_(Name, __VA_ARGS__)
 

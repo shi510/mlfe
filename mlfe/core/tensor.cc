@@ -15,19 +15,12 @@ namespace mlfe{
 
 //TODO : use thread for _children_modified
 struct Tensor::impl{
-    impl() : _exec_order(0), _ctx("unknown"),
-        _children_modified(true), __ti(type::float32()), __stop_grad(false){}
-    std::vector<Tensor> _parents;
-    std::vector<Tensor> _children;
-    int _exec_order;
+    impl() : _ctx("unknown"), __ti(type::float32()), __stop_grad(false){}
     memory_ptr _mem;
     OpAlgoContext _ctx;
     std::shared_ptr<OpAlgo> _algo;
     std::shared_ptr<Tensor> _gradient;
     Attributes _attrs;
-    std::vector<Tensor> _compute_list;
-    std::vector<std::shared_ptr<Tensor>> _backward_list;
-    bool _children_modified;
     std::string __name;
     bool __trainable;
     bool __stop_grad;
@@ -35,6 +28,8 @@ struct Tensor::impl{
     std::vector<int> __shape;
     int __size;
     std::shared_ptr<class graph> __g;
+    node n;
+    node backprop_n;
 };
 
 Tensor::Tensor(const bool trainable)
@@ -63,52 +58,26 @@ Tensor::Tensor(std::vector<int> shape, const std::string name, const bool traina
 
 Tensor::~Tensor(){}
 
-void Tensor::add_parent(Tensor p){
-    _pimpl->_parents.push_back(p);
-    //p.add_child(*this);
-    p._pimpl->_children.push_back(*this);
-}
-
-void Tensor::add_child(Tensor c){
-    _pimpl->_children.push_back(c);
-    //c.add_parent(*this);
-    c._pimpl->_parents.push_back(*this);
-    if(c._pimpl->_exec_order >= _pimpl->_exec_order){
-        _pimpl->_exec_order = c._pimpl->_exec_order + 1;
-    }
-}
-
-std::vector<Tensor> Tensor::get_parents() const{
-    return _pimpl->_parents;
-}
-
-std::vector<Tensor> Tensor::get_children() const{
-    return _pimpl->_children;
-}
-
-int Tensor::get_exec_order() const{
-    return _pimpl->_exec_order;
-}
-
 bool Tensor::operator==(const Tensor &v) const{
     return _pimpl.get() == v._pimpl.get();
 }
 
-void Tensor::eval(){
-    //compute all children.
-    op_algo_runtime_context rc;
-    rc.set_training(_pimpl->__g->training());
-    for(auto t : _pimpl->_compute_list){
-        if(t._pimpl->_algo != nullptr &&
-           t._pimpl->_children_modified
-          ){
-            t._pimpl->_algo->Compute(rc);
-            t._pimpl->_children_modified = false;
-            for(int n = 0; n < t._pimpl->_parents.size(); ++n){
-                t._pimpl->_parents[n]._pimpl->_children_modified = true;
-            }
-        }
+void Tensor::set_context(OpAlgoContext ctx)
+{
+    auto op = find_op(ctx);
+    _pimpl->_ctx = ctx;
+    this->get_node().set_task(make_task([](decltype(op) op, node n) {
+        op_algo_runtime_context rc;
+        rc.set_training(n.get_graph()->training());
+        op->Compute(rc);
+        }, op, this->get_node()));
+    this->get_backprop_node().set_task(make_task([]() {}));
+    for(int n = 0; n < ctx.num_inputs(); ++n)
+    {
+        this->get_node().add_input(ctx.get_input(n).get_node());
     }
+    this->get_node().add_attr("op_name", ctx.get_op_name());
+    this->get_node().add_attr("tensor", *this);
 }
 
 OpAlgoContext & Tensor::get_context() const{
@@ -163,6 +132,7 @@ void Tensor::resize(std::vector<int> shape, type::TypeInfo ti)
     _pimpl->__size = std::accumulate(_pimpl->__shape.begin(),
         _pimpl->__shape.end(), 1, std::multiplies<int>());
     _pimpl->__ti = ti;
+    _pimpl->_mem = create_memory(this->size() * this->type().size);
 }
 
 int Tensor::size() const
@@ -195,13 +165,77 @@ std::shared_ptr<graph> Tensor::get_graph() const
     return _pimpl->__g;
 }
 
-void Tensor::backprop(){
-    if(_pimpl->_backward_list.empty()){
-        compute_gradient(*this);
-    }
+void Tensor::set_gradient(Tensor t)
+{
+    _pimpl->_gradient = std::make_shared<Tensor>(t);
+}
 
-    for(auto &var : _pimpl->_backward_list){
-        var->eval();
+void Tensor::set_node(node n)
+{
+    _pimpl->n = n;
+}
+
+node& Tensor::get_node() const
+{
+    return _pimpl->n;
+}
+
+void Tensor::set_backprop_node(node n)
+{
+    _pimpl->backprop_n = n;
+}
+
+node& Tensor::get_backprop_node() const
+{
+    return _pimpl->backprop_n;
+}
+
+void Tensor::eval()
+{
+    _pimpl->n.run_only_mutated();
+}
+
+void Tensor::backprop()
+{
+    using TensorUmap = std::unordered_map<Tensor, std::vector<Tensor>>;
+    TensorUmap dy_collector;
+    auto grad_helper = GradientHelperRegistry::Get();
+    auto topo_list = topological_sort(_pimpl->n);
+    std::sort(topo_list.begin(), topo_list.end(), [](node a, node b) {
+        return a.get_name() > b.get_name();
+        });
+    topo_list.erase(std::unique(topo_list.begin(), topo_list.end()), topo_list.end());
+    std::sort(topo_list.begin(), topo_list.end(), [](node a, node b) {
+        return a.get_order() > b.get_order();
+        });
+    auto root_grad = functional::constant(1, this->shape());
+    this->set_backprop_node(root_grad.get_node());
+    this->set_gradient(root_grad);
+    dy_collector[*this].push_back(root_grad);
+    for(auto& n : topo_list)
+    {
+        auto op_name = *n.get_attr("op_name").data<std::string>();
+        if (op_name != "None")
+        {
+            auto op_grad = grad_helper->GetHelper(op_name);
+            auto y = *n.get_attr("tensor").data<Tensor>();
+            auto dy = functional::add_n(dy_collector[y]);
+            if (dy_collector[y].size() > 1)
+            {
+                y.set_backprop_node(dy.get_node());
+                y.set_gradient(dy);
+            }
+            //std::cout << op_name << std::endl;
+            //std::cout <<"\t"<< *dy.get_node().get_attr("op_name").data<std::string>() << std::endl;
+            //std::cout << "\t" << *y.grad().get_node().get_attr("op_name").data<std::string>() << std::endl;
+            op_grad->compute_gradient(y, dy);
+            for(auto& in : y.get_node().get_inputs())
+            {
+                auto x = *in.get_attr("tensor").data<Tensor>();
+                dy_collector[x].push_back(x.grad());
+            }
+            
+        }
     }
 }
 
@@ -214,9 +248,9 @@ const void *Tensor::_host_data(){
 }
 
 void *Tensor::_mutable_host_data(){
-    _pimpl->_children_modified = true;
-    for(int n = 0; n < _pimpl->_parents.size(); ++n){
-        _pimpl->_parents[n]._pimpl->_children_modified = true;
+    for(auto& o : _pimpl->n.get_outputs())
+    {
+        o.set_mutation(true);
     }
     return _pimpl->_mem->mutable_host_data<void>();
 }
@@ -226,91 +260,12 @@ const void *Tensor::_device_data(){
 }
 
 void *Tensor::_mutable_device_data(){
-    _pimpl->_children_modified = true;
-    for(int n = 0; n < _pimpl->_parents.size(); ++n){
-        _pimpl->_parents[n]._pimpl->_children_modified = true;
+    for(auto& o : _pimpl->n.get_outputs())
+    {
+        o.set_mutation(true);
     }
     return _pimpl->_mem->mutable_device_data<void>();
 }
-
-void Tensor::compute_gradient(const Tensor root){
-    using TensorUmap = std::unordered_map<Tensor, std::vector<Tensor>>;
-    auto make_ptr = [](Tensor &t){
-        return std::make_shared<Tensor>(t);
-    };
-    TensorUmap dy_collector;
-
-    // top-down seuqnce
-    auto v_list = visit_bfs(root);
-    // sort by execution order.
-    std::sort(v_list.begin(), v_list.end(), [](Tensor v1, Tensor v2){
-        return v1.get_exec_order() > v2.get_exec_order();
-    });
-
-    // root gradient is 1.
-    auto one = functional::constant(1, root.shape());
-    one.eval();
-    dy_collector[root].push_back(one);
-    // set root gradient.
-    root._pimpl->_gradient = make_ptr(dy_collector[root][0]);
-    //run computing all gradients.
-    for(auto &var : v_list){
-        if(var._pimpl->_algo != nullptr){
-            auto op_name = var._pimpl->_algo->get_name();
-            auto helper = GradientHelperRegistry::Get();
-            auto op_grad = helper->GetHelper(op_name);
-            //add all partial gradients and propagate down.
-            auto dy = functional::add_n(dy_collector[var]);
-            //calculate input's gradients.
-            auto input_grad = op_grad->compute_gradient(var, dy);
-            //set current variable's gradient, if a partial gradient exists.
-            if(dy_collector[var].size() > 1){
-                var._pimpl->_gradient = make_ptr(dy);
-                root._pimpl->_backward_list.push_back(var._pimpl->_gradient);
-            }
-            // store all input's gradients.
-            for(int n = 0; n < var.get_children().size(); ++n){
-                Tensor x = var.get_children()[n];
-                Tensor x_grad = input_grad[n];
-                dy_collector[x].push_back(x_grad);
-                x._pimpl->_gradient = make_ptr(x_grad);
-                if(dy._pimpl->_algo != x._pimpl->_gradient->_pimpl->_algo &&
-                    !x._pimpl->__stop_grad)
-                    root._pimpl->_backward_list.push_back(x._pimpl->_gradient);
-            }
-        }
-    }
-}
-
-Tensor::AssignOpFunctor::AssignOpFunctor(Tensor t, OpAlgoContext ctx){
-    auto reg = OpAlgoRegistry::Get();
-    auto dev = get_enabled_device();
-    std::string op_name = ctx.get_op_name();
-    std::string full_op_name = "Name:" + op_name + "/Device:";
-    std::string dev_name = dev->get_device_name();
-    std::string with_accel = dev_name + "(" + dev->get_accelerator_name() + ")";
-
-    t._pimpl->_compute_list = visit_bfs(t);
-    std::reverse(t._pimpl->_compute_list.begin(),
-                 t._pimpl->_compute_list.end()
-                );
-
-    ctx.add_output(t);
-    t._pimpl->_ctx = ctx;
-    if(reg->Has(full_op_name + with_accel)){
-        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + with_accel, &t._pimpl->_ctx);
-    }
-    else if(reg->Has(full_op_name + dev_name)){
-        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + dev_name, &t._pimpl->_ctx);
-    }
-    else if(reg->Has(full_op_name + "Any")){
-        t._pimpl->_algo = reg->GetOpAlgo(full_op_name + "Any", &t._pimpl->_ctx);
-    }
-    else{
-        throw std::string(op_name) + " is not supported.";
-    }
-}
-
 
 namespace functional{
 
@@ -319,23 +274,24 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
     OpAlgoContext ctx("Identity");
     var.set_trainable(trainable);
     var.resize(shape);
-    var._pimpl->_mem = create_memory(var.size() * var.type().size);
-    var._pimpl->_ctx = ctx;
-    Tensor::AssignOpFunctor(var, ctx);
+    var.set_context(ctx);
     return var;
 }
 
 Tensor reshape(Tensor x, std::vector<int> shape){
     Tensor y;
-    OpAlgoContext ctx("Reshape");
-    y.add_child(x);
     y._pimpl->_algo = nullptr;
     y._pimpl->_gradient = nullptr;
-    y._pimpl->_ctx = x._pimpl->_ctx;
     y._pimpl->_mem = x._pimpl->_mem;
     y._pimpl->__size = x.size();
     y._pimpl->__shape = shape;
-    Tensor::AssignOpFunctor(y, ctx);
+    OpAlgoContext ctx("Reshape");
+    ctx.add_input(x);
+    ctx.add_output(y);
+    y.set_context(ctx);
+    y.get_node().set_task(make_task([]() {}));
+    y.get_backprop_node().set_task(make_task([]() {}));
+    y.get_node().add_attr("tensor", y);
     return y;
 }
 

@@ -30,8 +30,6 @@ public:
     template <typename T>
     class const_iterator;
 
-    struct AssignOpFunctor;
-
     Tensor(const bool trainable = false);
 
     Tensor(std::string name, const bool trainable = false);
@@ -46,17 +44,9 @@ public:
 
     bool operator==(const Tensor &v) const;
 
-    void add_parent(const Tensor p);
+    void set_context(OpAlgoContext ctx);
 
-    void add_child(const Tensor c);
-
-    std::vector<Tensor> get_parents() const;
-
-    std::vector<Tensor> get_children() const;
-
-    int get_exec_order() const;
-
-    OpAlgoContext & get_context() const;
+    OpAlgoContext& get_context() const;
 
     memory_ptr get_memory() const;
 
@@ -85,6 +75,16 @@ public:
     type::TypeInfo type() const;
 
     std::shared_ptr<graph> get_graph() const;
+
+    void set_gradient(Tensor t);
+
+    void set_node(node n);
+
+    node& get_node() const;
+
+    void set_backprop_node(node n);
+
+    node& get_backprop_node() const;
 
     template <typename T>
     iterator<T> begin();
@@ -125,13 +125,10 @@ protected:
 
     void *_mutable_device_data();
 
-    void compute_gradient(const Tensor root);
-
 private:
     friend Tensor functional::create_variable(std::vector<int>, const bool trainable);
     friend Tensor functional::reshape(Tensor x, std::vector<int> shape);
     friend struct std::hash<Tensor>;
-    friend struct AssignOpFunctor;
     struct impl;
     std::shared_ptr<impl> _pimpl;
 };
@@ -280,10 +277,6 @@ public:
 
 private:
     pointer _ptr;
-};
-
-struct Tensor::AssignOpFunctor{
-    AssignOpFunctor(Tensor t, OpAlgoContext cxt);
 };
 
 } // end namespace mlfe

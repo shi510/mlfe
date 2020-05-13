@@ -47,7 +47,7 @@ public:
             };
         };
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
         idx = oac->get_attr<Tensor>("idx");
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
         
@@ -162,9 +162,9 @@ public:
             };
         };
         dx = oac->get_output(0);
-        x = dx.get_children()[0];
-        y = dx.get_children()[1];
-        dy = dx.get_children()[2];
+        x = oac->get_input(0);
+        y = oac->get_input(1);
+        dy = oac->get_input(2);
         ws_mem = y.get_context().template get_attr
         <std::shared_ptr<mkldnn::memory>>("mkldnn_ws");
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);

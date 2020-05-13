@@ -10,7 +10,7 @@ using T = typename Tp::T;
 public:
     Broadcasting(OpAlgoContext *oac) : OpAlgo(oac, "Broadcasting"){
         y = oac->get_output(0);
-        x = y.get_children()[0];
+        x = oac->get_input(0);
     }
 
     void Compute(op_algo_runtime_context& rc) override{
@@ -104,7 +104,7 @@ using T = typename Tp::T;
 public:
     BroadcastingGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
-        dy = dx.get_children()[0];
+        dy =oac->get_input(0);
     }
 
     void Compute(op_algo_runtime_context& rc) override{

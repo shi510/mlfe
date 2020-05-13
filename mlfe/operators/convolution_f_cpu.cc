@@ -21,8 +21,8 @@ using ArrI4 = Eigen::array<int, 4>;
 public:
     Convolution(OpAlgoContext *oac) : OpAlgo(oac, "Convolution"){
         y = oac->get_output(0);
-        x = y.get_children()[0];
-        w = y.get_children()[1];
+        x = oac->get_input(0);
+        w = oac->get_input(1);
         filters = w.shape()[0];
         filters_hw.resize(2);
         filters_hw[0] = w.shape()[2];
@@ -114,8 +114,8 @@ public:
     Conv2DGradientInput(OpAlgoContext *oac) : OpAlgo(oac){
         using IntVec = std::vector<type::int32::T>;
         dx = oac->get_output(0);
-        w = dx.get_children()[0];
-        dy = dx.get_children()[1];
+        w = oac->get_input(0);
+        dy = oac->get_input(1);
         filters = w.shape()[0];
         filters_hw.resize(2);
         filters_hw[0] = w.shape()[2];
@@ -210,8 +210,8 @@ public:
     Conv2DGradientFilter(OpAlgoContext *oac) : OpAlgo(oac){
         using IntVec = std::vector<type::int32::T>;
         dw = oac->get_output(0);
-        x = dw.get_children()[0];
-        dy = dw.get_children()[1];
+        x = oac->get_input(0);
+        dy = oac->get_input(1);
         filters = dw.shape()[0];
         filters_hw.resize(2);
         filters_hw[0] = dw.shape()[2];

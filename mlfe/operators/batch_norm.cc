@@ -11,20 +11,22 @@ public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         using IntVec = std::vector<type::int32::T>;
         VecTensor in_grads;
-        Tensor x = y.get_children()[0];
+		auto ctx_y = y.get_context();
+        Tensor x = ctx_y.get_input(0);
         Tensor dx = functional::create_variable(x.shape());
-        OpAlgoContext ctx("BatchNormSpatialGradient");
-		OpAlgoContext y_ctx = y.get_context();
-		ctx.add_attr({ "scales", y_ctx.get_attr<memory_ptr>("scales")});
-		ctx.add_attr({ "biases", y_ctx.get_attr<memory_ptr>("biases") });
-		ctx.add_attr({ "running_mean", y_ctx.get_attr<memory_ptr>("running_mean") });
-		ctx.add_attr({ "running_variance", y_ctx.get_attr<memory_ptr>("running_variance") });
-		ctx.add_attr({ "mean", y_ctx.get_attr<memory_ptr>("mean") });
-		ctx.add_attr({ "variance", y_ctx.get_attr<memory_ptr>("variance") });
-        dx.add_child(dy);
-		dx.add_child(x);
-        Tensor::AssignOpFunctor(dx, ctx);
-        in_grads.push_back(dx);
+        OpAlgoContext ctx_dx("BatchNormSpatialGradient");
+		ctx_dx.add_attr({ "scales", ctx_y.get_attr<memory_ptr>("scales")});
+		ctx_dx.add_attr({ "biases", ctx_y.get_attr<memory_ptr>("biases") });
+		ctx_dx.add_attr({ "running_mean", ctx_y.get_attr<memory_ptr>("running_mean") });
+		ctx_dx.add_attr({ "running_variance", ctx_y.get_attr<memory_ptr>("running_variance") });
+		ctx_dx.add_attr({ "mean", ctx_y.get_attr<memory_ptr>("mean") });
+		ctx_dx.add_attr({ "variance", ctx_y.get_attr<memory_ptr>("variance") });
+		ctx_dx.add_input(dy);
+		ctx_dx.add_input(x);
+		ctx_dx.add_output(dx);
+		dx.set_context(ctx_dx);
+		x.set_backprop_node(dx.get_node());
+		x.set_gradient(dx);
         return in_grads;
     }
 };
@@ -37,8 +39,9 @@ Tensor batch_normalize(Tensor x)
 	std::string op_name;
 	op_name = x.shape().size() == 4 ? "BatchNormSpatial" : "BatchNorm";
 	OpAlgoContext ctx(op_name);
-	y.add_child(x);
-	Tensor::AssignOpFunctor(y, ctx);
+	ctx.add_input(x);
+	ctx.add_output(y);
+	y.set_context(ctx);
 	return y;
 }
 

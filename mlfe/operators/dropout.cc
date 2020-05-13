@@ -8,17 +8,18 @@ class DropoutGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
         VecTensor in_grads;
-        auto x = y.get_children()[0];
+        auto ctx_y = y.get_context();
+        auto x = ctx_y.get_input(0);
         auto dx = functional::create_variable(x.shape());
-        OpAlgoContext ctx("DropoutGradient");
-        auto mask = y.get_context().get_attr<Tensor>("mask");
-        auto prob = y.get_context().get_attr<Tensor>("prob");
-        dx.add_child(x);
-        dx.add_child(dy);
-        ctx.add_attr({"mask", mask});
-        ctx.add_attr({"prob", prob});
-        Tensor::AssignOpFunctor(dx, ctx);
-        in_grads.push_back(dx);
+        OpAlgoContext ctx_dx("DropoutGradient");
+        ctx_dx.add_input(x);
+        ctx_dx.add_input(dy);
+        ctx_dx.add_output(dx);
+        ctx_dx.add_attr({"mask", ctx_y.get_attr<Tensor>("mask")});
+        ctx_dx.add_attr({"prob", ctx_y.get_attr<Tensor>("prob")});
+        dx.set_context(ctx_dx);
+        x.set_backprop_node(dx.get_node());
+        x.set_gradient(dx);
         return in_grads;
     }
 };
@@ -29,10 +30,11 @@ Tensor dropout(Tensor x, Tensor prob){
     Tensor y = create_variable(x.shape());
     Tensor dropout_mask = create_variable(x.shape());
     OpAlgoContext ctx("Dropout");
-    y.add_child(x);
+    ctx.add_input(x);
+    ctx.add_output(y);
     ctx.add_attr({"mask", dropout_mask});
     ctx.add_attr({"prob", prob});
-    Tensor::AssignOpFunctor(y, ctx);
+    y.set_context(ctx);
 
     return y;
 }
