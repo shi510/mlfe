@@ -1,4 +1,3 @@
-#pragma once
 #include "mlfe/module/callbacks/reduce_lr.h"
 #include "mlfe/module/model.h"
 #include <limits>

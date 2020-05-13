@@ -111,7 +111,10 @@ private:
     void init();
 
     template <class T>
-    static void destruct(void *ptr);
+    static void destruct(void *ptr)
+    {
+        delete static_cast<T *>(ptr);
+    }
 
     void set(void *val_ptr, destructor_fn fn);
 
@@ -140,12 +143,6 @@ template <typename T>
 T *attribute::item::data() const
 {
     return static_cast<T *>(get());
-}
-
-template <class T>
-static void attribute::item::destruct(void *ptr)
-{
-    delete static_cast<T *>(ptr);
 }
 
 } // end namespace mlfe
