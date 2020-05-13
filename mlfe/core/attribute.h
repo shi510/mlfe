@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 #include <functional>
-#include <unordered_map>
 
 namespace mlfe{
 class Attribution;
@@ -75,20 +74,20 @@ private:
 
 class attribute final
 {
-    template <typename T1, typename T2>
-    using umap = std::unordered_map<T1, T2>;
-
 public:
     class item;
-    
+
+    attribute();
+
     void add(std::string name, item attr_val);
-    
+
     item get(std::string key);
 
     bool has(std::string key) const;
 
 private:
-    umap<std::string, item> _attrs;
+    struct pimpl;
+    std::shared_ptr<pimpl> __p;
 };
 
 class attribute::item final

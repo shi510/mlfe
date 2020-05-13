@@ -1,4 +1,5 @@
 #include "attribute.h"
+#include <unordered_map>
 
 namespace mlfe{
 
@@ -29,23 +30,30 @@ Attribution::AttrHolderPtr Attribution::Attr() const{
     return attr.second;
 }
 
+struct attribute::pimpl
+{
+    std::unordered_map<std::string, item> attrs;
+};
+
+attribute::attribute() : __p(std::make_shared<pimpl>()){}
+
 void attribute::add(std::string name, item attr_val)
 {
-    _attrs[name] = attr_val;
+    __p->attrs[name] = attr_val;
 }
 
 attribute::item attribute::get(std::string key)
 {
-    if(_attrs.find(key) == _attrs.end())
+    if(__p->attrs.find(key) == __p->attrs.end())
     {
         return item();
     }
-    return _attrs[key];
+    return __p->attrs[key];
 }
 
 bool attribute::has(std::string key) const
 {
-    if(_attrs.find(key) == _attrs.end())
+    if(__p->attrs.find(key) == __p->attrs.end())
     {
         return false;
     }
