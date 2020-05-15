@@ -9,7 +9,9 @@ namespace layers{
 class dense final : public layer_impl<dense>
 {
 public:
-	dense(int out_features, std::string name = "dense");
+	dense(int out_features,
+		bool use_bias = true,
+		std::string name = "dense");
 
 	void build(std::vector<int> input_shape);
 
@@ -17,6 +19,7 @@ public:
 
 private:
 	int _out_features;
+	bool __use_bias;
 	Tensor _w, _b;
 	std::mt19937 __rng;
 };

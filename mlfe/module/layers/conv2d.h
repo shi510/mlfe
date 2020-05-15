@@ -13,6 +13,7 @@ public:
 		int kernel,
 		int stride,
 		int padding,
+		bool use_bias = true,
 		std::string name = "conv2d");
 
 	void build(std::vector<int> input_shape);
@@ -24,6 +25,7 @@ private:
 	int __kernel;
 	int __stride;
 	int __padding;
+	bool __use_bias;
 	Tensor __w, __b;
 	std::mt19937 __rng;
 };

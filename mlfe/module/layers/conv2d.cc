@@ -15,6 +15,7 @@ conv2d::conv2d(int out_channels,
 	int kernel,
 	int stride,
 	int padding,
+	bool use_bias,
 	std::string name)
 	: layer_impl<conv2d>(name)
 {
@@ -22,6 +23,7 @@ conv2d::conv2d(int out_channels,
 	__kernel = kernel;
 	__stride = stride;
 	__padding = padding;
+	__use_bias = use_bias;
 }
 
 void conv2d::build(std::vector<int> input_shape)
@@ -34,15 +36,22 @@ void conv2d::build(std::vector<int> input_shape)
 		return dist(__rng);
 	};
 	__w = add_variable("weights", { __out_channels, input_shape[1], __kernel, __kernel }, true);
-	__b = add_variable("bias", { 1, __out_channels, 1, 1 }, true);
 	std::generate(__w.begin<float>(), __w.end<float>(), kaiming_he_fn);
-	std::fill(__b.begin<float>(), __b.end<float>(), 0.1f);
+	if(__use_bias)
+	{
+		__b = add_variable("bias", { 1, __out_channels, 1, 1 }, true);
+		std::fill(__b.begin<float>(), __b.end<float>(), 0.1f);
+	}
 }
 
 Tensor conv2d::call(Tensor input)
 {
 	Tensor y = fn::conv2d(input, __w, {__stride, __stride}, {__padding, __padding});
-	return fn::add(y, fn::broadcast(__b, y.shape()));
+	if(__use_bias)
+	{
+		y = fn::add(y, fn::broadcast(__b, y.shape()));
+	}
+	return y;
 }
 
 } // end namespace layer
