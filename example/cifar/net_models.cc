@@ -10,7 +10,7 @@ using namespace mlfe::module::layers;
 
 Tensor conv_relu_dropout_block(Tensor in, int channels, float drop_ratio)
 {
-	Tensor out = conv2d(channels, 3, 1, 1)(in);
+	Tensor out = conv2d(channels, 3, 1, true)(in);
 	out = relu()(out);
 	out = dropout(drop_ratio)(out);
 	return out;

@@ -14,7 +14,7 @@ namespace fn = functional;
 conv2d::conv2d(int out_channels,
 	int kernel,
 	int stride,
-	int padding,
+	bool same_out,
 	bool use_bias,
 	std::string name)
 	: layer_impl<conv2d>(name)
@@ -22,7 +22,7 @@ conv2d::conv2d(int out_channels,
 	__out_channels = out_channels;
 	__kernel = kernel;
 	__stride = stride;
-	__padding = padding;
+	__same_out = same_out;
 	__use_bias = use_bias;
 }
 
@@ -46,7 +46,7 @@ void conv2d::build(std::vector<int> input_shape)
 
 Tensor conv2d::call(Tensor input)
 {
-	Tensor y = fn::conv2d(input, __w, {__stride, __stride}, {__padding, __padding});
+	Tensor y = fn::conv2d(input, __w, {__stride, __stride}, __same_out);
 	if(__use_bias)
 	{
 		y = fn::add(y, fn::broadcast(__b, y.shape()));

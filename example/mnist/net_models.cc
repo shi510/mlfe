@@ -16,10 +16,10 @@ model simple_net(std::vector<int> input_shape)
 model conv_net(std::vector<int> input_shape)
 {
 	auto in = input(input_shape)();
-	auto out = conv2d(16, 5, 1, 2)(in);
+	auto out = conv2d(16, 5, 1, true)(in);
 	out = maxpool2d(2, 2, 0)(out);
 	out = relu()(out);
-	out = conv2d(24, 5, 1, 2)(out);
+	out = conv2d(24, 5, 1, true)(out);
 	out = maxpool2d(2, 2, 0)(out);
 	out = relu()(out);
 	out = flatten()(out);

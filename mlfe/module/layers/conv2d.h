@@ -12,7 +12,7 @@ public:
 	conv2d(int out_channels,
 		int kernel,
 		int stride,
-		int padding,
+		bool same_out,
 		bool use_bias = true,
 		std::string name = "conv2d");
 
@@ -24,7 +24,7 @@ private:
 	int __out_channels;
 	int __kernel;
 	int __stride;
-	int __padding;
+	bool __same_out;
 	bool __use_bias;
 	Tensor __w, __b;
 	std::mt19937 __rng;

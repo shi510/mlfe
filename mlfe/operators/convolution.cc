@@ -1,6 +1,7 @@
 #include "convolution.h"
 #include "../core/op_algo.h"
 #include "../core/gradient_helper.h"
+#include <cmath>
 
 namespace mlfe{ namespace functional{
 
@@ -51,6 +52,40 @@ Tensor conv2d(Tensor x,
     OpAlgoContext ctx("Convolution");
     ctx.add_attr({"strides", strides});
     ctx.add_attr({"pads", pads});
+    ctx.add_input(x);
+    ctx.add_input(w);
+    ctx.add_output(y);
+    y.set_context(ctx);
+    return y;
+}
+
+Tensor conv2d(Tensor x,
+    Tensor w,
+    std::vector<type::int32::T> strides,
+    bool same_out)
+{
+    auto x_shape = x.shape();
+    auto w_shape = w.shape();
+    int out_w = std::floor(x_shape[2] / (float)strides[0]);
+    int out_h = std::floor(x_shape[3] / (float)strides[1]);
+    int pad_w;
+    int pad_h;
+
+    if(same_out)
+    {
+        pad_w = std::max(out_w * strides[0] + w_shape[2] - x_shape[2], 0) / 2;
+        pad_h = std::max(out_h * strides[1] + w_shape[3] - x_shape[3], 0) / 2;
+    }
+    else
+    {
+        pad_w = pad_h = 0;
+    }
+    out_w = (x_shape[2] - w_shape[2] + 2 * pad_w) / strides[0] + 1;
+    out_h = (x_shape[3] - w_shape[3] + 2 * pad_h) / strides[1] + 1;
+    Tensor y = create_variable({ x_shape[0], w_shape[0], out_h, out_w });
+    OpAlgoContext ctx("Convolution");
+    ctx.add_attr({ "strides", strides });
+    ctx.add_attr({ "pads", std::vector<int>{pad_w, pad_h} });
     ctx.add_input(x);
     ctx.add_input(w);
     ctx.add_output(y);
