@@ -1,6 +1,8 @@
 #ifndef __UTILS_HPP__
 #define __UTILS_HPP__
 #include <string>
+#include <cstdint>
+#include <cmath>
 
 #define __NAME_CONCAT(x, y) x##y
 #define NAME_CONCAT(x, y) __NAME_CONCAT(x, y)
@@ -31,14 +33,16 @@ namespace mlfe{ namespace type{
         return reinterpret_cast<To>(from);
     }
 
-    DECLARE_TYPE_INFO(uint8, unsigned char)
-    DECLARE_TYPE_INFO(uint16, unsigned short)
-    DECLARE_TYPE_INFO(uint32, unsigned int)
-    DECLARE_TYPE_INFO(int8, char)
-    DECLARE_TYPE_INFO(int16, short)
-    DECLARE_TYPE_INFO(int32, int)
-    DECLARE_TYPE_INFO(float32, float)
-    DECLARE_TYPE_INFO(float64, double)
+    DECLARE_TYPE_INFO(uint8, uint8_t)
+    DECLARE_TYPE_INFO(uint16, uint16_t)
+    DECLARE_TYPE_INFO(uint32, uint32_t)
+    DECLARE_TYPE_INFO(uint64, uint64_t)
+    DECLARE_TYPE_INFO(int8, int8_t)
+    DECLARE_TYPE_INFO(int16, int16_t)
+    DECLARE_TYPE_INFO(int32, int32_t)
+    DECLARE_TYPE_INFO(int64, int64_t)
+    DECLARE_TYPE_INFO(float32, float_t)
+    DECLARE_TYPE_INFO(float64, double_t)
 
 } // end namespace type
 
