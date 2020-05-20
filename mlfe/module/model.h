@@ -30,6 +30,12 @@ public:
 				 LossFn loss_fn,
 				 MetricFn metric_fn = nullptr);
 
+	Tensor get_input() const;
+
+	Tensor get_output() const;
+
+	std::string get_name() const;
+
 	template <typename T>
 	std::vector<T> operator()(std::vector<T> x, std::vector<int> shape)
 	{
@@ -147,6 +153,7 @@ private:
 	}
 
 private:
+	std::string __name;
 	Tensor __input;
 	Tensor __output;
 	Tensor __loss;

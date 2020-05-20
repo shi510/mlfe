@@ -11,6 +11,7 @@ model::model(Tensor input, Tensor output, std::string name)
 	__input = input;
 	__output = output;
 	__true = functional::create_variable(__output.shape());
+	__name = name;
 }
 
 void model::compile(
@@ -50,6 +51,21 @@ void model::compile(
 	std::sort(__train_seq.begin(), __train_seq.end(), [](node a, node b) {
 		return a.get_order() < b.get_order();
 		});
+}
+
+Tensor model::get_input() const
+{
+	return __input;
+}
+
+Tensor model::get_output() const
+{
+	return __output;
+}
+
+std::string model::get_name() const
+{
+	return __name;
 }
 
 } // end namespace module
