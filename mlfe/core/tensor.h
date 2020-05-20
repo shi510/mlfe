@@ -70,7 +70,7 @@ public:
 
     int dim(int idx) const;
 
-    std::vector<int> shape() const;
+    const std::vector<int>& shape() const;
 
     type::TypeInfo type() const;
 
