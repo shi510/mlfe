@@ -152,5 +152,79 @@ void col2im<double, CPUContext>(double* data_col,
     }
 }
 
+std::vector<int>
+check_broadcasting(std::vector<int>* a, std::vector<int>* b)
+{
+    std::vector<int> shape;
+    int max = std::max(a->size(), b->size());
+    while (max != a->size()) {
+        a->insert(a->begin(), 1);
+    }
+    while (max != b->size()) {
+        b->insert(b->begin(), 1);
+    }
+    shape.resize(max);
+    for (int n = max - 1; n >= 1; --n) {
+        int a_at = a->at(n);
+        int b_at = b->at(n);
+        if (a_at != 1 && b_at != 1 && a_at != b_at) {
+            return std::vector<int>();
+        }
+        else {
+            shape[n] = std::max(a_at, b_at);
+        }
+    }
+    shape[0] = std::max(a->at(0), b->at(0));
+    return shape;
+}
+
+template <>
+void broadcast<float, CPUContext>(const float* x, float* y,
+    int Nx, int Cx, int Hx, int Wx,
+    int Ny, int Cy, int Hy, int Wy)
+{
+    for (int i = 0; i < Ny; ++i) {
+        for (int j = 0; j < Cy; ++j) {
+            for (int k = 0; k < Hy; ++k) {
+                for (int l = 0; l < Wy; ++l) {
+                    int x_idx = (i % Nx) * Cx * Hx * Wx +
+                        (j % Cx) * Hx * Wx +
+                        (k % Hx) * Wx +
+                        (l % Wx);
+                    int y_idx = i * Cy * Hy * Wy +
+                        j * Hy * Wy +
+                        k * Wy +
+                        l;
+                    y[y_idx] = x[x_idx];
+                }
+            }
+        }
+    }
+}
+
+template <>
+void broadcast_gradient<float, CPUContext>(const float* dy, float* dx,
+    int Ny, int Cy, int Hy, int Wy,
+    int Nx, int Cx, int Hx, int Wx)
+{
+    for (int i = 0; i < Ny; ++i) {
+        for (int j = 0; j < Cy; ++j) {
+            for (int k = 0; k < Hy; ++k) {
+                for (int l = 0; l < Wy; ++l) {
+                    int dx_idx = (i % Nx) * Cx * Hx * Wx +
+                        (j % Cx) * Hx * Wx +
+                        (k % Hx) * Wx +
+                        (l % Wx);
+                    int dy_idx = i * Cy * Hy * Wy +
+                        j * Hy * Wy +
+                        k * Wy +
+                        l;
+                    dx[dx_idx] += dy[dy_idx];
+                }
+            }
+        }
+    }
+}
+
 } /* math */
 } /* mlfe */

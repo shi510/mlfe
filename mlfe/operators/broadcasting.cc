@@ -1,7 +1,10 @@
 #include "broadcasting.h"
 #include "mlfe/core/op_algo.h"
 #include "mlfe/core/gradient_helper.h"
+#include "mlfe/math/transform.h"
 #include <algorithm>
+#include <stdexcept>
+#include <sstream>
 
 namespace mlfe{
 namespace functional{
@@ -27,37 +30,22 @@ public:
 
 REGIST_GRADIENT_HELPER(Broadcasting, BroadcastingGradient)
 
-std::vector<int> check_broadcasting(std::vector<int> a,
-                                    std::vector<int> b
-                                   ){
-    std::vector<int> shape;
-    int max = std::max(a.size(), b.size());
-    while(max != a.size()){
-        a.insert(a.begin(), 1);
-    }
-    while(max != b.size()){
-        b.insert(b.begin(), 1);
-    }
-    shape.resize(max);
-    for(int n = max - 1; n >= 1; --n){
-        int a_at = a[n];
-        int b_at = b[n];
-        if(a_at != 1 && b_at != 1 && a_at != b_at){
-            throw std::string("Can not broadcasting.");
-        }
-        else{
-            shape[n] = std::max(a_at, b_at);
-        }
-    }
-    shape[0] = std::max(a[0], b[0]);
-    return shape;
-}
-
 Tensor broadcast(Tensor x,
                  std::vector<type::int32::T> shape
                  ){
-    check_broadcasting(x.shape(), shape);
-    Tensor y = create_variable(shape);
+    auto x_shape = x.shape();
+    auto bc_shape = math::check_broadcasting(&x_shape, &shape);
+    if (bc_shape.empty())
+    {
+        std::stringstream ss;
+        ss << "Can not broadcast from ";
+        for (auto& v : x.shape()) ss << v << " ";
+        ss << "to ";
+        for (auto& v : shape) ss << v << " ";
+        ss << std::endl;
+        throw std::runtime_error(ss.str());
+    }
+    Tensor y = create_variable(bc_shape);
     OpAlgoContext ctx("Broadcasting");
     ctx.add_input(x);
     ctx.add_output(y);

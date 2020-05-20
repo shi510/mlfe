@@ -150,7 +150,7 @@ int Tensor::dim(int idx) const
     return _pimpl->__shape[idx];
 }
 
-std::vector<int> Tensor::shape() const
+const std::vector<int>& Tensor::shape() const
 {
     return _pimpl->__shape;
 }

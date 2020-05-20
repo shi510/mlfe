@@ -14,66 +14,29 @@ public:
     Broadcasting(OpAlgoContext *oac) : OpAlgo(oac, "Broadcasting"){
         y = oac->get_output(0);
         x = oac->get_input(0);
+        if (x.dims() > 4 || y.dims() > 4) {
+            throw std::runtime_error("broadcasting only supports upto 4 dimensions.");
+        }
+        x_shape.resize(x.shape().size());
+        y_shape.resize(y.shape().size());
+        std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
+        std::copy(y.shape().begin(), y.shape().end(), y_shape.begin());
+        math::check_broadcasting(&x_shape, &y_shape);
     }
 
     void Compute(op_algo_runtime_context& rc) override{
         auto x_ptr = x.device_data<T>();
         auto y_ptr = y.mutable_device_data<T>();
-        int Nx, Cx, Hx, Wx;
-        int Ny, Cy, Hy, Wy;
-
-        switch(y.dims()){
-        case 1:
-            Nx = x.dim(0);
-            Cx = 1;
-            Hx = 1;
-            Wx = 1;
-            Ny = y.dim(0);
-            Cy = 1;
-            Hy = 1;
-            Wy = 1;
-            break;
-        case 2:
-            Nx = x.dim(0);
-            Cx = x.dim(1);
-            Hx = 1;
-            Wx = 1;
-            Ny = y.dim(0);
-            Cy = y.dim(1);
-            Hy = 1;
-            Wy = 1;
-            break;
-        case 3:
-            Nx = x.dim(0);
-            Cx = x.dim(1);
-            Hx = x.dim(2);
-            Wx = 1;
-            Ny = y.dim(0);
-            Cy = y.dim(1);
-            Hy = y.dim(2);
-            Wy = 1;
-            break;
-        case 4:
-            Nx = x.dim(0);
-            Cx = x.dim(1);
-            Hx = x.dim(2);
-            Wx = x.dim(3);
-            Ny = y.dim(0);
-            Cy = y.dim(1);
-            Hy = y.dim(2);
-            Wy = y.dim(3);
-            break;
-        default:
-            throw std::string("broadcasting only supports upto 4 dimensions.");
-        }
 
         math::broadcast<T, CUDAContext>(x_ptr, y_ptr,
-                                        Nx, Cx, Hx, Wx,
-                                        Ny, Cy, Hy, Wy);
+            x_shape[0], x_shape[1], x_shape[2], x_shape[3],
+            y_shape[0], y_shape[1], y_shape[2], y_shape[3]);
     }
 private:
     Tensor x;
     Tensor y;
+    std::vector<int> x_shape;
+    std::vector<int> y_shape;
 };
 
 REGIST_OP_ALGO(Broadcasting)
@@ -93,71 +56,33 @@ public:
     BroadcastingGrad(OpAlgoContext *oac) : OpAlgo(oac){
         dx = oac->get_output(0);
         dy = oac->get_input(0);
+        if (dy.dims() > 4 || dx.dims() > 4) {
+            throw std::runtime_error("broadcasting only supports upto 4 dimensions.");
+        }
+        dy_shape.resize(dy.dims());
+        dx_shape.resize(dx.dims());
+        std::copy(dy.shape().begin(), dy.shape().end(), dy_shape.begin());
+        std::copy(dx.shape().begin(), dx.shape().end(), dx_shape.begin());
+        math::check_broadcasting(&dx_shape, &dy_shape);
     }
 
     void Compute(op_algo_runtime_context& rc) override{
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
-        int Nx, Cx, Hx, Wx;
-        int Ny, Cy, Hy, Wy;
-
-        switch(dy.dims()){
-        case 1:
-            Nx = dx.dim(0);
-            Cx = 1;
-            Hx = 1;
-            Wx = 1;
-            Ny = dy.dim(0);
-            Cy = 1;
-            Hy = 1;
-            Wy = 1;
-            break;
-        case 2:
-            Nx = dx.dim(0);
-            Cx = dx.dim(1);
-            Hx = 1;
-            Wx = 1;
-            Ny = dy.dim(0);
-            Cy = dy.dim(1);
-            Hy = 1;
-            Wy = 1;
-            break;
-        case 3:
-            Nx = dx.dim(0);
-            Cx = dx.dim(1);
-            Hx = dx.dim(2);
-            Wx = 1;
-            Ny = dy.dim(0);
-            Cy = dy.dim(1);
-            Hy = dy.dim(2);
-            Wy = 1;
-            break;
-        case 4:
-            Nx = dx.dim(0);
-            Cx = dx.dim(1);
-            Hx = dx.dim(2);
-            Wx = dx.dim(3);
-            Ny = dy.dim(0);
-            Cy = dy.dim(1);
-            Hy = dy.dim(2);
-            Wy = dy.dim(3);
-            break;
-        default:
-            throw std::string("broadcasting only supports upto 4 dimensions.");
-        }
 
         // zero
         math::set<T, CUDAContext>(dx.size(), T(0), dx_ptr);
 
         math::broadcast_gradient<T, CUDAContext>(dy_ptr, dx_ptr,
-                                                 Ny, Cy, Hy, Wy,
-                                                 Nx, Cx, Hx, Wx);
-
+            dy_shape[0], dy_shape[1], dy_shape[2], dy_shape[3],
+            dx_shape[0], dx_shape[1], dx_shape[2], dx_shape[3]);
     }
 
 private:
     Tensor dy;
     Tensor dx;
+    std::vector<int> dy_shape;
+    std::vector<int> dx_shape;
 };
 
 REGIST_OP_GRAD_ALGO(Broadcasting)

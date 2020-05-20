@@ -3,6 +3,7 @@
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/device_context/cuda_context.h"
 #include "mlfe/math/blas.h"
+#include "mlfe/math/transform.h"
 
 namespace mlfe{
 namespace algorithm_cuda{
@@ -80,6 +81,97 @@ ADD_BASIC_OP(Mul)
 ADD_BASIC_OP(Div)
 
 #undef ADD_BASIC_OP
+
+template <class Tp>
+class AddWithBroadcast : public OpAlgo{
+using T = typename Tp::T;
+public:
+    AddWithBroadcast(OpAlgoContext *oac)
+        : OpAlgo(oac, "AddWithBroadcast"){
+        y = oac->get_output(0);
+        x1 = oac->get_input(0);
+        x2 = oac->get_input(1);
+        size = y.size();
+        from_shape.resize(x2.dims());
+        to_shape.resize(y.dims());
+        std::copy(x2.shape().begin(), x2.shape().end(), from_shape.begin());
+        std::copy(y.shape().begin(), y.shape().end(), to_shape.begin());
+        math::check_broadcasting(&from_shape, &to_shape);
+    }
+    void Compute(op_algo_runtime_context& rc) override {
+        auto x1_ptr = x1.device_data<T>();
+        auto x2_ptr = x2.device_data<T>();
+        auto y_ptr = y.mutable_device_data<T>();
+        math::broadcast<T, CUDAContext>(x2_ptr, y_ptr,
+            from_shape[0], from_shape[1], from_shape[2], from_shape[3],
+            to_shape[0], to_shape[1], to_shape[2], to_shape[3]);
+        math::AddCuda<T>(size, x1_ptr, y_ptr, y_ptr);
+    }
+private:
+    Tensor x1;
+    Tensor x2;
+    Tensor y;
+    std::vector<int> from_shape;
+    std::vector<int> to_shape;
+    int size;
+};
+REGIST_OP_ALGO(AddWithBroadcast)
+    .Input("X1", "float32")
+    .Input("X2", "float32")
+    .Output("Y", type::float32::string)
+    .Device("CUDA")
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
+        using T = AddWithBroadcast<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
+template <class Tp>
+class AddWithBroadcastGrad : public OpAlgo {
+    using T = typename Tp::T;
+public:
+    AddWithBroadcastGrad(OpAlgoContext* oac)
+        : OpAlgo(oac, "AddWithBroadcastGrad") {
+        dx1 = oac->get_output(0);
+        dx2 = oac->get_output(1);
+        dy = oac->get_input(0);
+        from_shape.resize(dx2.dims());
+        to_shape.resize(dy.dims());
+        std::copy(dx2.shape().begin(), dx2.shape().end(), from_shape.begin());
+        std::copy(dy.shape().begin(), dy.shape().end(), to_shape.begin());
+        math::check_broadcasting(&from_shape, &to_shape);
+        
+    }
+    void Compute(op_algo_runtime_context& rc) override {
+        auto dx1_ptr = dx1.mutable_device_data<T>();
+        auto dx2_ptr = dx2.mutable_device_data<T>();
+        auto dy_ptr = dy.device_data<T>();
+
+        copy(dy.get_memory(), dx1.get_memory());
+        math::set<T, CUDAContext>(dx2.size(), T(0), dx2_ptr);
+        math::broadcast_gradient<T, CUDAContext>(dy_ptr, dx2_ptr,
+            to_shape[0], to_shape[1], to_shape[2], to_shape[3],
+            from_shape[0], from_shape[1], from_shape[2], from_shape[3]);
+    }
+
+private:
+    Tensor dx1;
+    Tensor dx2;
+    Tensor dy;
+    std::vector<int> from_shape;
+    std::vector<int> to_shape;
+};
+
+REGIST_OP_GRAD_ALGO(AddWithBroadcast)
+    .Input("X1", "float32")
+    .Input("X2", "float32")
+    .Output("Y", type::float32::string)
+    .Device("CUDA")
+    .CreatorFn([](OpAlgoContext* oac) -> std::shared_ptr<OpAlgo> {
+    using T = AddWithBroadcastGrad<type::float32>;
+    return std::make_shared<T>(oac);
+        })
+    .Finish();
 
 #if 0
 template <class Tp>

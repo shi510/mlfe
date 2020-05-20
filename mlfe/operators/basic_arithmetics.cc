@@ -1,9 +1,12 @@
 #include "mlfe/core/op_algo.h"
 #include "mlfe/core/gradient_helper.h"
+#include "mlfe/math/transform.h"
 #include "basic_arithmetics.h"
 #include "matmul.h"
 #include "initializer.h"
 #include <algorithm>
+#include <sstream>
+#include <stdexcept>
 
 namespace mlfe{
 namespace functional{
@@ -91,6 +94,34 @@ public:
 
 REGIST_GRADIENT_HELPER(ElementwiseDiv, ElementwiseDivGradient)
 
+class AddWithBroadcastGradient : public GradientHelper {
+public:
+    VecTensor compute_gradient(Tensor y, Tensor dy) override {
+        VecTensor in_grads;
+        auto ctx_y = y.get_context();
+        auto x1 = ctx_y.get_input(0);
+        auto x2 = ctx_y.get_input(1);
+        Tensor dx1 = functional::create_variable(x1.shape());
+        Tensor dx2 = functional::create_variable(x2.shape());
+        OpAlgoContext ctx_x_grad("AddWithBroadcastGradient");
+        ctx_x_grad.add_input(dy);
+        ctx_x_grad.add_input(x1);
+        ctx_x_grad.add_input(x2);
+        ctx_x_grad.add_input(y);
+        ctx_x_grad.add_output(dx1);
+        ctx_x_grad.add_output(dx2);
+        dx1.set_context(ctx_x_grad);
+        dx2.set_context(ctx_x_grad);
+        x1.set_backprop_node(dx1.get_node());
+        x1.set_gradient(dx1);
+        x2.set_backprop_node(dx2.get_node());
+        x2.set_gradient(dx2);
+        return in_grads;
+    }
+};
+
+REGIST_GRADIENT_HELPER(AddWithBroadcast, AddWithBroadcastGradient)
+
 class AddNGradient : public GradientHelper{
 public:
     VecTensor compute_gradient(Tensor y, Tensor dy) override{
@@ -177,10 +208,11 @@ Tensor add(Tensor x1, Tensor x2){
         max_shape = x2_shape;
         min_shape = x1_shape;
     }
-    y = functional::create_variable(max_shape);
+    
     if(max_dim == 4 && min_dim == 1){
         if(max_shape[1] == min_shape[0]){
             OpAlgoContext cxt("BatchedMatrixVectorAdd");
+            y = functional::create_variable(max_shape);
             cxt.add_input(x1);
             cxt.add_input(x2);
             cxt.add_output(y);
@@ -197,6 +229,7 @@ Tensor add(Tensor x1, Tensor x2){
     else if(max_dim == 2 && min_dim == 1){
         if(max_shape[1] == min_shape[0]){
             OpAlgoContext cxt("MatrixVectorAdd");
+            y = functional::create_variable(max_shape);
             cxt.add_input(x1);
             cxt.add_input(x2);
             cxt.add_output(y);
@@ -210,8 +243,30 @@ Tensor add(Tensor x1, Tensor x2){
             throw err;
         }
     }
-    else if(max_dim == min_dim){
+    else if(max_dim == min_dim && x1.size() == x2.size()){
         OpAlgoContext cxt("ElementwiseAdd");
+        y = functional::create_variable(max_shape);
+        cxt.add_input(x1);
+        cxt.add_input(x2);
+        cxt.add_output(y);
+        y.set_context(cxt);
+    }
+    else {
+        auto x1_shape = x1.shape();
+        auto x2_shape = x2.shape();
+        auto bc_shape = math::check_broadcasting(&x1_shape, &x2_shape);
+        if (bc_shape.empty())
+        {
+            std::stringstream ss;
+            ss << "Can not broadcast from ";
+            for (auto& v : x1.shape()) ss << v << " ";
+            ss << "to ";
+            for (auto& v : x2.shape()) ss << v << " ";
+            ss << std::endl;
+            throw std::runtime_error(ss.str());
+        }
+        OpAlgoContext cxt("AddWithBroadcast");
+        y = functional::create_variable(bc_shape);
         cxt.add_input(x1);
         cxt.add_input(x2);
         cxt.add_output(y);

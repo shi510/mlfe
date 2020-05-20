@@ -1,5 +1,6 @@
 #ifndef __TRANSFORM_HPP__
 #define __TRANSFORM_HPP__
+#include <vector>
 
 namespace mlfe{ namespace math{
 
@@ -35,13 +36,15 @@ void MaxPoolGradient(
     const int stride_h, const int stride_w, const int pad_h, const int pad_w,
     float *dx);
 
+std::vector<int> check_broadcasting(std::vector<int>* a, std::vector<int>* b);
+
 template <class T, class D>
-void broadcast(const float *x, float *y,
+void broadcast(const T *x, T *y,
                int Nx, int Cx, int Hx, int Wx,
                int Ny, int Cy, int Hy, int Wy);
 
 template <class T, class D>
-void broadcast_gradient(const float *dy, float *dx,
+void broadcast_gradient(const T* dy, T* dx,
                         int Ny, int Cy, int Hy, int Wy,
                         int Nx, int Cx, int Hx, int Wx);
 

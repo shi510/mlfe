@@ -49,7 +49,7 @@ Tensor conv2d::call(Tensor input)
 	Tensor y = fn::conv2d(input, __w, {__stride, __stride}, __same_out);
 	if(__use_bias)
 	{
-		y = fn::add(y, fn::broadcast(__b, y.shape()));
+		y = fn::add(y, __b);
 	}
 	return y;
 }
