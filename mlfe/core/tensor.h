@@ -17,6 +17,8 @@ namespace functional{
 
 Tensor create_variable(std::vector<int> shape, const bool trainable = false);
 
+Tensor create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable = false);
+
 Tensor reshape(Tensor x, std::vector<int> shape);
 
 } // end namespace functional
@@ -127,6 +129,7 @@ protected:
 
 private:
     friend Tensor functional::create_variable(std::vector<int>, const bool trainable);
+    friend Tensor functional::create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable);
     friend Tensor functional::reshape(Tensor x, std::vector<int> shape);
     friend struct std::hash<Tensor>;
     struct impl;

@@ -272,21 +272,37 @@ namespace functional{
 Tensor create_variable(std::vector<int> shape, const bool trainable){
     Tensor var;
     OpAlgoContext ctx("Identity");
+    ctx.add_output(var);
     var.set_trainable(trainable);
     var.resize(shape);
     var.set_context(ctx);
     return var;
 }
 
+Tensor create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable){
+    Tensor var;
+    OpAlgoContext ctx("Identity");
+    ctx.add_output(var);
+    var.set_trainable(trainable);
+    var.resize(shape, ti);
+    var.set_context(ctx);
+    return var;
+}
+
 Tensor reshape(Tensor x, std::vector<int> shape){
+    OpAlgoContext ctx("Reshape");
+    Tensor shape_t = create_variable({ (int)shape.size() }, type::int64());
     Tensor y;
+    for(int n = 0; n < shape.size(); ++n){
+        shape_t.mutable_data<int64_t>()[n] = shape[n];
+    }
     y._pimpl->_algo = nullptr;
     y._pimpl->_gradient = nullptr;
     y._pimpl->_mem = x._pimpl->_mem;
     y._pimpl->__size = x.size();
     y._pimpl->__shape = shape;
-    OpAlgoContext ctx("Reshape");
     ctx.add_input(x);
+    ctx.add_input(shape_t);
     ctx.add_output(y);
     y.set_context(ctx);
     y.get_node().set_task(make_task([]() {}));
