@@ -89,7 +89,7 @@ public:
         if (y_memory_reorder != y_memory){
             net.push_back(reorder(*y_memory_reorder, *y_memory));
         }
-        y.get_context().add_attr({"mkldnn_ws", ws_mem});
+		oac->add_attr({"mkldnn_ws", ws_mem});
     }
 
     void Compute(op_algo_runtime_context& rc) override{
@@ -165,8 +165,7 @@ public:
         x = oac->get_input(0);
         y = oac->get_input(1);
         dy = oac->get_input(2);
-        ws_mem = y.get_context().template get_attr
-        <std::shared_ptr<mkldnn::memory>>("mkldnn_ws");
+        ws_mem = oac->get_attr<std::shared_ptr<mkldnn::memory>>("mkldnn_ws");
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
         
         dx_memory = make_smem(make_mem_prim_desc(dx.shape(), data_order::nchw),
