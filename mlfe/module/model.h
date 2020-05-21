@@ -54,6 +54,38 @@ public:
 	}
 
 	template <typename _Callable>
+	void evaluate(
+		_Callable valid_set,
+		const int batch_size,
+		util::template_unpacker<callback> callbacks = {})
+	{
+		typedef typename std::remove_reference<
+			decltype(std::get<0>(valid_set(0))[0])>::type _TypeX;
+		typedef typename std::remove_reference<
+			decltype(std::get<1>(valid_set(0))[0])>::type _TypeY;
+		std::map<std::string, float> logs;
+		std::for_each(callbacks.params.begin(), callbacks.params.end(),
+			[this](std::shared_ptr<callback> cb) {cb->set_model(this); });
+		std::for_each(callbacks.params.begin(), callbacks.params.end(),
+			[&logs](std::shared_ptr<callback> cb) {cb->on_test_begin(0, logs); });
+		auto [valid_loss, valid_acc] = __iter<_Callable, _TypeX, _TypeY>(
+			valid_set, valid_set.size() / batch_size, false);
+		std::for_each(callbacks.params.begin(), callbacks.params.end(),
+			[&logs](std::shared_ptr<callback> cb) {cb->on_test_end(0, logs); });
+		if (__metric_fn)
+		{
+			logs["valid/accuracy"] = valid_acc;
+		}
+		logs["valid/loss"] = valid_loss;
+
+		std::cout << "valid loss : " << valid_loss << std::endl;
+		if (__metric_fn)
+		{
+			std::cout << "valid accuracy : " << valid_acc << std::endl;
+		}
+	}
+
+	template <typename _Callable>
 	void fit(
 		_Callable train_set,
 		_Callable valid_set,
