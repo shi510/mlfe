@@ -36,9 +36,7 @@ REGIST_GRADIENT_HELPER(BatchNormSpatial, BatchNormGradient)
 Tensor batch_normalize(Tensor x)
 {
 	Tensor y = create_variable(x.shape());
-	std::string op_name;
-	op_name = x.shape().size() == 4 ? "BatchNormSpatial" : "BatchNorm";
-	OpAlgoContext ctx(op_name);
+	OpAlgoContext ctx("BatchNormSpatial");
 	ctx.add_input(x);
 	ctx.add_output(y);
 	y.set_context(ctx);

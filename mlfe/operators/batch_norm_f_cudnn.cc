@@ -20,16 +20,23 @@ public:
 			return type_str == type::float32::string ? 
 				CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
 		};
+		std::vector<int> x_shape;
 		y = oac->get_output(0);
 		x = oac->get_input(0);
-		_scales_ptr = create_memory(x.shape()[1] * sizeof(T));
-		_biases_ptr = create_memory(x.shape()[1] * sizeof(T));
-		_running_mean_ptr = create_memory(x.shape()[1] * sizeof(T));
-		_running_variance_ptr = create_memory(x.shape()[1] * sizeof(T));
-		_mean_ptr = create_memory(x.shape()[1] * sizeof(T));
-		_variance_ptr = create_memory(x.shape()[1] * sizeof(T));
-		math::set<T, CUDAContext>(x.shape()[1], 1.f, _scales_ptr->mutable_device_data<float>());
-		math::set<T, CUDAContext>(x.shape()[1], 0.f, _biases_ptr->mutable_device_data<float>());
+		x_shape.resize(x.dims());
+		std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
+		if(x_shape.size() == 2){
+			x_shape.push_back(1);
+			x_shape.push_back(1);
+		}
+		_scales_ptr = create_memory(x_shape[1] * sizeof(T));
+		_biases_ptr = create_memory(x_shape[1] * sizeof(T));
+		_running_mean_ptr = create_memory(x_shape[1] * sizeof(T));
+		_running_variance_ptr = create_memory(x_shape[1] * sizeof(T));
+		_mean_ptr = create_memory(x_shape[1] * sizeof(T));
+		_variance_ptr = create_memory(x_shape[1] * sizeof(T));
+		math::set<T, CUDAContext>(x_shape[1], 1.f, _scales_ptr->mutable_device_data<float>());
+		math::set<T, CUDAContext>(x_shape[1], 0.f, _biases_ptr->mutable_device_data<float>());
 		oac->add_attr({ "scales", _scales_ptr });
 		oac->add_attr({ "biases", _biases_ptr });
 		oac->add_attr({ "running_mean", _running_mean_ptr });
@@ -42,12 +49,12 @@ public:
 		cudnnSetTensor4dDescriptor(_dst_desc,
 			CUDNN_TENSOR_NCHW,
 			cudnn_type(Tp::string),
-			x.shape()[0], x.shape()[1],
-			x.shape()[2], x.shape()[3]);
+			x_shape[0], x_shape[1],
+			x_shape[2], x_shape[3]);
 		cudnnSetTensor4dDescriptor(_norm_desc,
 			CUDNN_TENSOR_NCHW,
 			cudnn_type(Tp::string),
-			1, x.shape()[1], 1, 1);
+			1, x_shape[1], 1, 1);
 	}
 
 	void Compute(op_algo_runtime_context& rc) override
@@ -137,29 +144,36 @@ public:
 			return type_str == type::float32::string ?
 				CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
 		};
+		std::vector<int> x_shape;
 		dx = oac->get_output(0);
 		dy = oac->get_input(0);
 		x = oac->get_input(1);
+		x_shape.resize(x.dims());
+		std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
+		if(x_shape.size() == 2){
+			x_shape.push_back(1);
+			x_shape.push_back(1);
+		}
 		_scales_ptr = oac->get_attr<memory_ptr>("scales");
 		_biases_ptr = oac->get_attr<memory_ptr>("biases");
 		_running_mean_ptr = oac->get_attr<memory_ptr>("running_mean");
 		_running_variance_ptr = oac->get_attr<memory_ptr>("running_variance");
 		_mean_ptr = oac->get_attr<memory_ptr>("mean");
 		_variance_ptr = oac->get_attr<memory_ptr>("variance");
-		_scales_diff_ptr = create_memory(x.shape()[1] * sizeof(T));
-		_biases_diff_ptr = create_memory(x.shape()[1] * sizeof(T));
+		_scales_diff_ptr = create_memory(x_shape[1] * sizeof(T));
+		_biases_diff_ptr = create_memory(x_shape[1] * sizeof(T));
 		cudnnCreate(&_handle);
 		cudnnCreateTensorDescriptor(&_dst_desc);
 		cudnnCreateTensorDescriptor(&_norm_desc);
 		cudnnSetTensor4dDescriptor(_dst_desc,
 			CUDNN_TENSOR_NCHW,
 			cudnn_type(Tp::string),
-			x.shape()[0], x.shape()[1],
-			x.shape()[2], x.shape()[3]);
+			x_shape[0], x_shape[1],
+			x_shape[2], x_shape[3]);
 		cudnnSetTensor4dDescriptor(_norm_desc,
 			CUDNN_TENSOR_NCHW,
 			cudnn_type(Tp::string),
-			1, x.shape()[1], 1, 1);
+			1, x_shape[1], 1, 1);
 	}
 
 	void Compute(op_algo_runtime_context& rc) override
