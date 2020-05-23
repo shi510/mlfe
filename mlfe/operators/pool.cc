@@ -19,11 +19,7 @@ public:
         ctx.add_input(y);
         ctx.add_input(dy);
         ctx.add_output(dx);
-        ctx.add_attr({ "kernel", y_ctx.get_attr<Ints>("kernel") });
-        ctx.add_attr({ "stride", y_ctx.get_attr<Ints>("stride") });
-        ctx.add_attr({ "padding", y_ctx.get_attr<Ints>("padding") });
-		ctx.add_attr({ "mkldnn_ws", y_ctx.get_attr<std::shared_ptr<mkldnn::memory>>("mkldnn_ws")});
-        ctx.add_attr({ "idx", idx });
+        ctx.set_attrs(y_ctx.get_attrs());
         dx.set_context(ctx);
         x.set_backprop_node(dx.get_node());
         x.set_gradient(dx);

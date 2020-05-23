@@ -113,6 +113,16 @@ void OpAlgoContext::add_attr(Attribution attr){
     _attrs.SetAttr(attr);
 }
 
+Attributes OpAlgoContext::get_attrs() const
+{
+    return _attrs;
+}
+
+void OpAlgoContext::set_attrs(Attributes attrs)
+{
+    _attrs = attrs;
+}
+
 using OAR = OpAlgoRegistry;
 
 void OAR::Register(std::string name, OpAlgoSchema oac){

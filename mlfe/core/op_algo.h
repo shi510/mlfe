@@ -106,12 +106,15 @@ public:
 
     void add_attr(Attribution attr);
 
+    Attributes get_attrs() const;
+
+    void set_attrs(Attributes attrs);
+
     template <class T>
     T get_attr(std::string name) const;
 
 private:
     std::string _op_name;
-    Workspace _ws;
     Attributes _attrs;
     Tensors _inputs;
     Tensors _outputs;
