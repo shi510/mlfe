@@ -3,7 +3,7 @@ function(find_mkldnn )
     find_path(MKLDNN_INCLUDE_DIR mkldnn.h)
     find_library(MKLDNN_LIB mkldnn)
 
-    if(NOT ${MKLDNN_INCLUDE_DIR} AND NOT ${MKLDNN_LIB})
+    if(MKLDNN_INCLUDE_DIR AND MKLDNN_LIB)
         set(MKLDNN_FOUND TRUE)
     endif()
 
