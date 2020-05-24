@@ -16,6 +16,7 @@ public:
 	Tensor call(Tensor input);
 
 private:
+	Tensor __scales, __biases;
 };
 
 } // end namespace layer

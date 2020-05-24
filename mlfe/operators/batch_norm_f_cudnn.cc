@@ -23,24 +23,18 @@ public:
 		std::vector<int> x_shape;
 		y = oac->get_output(0);
 		x = oac->get_input(0);
+		scales = oac->get_input(1);
+		biases = oac->get_input(2);
 		x_shape.resize(x.dims());
 		std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
 		if(x_shape.size() == 2){
 			x_shape.push_back(1);
 			x_shape.push_back(1);
 		}
-		_scales_ptr = create_memory(x_shape[1] * sizeof(T));
-		_biases_ptr = create_memory(x_shape[1] * sizeof(T));
-		_running_mean_ptr = create_memory(x_shape[1] * sizeof(T));
-		_running_variance_ptr = create_memory(x_shape[1] * sizeof(T));
+		running_mean = oac->get_attr<Tensor>("running_mean");
+		running_var = oac->get_attr<Tensor>("running_var");
 		_mean_ptr = create_memory(x_shape[1] * sizeof(T));
 		_variance_ptr = create_memory(x_shape[1] * sizeof(T));
-		math::set<T, CUDAContext>(x_shape[1], 1.f, _scales_ptr->mutable_device_data<float>());
-		math::set<T, CUDAContext>(x_shape[1], 0.f, _biases_ptr->mutable_device_data<float>());
-		oac->add_attr({ "scales", _scales_ptr });
-		oac->add_attr({ "biases", _biases_ptr });
-		oac->add_attr({ "running_mean", _running_mean_ptr });
-		oac->add_attr({ "running_variance", _running_variance_ptr });
 		oac->add_attr({ "mean", _mean_ptr });
 		oac->add_attr({ "variance", _variance_ptr });
 		cudnnCreate(&_handle);
@@ -72,11 +66,11 @@ public:
 				_dst_desc,
 				y.mutable_device_data<void>(),
 				_norm_desc,
-				_scales_ptr->device_data<void>(),
-				_biases_ptr->device_data<void>(),
+				scales.device_data<void>(),
+				biases.device_data<void>(),
 				.01,
-				_running_mean_ptr->mutable_device_data<void>(),
-				_running_variance_ptr->mutable_device_data<void>(),
+				running_mean.mutable_device_data<void>(),
+				running_var.mutable_device_data<void>(),
 				.00001,
 				_mean_ptr->mutable_device_data<void>(),
 				_variance_ptr->mutable_device_data<void>());
@@ -92,10 +86,10 @@ public:
 				_dst_desc,
 				y.mutable_device_data<void>(),
 				_norm_desc,
-				_scales_ptr->device_data<void>(),
-				_biases_ptr->device_data<void>(),
-				_running_mean_ptr->device_data<void>(),
-				_running_variance_ptr->device_data<void>(),
+				scales.device_data<void>(),
+				biases.device_data<void>(),
+				running_mean.device_data<void>(),
+				running_var.device_data<void>(),
 				.00001);
 		}
 
@@ -111,10 +105,10 @@ public:
 private:
 	Tensor x;
 	Tensor y;
-	memory_ptr _scales_ptr;
-	memory_ptr _biases_ptr;
-	memory_ptr _running_mean_ptr;
-	memory_ptr _running_variance_ptr;
+	Tensor scales;
+	Tensor biases;
+	Tensor running_mean;
+	Tensor running_var;
 	memory_ptr _mean_ptr;
 	memory_ptr _variance_ptr;
 	cudnnHandle_t _handle;
@@ -146,22 +140,20 @@ public:
 		};
 		std::vector<int> x_shape;
 		dx = oac->get_output(0);
+		dscales = oac->get_output(1);
+		dbiases = oac->get_output(2);
 		dy = oac->get_input(0);
 		x = oac->get_input(1);
+		scales = oac->get_input(2);
+		biases = oac->get_input(3);
 		x_shape.resize(x.dims());
 		std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
 		if(x_shape.size() == 2){
 			x_shape.push_back(1);
 			x_shape.push_back(1);
 		}
-		_scales_ptr = oac->get_attr<memory_ptr>("scales");
-		_biases_ptr = oac->get_attr<memory_ptr>("biases");
-		_running_mean_ptr = oac->get_attr<memory_ptr>("running_mean");
-		_running_variance_ptr = oac->get_attr<memory_ptr>("running_variance");
 		_mean_ptr = oac->get_attr<memory_ptr>("mean");
 		_variance_ptr = oac->get_attr<memory_ptr>("variance");
-		_scales_diff_ptr = create_memory(x_shape[1] * sizeof(T));
-		_biases_diff_ptr = create_memory(x_shape[1] * sizeof(T));
 		cudnnCreate(&_handle);
 		cudnnCreateTensorDescriptor(&_dst_desc);
 		cudnnCreateTensorDescriptor(&_norm_desc);
@@ -193,9 +185,9 @@ public:
 			_dst_desc,
 			dx.mutable_device_data<void>(),
 			_norm_desc,
-			_scales_ptr->device_data<void>(),
-			_scales_diff_ptr->mutable_device_data<void>(),
-			_biases_diff_ptr->mutable_device_data<void>(),
+			scales.device_data<void>(),
+			dscales.mutable_device_data<void>(),
+			dbiases.mutable_device_data<void>(),
 			.00001,
 			_mean_ptr->mutable_device_data<void>(),
 			_variance_ptr->mutable_device_data<void>());
@@ -212,12 +204,10 @@ private:
 	Tensor dx;
 	Tensor dy;
 	Tensor x;
-	memory_ptr _scales_diff_ptr;
-	memory_ptr _biases_diff_ptr;
-	memory_ptr _scales_ptr;
-	memory_ptr _biases_ptr;
-	memory_ptr _running_mean_ptr;
-	memory_ptr _running_variance_ptr;
+	Tensor scales;
+	Tensor biases;
+	Tensor dscales;
+	Tensor dbiases;
 	memory_ptr _mean_ptr;
 	memory_ptr _variance_ptr;
 	cudnnHandle_t _handle;
