@@ -9,5 +9,7 @@ using namespace ::onnx;
 
 bool export_onnx_model(module::model m, std::string onnx_file_name);
 
+module::model import_onnx_model(std::string onnx_file_name);
+
 } // end namesapce onnx
 } // end namespace mlfe
