@@ -127,6 +127,85 @@ private:
 
 bool matmul_op::__is_registered = matmul_op::regist("MatMul");
 
+// conv
+class conv_op : public import_impl<conv_op> {
+public:
+    void convert(const ::onnx::NodeProto& nd_proto,
+        std::map<std::string, Tensor>& inputs) override
+    {
+        auto& x = inputs[nd_proto.input()[0]];
+        auto& w = inputs[nd_proto.input()[1]];
+        auto kshape = get_node_proto_attr<std::vector<int>,
+            ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "kernel_shape");
+        auto strides = get_node_proto_attr<std::vector<int>,
+            ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "strides");
+        auto auto_pad = get_node_proto_attr<std::string,
+            ::onnx::AttributeProto_AttributeType_STRING>(&nd_proto, "auto_pad");
+        bool same_out = auto_pad == "SAME_UPPER" ? true : false;
+        int group = get_node_proto_attr<int,
+            ::onnx::AttributeProto_AttributeType_INT>(&nd_proto, "group");
+        auto dilations = get_node_proto_attr<std::vector<int>,
+            ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "dilations");
+        assert(group == 1);
+        assert(dilations.size() == 2);
+        assert(dilations[0] == 1);
+        assert(dilations[1] == 1);
+        auto y = functional::conv2d(x, w, strides, same_out);
+        inputs[nd_proto.output()[0]] = y;
+    }
+
+private:
+    static bool __is_registered;
+};
+
+bool conv_op::__is_registered = conv_op::regist("Conv");
+
+// maxpool
+class maxpool_op : public import_impl<maxpool_op> {
+public:
+    void convert(const ::onnx::NodeProto& nd_proto,
+        std::map<std::string, Tensor>& inputs) override
+    {
+        auto& x = inputs[nd_proto.input()[0]];
+        auto kshape = get_node_proto_attr<std::vector<int>,
+            ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "kernel_shape");
+        auto strides = get_node_proto_attr<std::vector<int>,
+            ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "strides");
+        auto auto_pad = get_node_proto_attr<std::string,
+            ::onnx::AttributeProto_AttributeType_STRING>(&nd_proto, "auto_pad");
+        bool same_out = auto_pad == "SAME_UPPER" ? true : false;
+        assert(auto_pad == "NOSET");
+        auto y = functional::pool_max(x, kshape, strides, { 0, 0 });
+        inputs[nd_proto.output()[0]] = y;
+    }
+
+private:
+    static bool __is_registered;
+};
+
+bool maxpool_op::__is_registered = maxpool_op::regist("MaxPool");
+
+// batchnormalize
+class batchnorm_op : public import_impl<batchnorm_op> {
+public:
+    void convert(const ::onnx::NodeProto& nd_proto,
+        std::map<std::string, Tensor>& inputs) override
+    {
+        auto& x = inputs[nd_proto.input()[0]];
+        auto& scales = inputs[nd_proto.input()[1]];
+        auto& biases = inputs[nd_proto.input()[2]];
+        auto& mean = inputs[nd_proto.input()[3]];
+        auto& var = inputs[nd_proto.input()[4]];
+        auto y = functional::batch_normalize(x, scales, biases, mean, var);
+        inputs[nd_proto.output()[0]] = y;
+    }
+
+private:
+    static bool __is_registered;
+};
+
+bool batchnorm_op::__is_registered = batchnorm_op::regist("BatchNormalization");
+
 } // end namespace onnx_import
 } // end namesapce onnx
 } // end namespace mlfe
