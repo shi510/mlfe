@@ -18,9 +18,7 @@ struct Tensor::impl{
     impl() : _ctx("unknown"), __ti(type::float32()), __stop_grad(false){}
     memory_ptr _mem;
     OpAlgoContext _ctx;
-    std::shared_ptr<OpAlgo> _algo;
     std::shared_ptr<Tensor> _gradient;
-    Attributes _attrs;
     std::string __name;
     bool __trainable;
     bool __stop_grad;
@@ -77,6 +75,7 @@ void Tensor::set_context(OpAlgoContext ctx)
         this->get_node().add_input(ctx.get_input(n).get_node());
     }
     this->get_node().add_attr("op_name", ctx.get_op_name());
+    this->get_node().add_attr("op", op);
     this->get_node().add_attr("tensor", *this);
 }
 
@@ -296,7 +295,6 @@ Tensor reshape(Tensor x, std::vector<int> shape){
     for(int n = 0; n < shape.size(); ++n){
         shape_t.mutable_data<int64_t>()[n] = shape[n];
     }
-    y._pimpl->_algo = nullptr;
     y._pimpl->_gradient = nullptr;
     y._pimpl->_mem = x._pimpl->_mem;
     y._pimpl->__size = x.size();

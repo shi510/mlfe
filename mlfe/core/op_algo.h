@@ -31,6 +31,8 @@ public:
 
     virtual void Compute(op_algo_runtime_context& rc) = 0;
 
+    virtual void resize(){}
+
     virtual void Compute()
     {
         op_algo_runtime_context rc;

@@ -30,7 +30,8 @@ void model::compile(
 	// make computation graph for gradient nodes.
 	__loss.backprop();
 	// collect all nodes related to trainable variables.
-	for (auto back_node : topological_sort(__loss.get_node()))
+	auto topo_list = topological_sort(__loss.get_node());
+	for (auto back_node : topo_list)
 	{
 		if(back_node.has_attr("trainable"))
 		{
@@ -46,11 +47,21 @@ void model::compile(
 	// remove duplicated nodes.
 	std::sort(__train_seq.begin(), __train_seq.end(), [](node a, node b) {
 		return a.get_name() > b.get_name();
-		});
+	});
 	__train_seq.erase(std::unique(__train_seq.begin(), __train_seq.end()), __train_seq.end());
 	std::sort(__train_seq.begin(), __train_seq.end(), [](node a, node b) {
 		return a.get_order() < b.get_order();
-		});
+	});
+
+	// make forward sequance.
+	__fwd_seq = topo_list;
+	std::sort(__fwd_seq.begin(), __fwd_seq.end(), [](node a, node b) {
+		return a.get_name() > b.get_name();
+	});
+	__fwd_seq.erase(std::unique(__fwd_seq.begin(), __fwd_seq.end()), __fwd_seq.end());
+	std::sort(__fwd_seq.begin(), __fwd_seq.end(), [](node a, node b) {
+		return a.get_order() < b.get_order();
+	});
 }
 
 Tensor model::get_input() const
@@ -66,6 +77,26 @@ Tensor model::get_output() const
 std::string model::get_name() const
 {
 	return __name;
+}
+
+void model::resize(int batch_size)
+{
+	if (__input.shape()[0] != batch_size)
+	{
+		std::vector<int> resize_shape = __input.shape();
+		resize_shape[0] = batch_size;
+		__input.resize(resize_shape);
+		resize_shape = __output.shape();
+		resize_shape[0] = batch_size;
+		__output.resize(resize_shape);
+		__true.resize(resize_shape);
+		for(auto& nd : __fwd_seq){
+			auto op_name = *nd.get_attr("op_name").data<std::string>();
+			auto op = *nd.get_attr("op").data<std::shared_ptr<OpAlgo>>();
+			auto t = *nd.get_attr("tensor").data<Tensor>();
+			op->resize();
+		}
+	}
 }
 
 } // end namespace module

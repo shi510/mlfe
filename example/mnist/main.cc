@@ -12,20 +12,17 @@ using namespace mlfe::module;
 // custom metric function.
 float categorical_accuracy(Tensor y_true, Tensor y_pred);
 
-template <int _BatchSize>
 void train_simplenet(
-	dataset::mnist_gen<_BatchSize> train_set,
-	dataset::mnist_gen<_BatchSize> valid_set);
+	dataset::mnist_gen train_set,
+	dataset::mnist_gen valid_set);
 
-template <int _BatchSize>
 void train_convnet(
-	dataset::mnist_gen<_BatchSize> train_set,
-	dataset::mnist_gen<_BatchSize> valid_set);
+	dataset::mnist_gen train_set,
+	dataset::mnist_gen valid_set);
 
-template <int _BatchSize>
 void train_autoencoder(
-	dataset::mnist_gen<_BatchSize> train_set,
-	dataset::mnist_gen<_BatchSize> valid_set);
+	dataset::mnist_gen train_set,
+	dataset::mnist_gen valid_set);
 
 int main(int argc, char *argv[])
 {
@@ -48,17 +45,17 @@ int main(int argc, char *argv[])
 
 	if(std::string(argv[1]) == "simple")
 	{
-		dataset::mnist_gen<32> train_set(train_x, train_y), valid_set(valid_x, valid_y);
+		dataset::mnist_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
 		train_simplenet(train_set, valid_set);
 	}
 	else if(std::string(argv[1]) == "conv")
 	{
-		dataset::mnist_gen<64> train_set(train_x, train_y), valid_set(valid_x, valid_y);
+		dataset::mnist_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
 		train_convnet(train_set, valid_set);
 	}
 	else if(std::string(argv[1]) == "autoencoder")
 	{
-		dataset::mnist_gen<32> train_set(train_x, train_y, true), valid_set(valid_x, valid_y, true);
+		dataset::mnist_gen train_set(train_x, train_y, true), valid_set(valid_x, valid_y, true);
 		train_autoencoder(train_set, valid_set);
 	}
 	else
@@ -85,28 +82,27 @@ void train_simplenet(
 	net.fit(train_set, valid_set, 2, _BatchSize);
 }
 
-template <int _BatchSize>
 void train_convnet(
-	dataset::mnist_gen<_BatchSize> train_set,
-	dataset::mnist_gen<_BatchSize> valid_set)
+	dataset::mnist_gen train_set,
+	dataset::mnist_gen valid_set)
 {
-	auto net = models::conv_net({_BatchSize, 1, 28, 28});
+	auto net = models::conv_net({32, 1, 28, 28});
 	auto optm = functional::create_gradient_descent_optimizer(2e-2, 0.9);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
-	net.fit(train_set, valid_set, 5, _BatchSize, {tensorboard("mnist_logs")});
+	net.fit(train_set, valid_set, 5, 32,
+		{tensorboard("logs/mnist_conv")});
 }
 
-template <int _BatchSize>
 void train_autoencoder(
-	dataset::mnist_gen<_BatchSize> train_set,
-	dataset::mnist_gen<_BatchSize> valid_set)
+	dataset::mnist_gen train_set,
+	dataset::mnist_gen valid_set)
 {
-	auto net = models::auto_encoder({_BatchSize, 28 * 28});
+	auto net = models::auto_encoder({32, 28 * 28});
 	auto optm = functional::create_gradient_descent_optimizer(1e-2, 0.9);
 	auto loss = functional::squared_difference;
 	net.compile(optm, loss);
-	net.fit(train_set, valid_set, 3, _BatchSize);
+	net.fit(train_set, valid_set, 3, 32);
 }
 
 float categorical_accuracy(Tensor y_true, Tensor y_pred)

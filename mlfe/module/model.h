@@ -36,6 +36,8 @@ public:
 
 	std::string get_name() const;
 
+	void resize(int batch);
+
 	template <typename T>
 	std::vector<T> operator()(std::vector<T> x, std::vector<int> shape)
 	{
@@ -68,8 +70,7 @@ public:
 			[this](std::shared_ptr<callback> cb) {cb->set_model(this); });
 		std::for_each(callbacks.params.begin(), callbacks.params.end(),
 			[&logs](std::shared_ptr<callback> cb) {cb->on_test_begin(0, logs); });
-		auto [valid_loss, valid_acc] = __iter<_Callable, _TypeX, _TypeY>(
-			valid_set, valid_set.size() / batch_size, false);
+		auto [valid_loss, valid_acc] = __iter<_Callable, _TypeX, _TypeY>(valid_set, batch_size, false);
 		std::for_each(callbacks.params.begin(), callbacks.params.end(),
 			[&logs](std::shared_ptr<callback> cb) {cb->on_test_end(0, logs); });
 		if (__metric_fn)
@@ -106,7 +107,7 @@ public:
 			std::for_each(callbacks.params.begin(), callbacks.params.end(),
 				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_train_begin(n, logs); });
 			auto [train_loss, train_acc] = __iter<_Callable, _TypeX, _TypeY>(
-				train_set, train_set.size() / batch_size, true);
+				train_set, batch_size, true);
 			std::for_each(callbacks.params.begin(), callbacks.params.end(),
 				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_train_end(n, logs); });
 			if(__metric_fn)
@@ -118,7 +119,7 @@ public:
 			std::for_each(callbacks.params.begin(), callbacks.params.end(),
 				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_test_begin(n, logs); });
 			auto [valid_loss, valid_acc] = __iter<_Callable, _TypeX, _TypeY>(
-				valid_set, valid_set.size() / batch_size, false);
+				valid_set, batch_size, false);
 			std::for_each(callbacks.params.begin(), callbacks.params.end(),
 				[&logs, &n](std::shared_ptr<callback> cb) {cb->on_test_end(n, logs); });
 			if(__metric_fn)
@@ -151,15 +152,28 @@ public:
 
 private:
 	template <typename _Callable, typename _TypeX, typename _TypeY>
-	std::tuple<float, float> __iter(_Callable &data_set, const int iter, const bool train)
+	void __fill_batch(_Callable& dataset, int batch_idx, int batch_size)
+	{
+		for (int n = 0; n < batch_size; ++n) {
+			auto [x, y] = dataset(batch_idx * n);
+			std::copy(x.begin(), x.end(), __input.begin<_TypeX>() + n * x.size());
+			std::copy(y.begin(), y.end(), __true.begin<_TypeY>() + n * y.size());
+		}
+	}
+
+	template <typename _Callable, typename _TypeX, typename _TypeY>
+	std::tuple<float, float> __iter(_Callable &data_set, const int batch_size, const bool train)
 	{
 		float total_loss = 0.f;
 		float accuracy = 0.f;
-		for (int n = 0; n < iter; ++n)
+		const int num_iter = data_set.size() / batch_size;
+		if(__input.shape()[0] != batch_size)
 		{
-			auto [x, y] = data_set(n);
-			std::copy(x.begin(), x.end(), __input.begin<_TypeX>());
-			std::copy(y.begin(), y.end(), __true.begin<_TypeY>());
+			resize(batch_size);
+		}
+		for (int n = 0; n < num_iter; ++n)
+		{
+			__fill_batch<_Callable, _TypeX, _TypeY>(data_set, n, batch_size);
 			__loss.get_graph()->set_training(train);
 			if(!train)
 			{
@@ -181,7 +195,9 @@ private:
 				accuracy += __metric_fn(__true, __output);
 			}
 		}
-		return std::make_tuple(total_loss / iter, accuracy / iter);
+		total_loss /= num_iter;
+		accuracy /= num_iter;
+		return std::make_tuple(total_loss, accuracy);
 	}
 
 private:
@@ -192,6 +208,7 @@ private:
 	Tensor __true;
 	LossFn __loss_fn;
 	MetricFn __metric_fn;
+	std::vector<node> __fwd_seq;
 	std::vector<node> __train_seq;
 	std::vector<Tensor> __train_vars;
 	std::shared_ptr<opt::optimizer> __optim;

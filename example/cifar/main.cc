@@ -14,10 +14,9 @@ using namespace mlfe::module;
 // custom metric function.
 float categorical_accuracy(Tensor y_true, Tensor y_pred);
 
-template <int _BatchSize>
 void train_convnet(
-	dataset::cifar10_gen<_BatchSize> train_set,
-	dataset::cifar10_gen<_BatchSize> valid_set);
+	dataset::cifar10_gen train_set,
+	dataset::cifar10_gen valid_set);
 
 class custom_histo_weights : public callback
 {
@@ -68,7 +67,7 @@ int main(int argc, char *argv[])
 
 	if (std::string(argv[1]) == "cifar10")
 	{
-		dataset::cifar10_gen<64> train_set(train_x, train_y), valid_set(valid_x, valid_y);
+		dataset::cifar10_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
 		train_convnet(train_set, valid_set);
 	}
 	else
@@ -81,18 +80,19 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-template <int _BatchSize>
 void train_convnet(
-	dataset::cifar10_gen<_BatchSize> train_set,
-	dataset::cifar10_gen<_BatchSize> valid_set)
+	dataset::cifar10_gen train_set,
+	dataset::cifar10_gen valid_set)
 {
-	auto net = models::conv_net({_BatchSize, 3, 32, 32});
+	constexpr int BATCH = 64;
+	auto net = models::conv_bn_net({ BATCH, 3, 32, 32});
+	//auto net = models::conv_dropout_net({ BATCH, 3, 32, 32 });
 	auto optm = functional::create_gradient_descent_optimizer(5e-3, 0.9);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
-	net.fit(train_set, valid_set, 100, _BatchSize,
-		{ reduce_lr("valid/loss", 3), tensorboard("cifar10_logs"),
-			custom_histo_weights("cifar10_logs") });
+	net.fit(train_set, valid_set, 30, BATCH,
+		{ reduce_lr("valid/loss", 3), tensorboard("logs/cifar10_bn"),
+			custom_histo_weights("logs/cifar10_bn") });
 }
 
 

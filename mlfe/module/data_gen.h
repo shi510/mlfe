@@ -12,6 +12,8 @@ class generator
 {
 public:
 	auto operator()(int batch_idx);
+
+	virtual size_t size() const = 0;
 };
 
 template <typename Derived>
