@@ -1,4 +1,5 @@
 #include "mlfe/module/model.h"
+#include "mlfe/core/op_algo.h"
 #include <algorithm>
 
 namespace mlfe

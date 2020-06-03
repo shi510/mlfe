@@ -26,10 +26,10 @@ using namespace mlfe::module::layers;
 model conv_net(std::vector<int> input_shape)
 {
     auto in = input(input_shape)();
-    auto out = conv2d(16, 5, 1, 2)(in);
+    auto out = conv2d(16, 5, 1, true)(in);
     out = maxpool2d(2, 2, 0)(out);
     out = relu()(out);
-    out = conv2d(24, 5, 1, 2)(out);
+    out = conv2d(24, 5, 1, true)(out);
     out = maxpool2d(2, 2, 0)(out);
     out = relu()(out);
     out = flatten()(out);
@@ -54,9 +54,9 @@ read_mnist_dataset("MNIST data path", train_x, train_y, valid_x, valid_y);
 
 Thirdly, implement custom Generator class.  
 See mnist_gen class in examples/mnist/dataset/mnist.h.  
-The mnist_gen class is callable and returns a tuple by operator(int batch_idx).  
+The mnist_gen class is callable and returns a tuple by operator(int idx).  
 ```c++
-dataset::mnist_gen<64> train_set(train_x, train_y), valid_set(valid_x, valid_y);
+dataset::mnist_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
 std::tuple<std::vector<uint8_t>, std::vector<uint8_t>> data_label = train_set(0);
 ```
 
@@ -80,29 +80,29 @@ You can customize callback for tensorboard.
 class custom_histo_weights : public callback
 {
 public:
-	custom_histo_weights(std::string log_dir)
-	{
-		__writer = std::make_shared<util::summary_writer>(log_dir + "/hist/tfevents.pb");
-	}
+    custom_histo_weights(std::string log_dir)
+    {
+        __writer = std::make_shared<util::summary_writer>(log_dir + "/hist/tfevents.pb");
+    }
 
-	void on_epoch_end(const int epoch,
-		const std::map<std::string, float>& logs) override
-	{
-		for (auto& var : __m->get_train_variables())
-		{
-			auto pos1 = var.name().find("dense");
-			auto pos2 = var.name().find("weights");
-			if (pos1 != std::string::npos && pos2 != std::string::npos)
-			{
-				std::vector<float> w(var.size());
-				std::copy(var.cbegin<float>(), var.cend<float>(), w.begin());
-				__writer->add_histogram(var.name(), epoch, w);
-			}
-		}
-	}
+    void on_epoch_end(const int epoch,
+        const std::map<std::string, float>& logs) override
+    {
+        for (auto& var : __m->get_train_variables())
+        {
+            auto pos1 = var.name().find("dense");
+            auto pos2 = var.name().find("weights");
+            if (pos1 != std::string::npos && pos2 != std::string::npos)
+            {
+                std::vector<float> w(var.size());
+                std::copy(var.cbegin<float>(), var.cend<float>(), w.begin());
+                __writer->add_histogram(var.name(), epoch, w);
+            }
+        }
+    }
 
 private:
-	std::shared_ptr<util::summary_writer> __writer;
+    std::shared_ptr<util::summary_writer> __writer;
 };
 ```
 The model class will call on_epoch_end function at every end of epoch.  
