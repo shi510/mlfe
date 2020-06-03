@@ -90,8 +90,8 @@ public:
 	void fit(
 		_Callable train_set,
 		_Callable valid_set,
-		const int epoch,
 		const int batch_size,
+		const int epoch,
 		util::template_unpacker<callback> callbacks = {})
 	{
 		typedef typename std::remove_reference<
