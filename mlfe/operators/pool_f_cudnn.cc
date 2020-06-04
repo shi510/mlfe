@@ -29,16 +29,21 @@ public:
         filters_hw = oac->get_attr<IntVec>("kernel");
         strides = oac->get_attr<IntVec>("stride");
         pads = oac->get_attr<IntVec>("padding");
-        auto cudnn_type = [](std::string type_str){
-            return type_str == type::float32::string ?
-                CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
-        };
-
         cudnnCreate(&_handle);
         cudnnCreateTensorDescriptor(&_x_desc);
         cudnnCreateTensorDescriptor(&_y_desc);
         cudnnCreatePoolingDescriptor(&_pooling_desc);
+        resize();
+    }
 
+    void resize() override{
+        auto cudnn_type = [](std::string type_str) {
+            return type_str == type::float32::string ?
+                CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
+        };
+        int out_h = (x.shape()[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
+        int out_w = (x.shape()[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
+        y.resize({ x.shape()[0], x.shape()[1], out_h, out_w });
         cudnnSetTensor4dDescriptor(
             _x_desc,
             CUDNN_TENSOR_NCHW,

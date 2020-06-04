@@ -16,30 +16,35 @@ class BatchNormSpatial : public OpAlgo
 public:
 	BatchNormSpatial(OpAlgoContext *oac) : OpAlgo(oac, "BatchNormSpatial")
 	{
-		auto cudnn_type = [](std::string type_str) {
-			return type_str == type::float32::string ? 
-				CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
-		};
-		std::vector<int> x_shape;
+
 		y = oac->get_output(0);
 		x = oac->get_input(0);
 		scales = oac->get_input(1);
 		biases = oac->get_input(2);
-		x_shape.resize(x.dims());
-		std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
-		if(x_shape.size() == 2){
-			x_shape.push_back(1);
-			x_shape.push_back(1);
-		}
 		running_mean = oac->get_attr<Tensor>("running_mean");
 		running_var = oac->get_attr<Tensor>("running_var");
-		_mean_ptr = create_memory(x_shape[1] * sizeof(T));
-		_variance_ptr = create_memory(x_shape[1] * sizeof(T));
-		oac->add_attr({ "mean", _mean_ptr });
-		oac->add_attr({ "variance", _variance_ptr });
 		cudnnCreate(&_handle);
 		cudnnCreateTensorDescriptor(&_dst_desc);
 		cudnnCreateTensorDescriptor(&_norm_desc);
+		_mean_ptr = create_memory(x.shape()[1] * sizeof(T));
+		_variance_ptr = create_memory(x.shape()[1] * sizeof(T));
+		oac->add_attr({ "mean", _mean_ptr });
+		oac->add_attr({ "variance", _variance_ptr });
+	}
+
+	void resize() override {
+		auto cudnn_type = [](std::string type_str) {
+			return type_str == type::float32::string ?
+				CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
+		};
+		std::vector<int> x_shape;
+		x_shape.resize(x.dims());
+		std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
+		if (x_shape.size() == 2) {
+			x_shape.push_back(1);
+			x_shape.push_back(1);
+		}
+		y.resize(x.shape());
 		cudnnSetTensor4dDescriptor(_dst_desc,
 			CUDNN_TENSOR_NCHW,
 			cudnn_type(Tp::string),

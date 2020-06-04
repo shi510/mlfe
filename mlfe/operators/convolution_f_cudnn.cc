@@ -24,22 +24,35 @@ public:
 
     Convolution(OpAlgoContext *oac) : OpAlgo(oac, "Convolution"){
         using IntVec = std::vector<type::int32::T>;
-        auto cudnn_type = [](std::string type_str){
-            return type_str == type::float32::string ?
-                CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
-        };
         y = oac->get_output(0);
         x = oac->get_input(0);
         w = oac->get_input(1);
         strides = oac->get_attr<std::vector<int>>("strides");
         pads = oac->get_attr<std::vector<int>>("pads");
-
+        _ws_fwd = nullptr;
+        _ws_fwd_size = 0;
         cudnnCreate(&_handle);
         cudnnCreateTensorDescriptor(&_x_desc);
         cudnnCreateFilterDescriptor(&_w_desc);
         cudnnCreateTensorDescriptor(&_y_desc);
         cudnnCreateConvolutionDescriptor(&_conv_desc);
+        resize();
+    }
 
+    void resize() override{
+        auto cudnn_type = [](std::string type_str) {
+            return type_str == type::float32::string ?
+                CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
+        };
+         if(_ws_fwd){
+             cudaFree(_ws_fwd);
+             _ws_fwd = nullptr;
+             _ws_fwd_size = 0;
+         }
+
+        int out_h = (x.shape()[2] - w.shape()[2] + 2 * pads[0]) / strides[0] + 1;
+        int out_w = (x.shape()[3] - w.shape()[3] + 2 * pads[1]) / strides[1] + 1;
+        y.resize({ x.shape()[0], w.shape()[0], out_h, out_w });
         cudnnSetTensor4dDescriptor(
             _x_desc,
             CUDNN_TENSOR_NCHW,
@@ -105,12 +118,16 @@ public:
     }
 
     ~Convolution(){
+        cudnnDestroy(_handle);
         cudnnDestroyTensorDescriptor(_x_desc);
         cudnnDestroyFilterDescriptor(_w_desc);
         cudnnDestroyTensorDescriptor(_y_desc);
         cudnnDestroyConvolutionDescriptor(_conv_desc);
-        cudaFree(_ws_fwd);
-        cudnnDestroy(_handle);
+        if(_ws_fwd){
+            cudaFree(_ws_fwd);
+            _ws_fwd = nullptr;
+            _ws_fwd_size = 0;
+        }
     }
 
 private:

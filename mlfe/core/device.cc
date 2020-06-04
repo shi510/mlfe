@@ -66,6 +66,8 @@ protected:
 
     void *_mutable_host_data() override;
 
+    void _close();
+
 private:
     void *_h_data;
     void *_d_data;
@@ -108,6 +110,7 @@ void sync_d2d(void *to,
 }
 
 void device_memory::allocate(type::uint32::T byte_size){
+    _close();
     _byte_size = byte_size;
     if(cudaMalloc((void**)&_d_data, _byte_size) != cudaSuccess){
         throw std::string("device_memory::allocate() - "
@@ -121,16 +124,20 @@ void device_memory::allocate(type::uint32::T byte_size){
 }
 
 device_memory::~device_memory(){
+    _close();
+}
+
+void device_memory::_close(){
     _byte_size = 0;
-    if(_d_data != nullptr){
-        if(cudaFree(_d_data) != cudaSuccess){
+    if (_d_data != nullptr) {
+        if (cudaFree(_d_data) != cudaSuccess) {
             throw std::string("device_memory::~device_memory() - "
                 "failed to free memory.");
         }
         _d_data = nullptr;
     }
-    if(_h_data != nullptr){
-        delete[] static_cast<type::uint8::T *>(_h_data);
+    if (_h_data != nullptr) {
+        delete[] static_cast<type::uint8::T*>(_h_data);
         _h_data = nullptr;
     }
 }
@@ -156,6 +163,7 @@ void sync_d2d(void *to,
 }
 
 void device_memory::allocate(type::uint32::T byte_size){
+    _close();
     _byte_size = byte_size;
     _h_data = static_cast<void *>(new type::uint8::T[_byte_size]);
     if(_h_data == nullptr){
@@ -166,9 +174,13 @@ void device_memory::allocate(type::uint32::T byte_size){
 }
 
 device_memory::~device_memory(){
+    _close();
+}
+
+void device_memory::_close() {
     _byte_size = 0;
-    if(_h_data != nullptr){
-        delete[] static_cast<type::uint8::T *>(_h_data);
+    if (_h_data != nullptr) {
+        delete[] static_cast<type::uint8::T*>(_h_data);
         _h_data = nullptr;
         _d_data = nullptr;
     }

@@ -131,7 +131,12 @@ void Tensor::resize(std::vector<int> shape, type::TypeInfo ti)
     _pimpl->__size = std::accumulate(_pimpl->__shape.begin(),
         _pimpl->__shape.end(), 1, std::multiplies<int>());
     _pimpl->__ti = ti;
-    _pimpl->_mem = create_memory(this->size() * this->type().size);
+    if (_pimpl->_mem) {
+        _pimpl->_mem->allocate(this->size() * this->type().size);
+    }
+    else {
+        _pimpl->_mem = create_memory(this->size() * this->type().size);
+    }
 }
 
 int Tensor::size() const

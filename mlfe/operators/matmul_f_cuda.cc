@@ -19,6 +19,10 @@ public:
         y = oac->get_output(0);
         trans_a = oac->get_attr<bool>("trans_a");
         trans_b = oac->get_attr<bool>("trans_b");
+        resize();
+    }
+
+    void resize() override{
         if(trans_a && !trans_b){
             m = a.shape()[1];
             n = b.shape()[1];
@@ -47,6 +51,7 @@ public:
             runtime_assert(k == a.shape()[1],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
+        y.resize({m, n});
     }
 
     void Compute(op_algo_runtime_context& rc) override{

@@ -11,21 +11,24 @@ class ReLU : public OpAlgo{
 using T = typename Tp::T;
 public:
     ReLU(OpAlgoContext *oac) : OpAlgo(oac, "ReLU"){
-        auto cudnn_type = [](std::string type_str){
+        y = oac->get_output(0);
+        x = oac->get_input(0);
+        cudnnCreate(&handle);
+        cudnnCreateTensorDescriptor(&x_desc);
+        cudnnCreateActivationDescriptor(&act_desc);
+    }
+
+    void resize() override{
+        auto cudnn_type = [](std::string type_str) {
             return type_str == type::float32::string ?
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         std::vector<int> shape(4);
-        y = oac->get_output(0);
-        x = oac->get_input(0);
         std::fill(shape.begin(), shape.end(), 1);
-        for(int n = 0; n < x.shape().size(); ++n){
+        for (int n = 0; n < x.shape().size(); ++n) {
             shape[n] = x.shape()[n];
         }
-        cudnnCreate(&handle);
-        cudnnCreateTensorDescriptor(&x_desc);
-        cudnnCreateActivationDescriptor(&act_desc);
-
+        y.resize(x.shape());
         cudnnSetTensor4dDescriptor(
             x_desc,
             CUDNN_TENSOR_NCHW,
@@ -156,27 +159,29 @@ class Sigmoid : public OpAlgo{
 using T = typename Tp::T;
 public:
     Sigmoid(OpAlgoContext *oac) : OpAlgo(oac, "Sigmoid"){
-        auto cudnn_type = [](std::string type_str){
+        y = oac->get_output(0);
+        x = oac->get_input(0);
+        cudnnCreate(&handle);
+        cudnnCreateTensorDescriptor(&x_desc);
+        cudnnCreateActivationDescriptor(&act_desc);
+    }
+
+    void resize() override {
+        auto cudnn_type = [](std::string type_str) {
             return type_str == type::float32::string ?
                 CUDNN_DATA_FLOAT : CUDNN_DATA_DOUBLE;
         };
         std::vector<int> shape(4);
-        y = oac->get_output(0);
-        x = oac->get_input(0);
         std::fill(shape.begin(), shape.end(), 1);
-        for(int n = 0; n < x.shape().size(); ++n){
+        for (int n = 0; n < x.shape().size(); ++n) {
             shape[n] = x.shape()[n];
         }
-        cudnnCreate(&handle);
-        cudnnCreateTensorDescriptor(&x_desc);
-        cudnnCreateActivationDescriptor(&act_desc);
-
+        y.resize(x.shape());
         cudnnSetTensor4dDescriptor(
             x_desc,
             CUDNN_TENSOR_NCHW,
             cudnn_type(Tp::string),
             shape[0], shape[1], shape[2], shape[3]);
-
         cudnnSetActivationDescriptor(act_desc, CUDNN_ACTIVATION_SIGMOID, CUDNN_PROPAGATE_NAN, 0.0);
     }
 

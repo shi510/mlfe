@@ -19,6 +19,10 @@ public:
         size = x1.size();
     }
 
+    void resize() override {
+        y.resize(x1.shape());
+    }
+
     void Compute(op_algo_runtime_context& rc) override{
         auto x1_ptr = x1.device_data<T>();
         auto x2_ptr = x2.device_data<T>();
@@ -81,6 +85,10 @@ public:
     ReduceMean(OpAlgoContext *oac) : OpAlgo(oac, "ReduceMean"){
         y = oac->get_output(0);
         x = oac->get_input(0);
+        resize();
+    }
+
+    void resize() override {
         size = x.size();
     }
 

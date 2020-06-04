@@ -22,7 +22,6 @@ void input::build()
 
 Tensor input::call()
 {
-	build();
 	return _in;
 }
 
