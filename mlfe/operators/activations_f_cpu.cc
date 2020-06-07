@@ -12,7 +12,12 @@ public:
     ReLU(OpAlgoContext *oac) : OpAlgo(oac, "ReLU"){
         y = oac->get_output(0);
         x = oac->get_input(0);
+        resize();
+    }
+
+    void resize() override {
         size = x.size();
+        y.resize(x.shape());
     }
 
     void Compute(op_algo_runtime_context& rc) override{
@@ -91,7 +96,12 @@ public:
     Sigmoid(OpAlgoContext *oac) : OpAlgo(oac, "Sigmoid"){
         y = oac->get_output(0);
         x = oac->get_input(0);
+        resize();
+    }
+
+    void resize() override {
         size = x.size();
+        y.resize(x.shape());
     }
 
     void Compute(op_algo_runtime_context& rc) override{

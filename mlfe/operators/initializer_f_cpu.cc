@@ -13,6 +13,10 @@ public:
     Constant(OpAlgoContext *oac) : OpAlgo(oac, "Constant"){
         y = oac->get_output(0);
         value = oac->get_attr<float>("value");
+        resize();
+    }
+
+    void resize() override {
         size = y.size();
     }
 

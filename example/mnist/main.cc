@@ -76,7 +76,7 @@ void train_simplenet(
 {
 	constexpr int BATCH = 32;
 	constexpr int EPOCH = 2;
-	auto net = models::simple_net({BATCH, 28 * 28});
+	auto net = models::simple_net({28 * 28});
 	auto optm = functional::create_gradient_descent_optimizer(1e-1, 0);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
@@ -89,7 +89,7 @@ void train_convnet(
 {
 	constexpr int BATCH = 32;
 	constexpr int EPOCH = 5;
-	auto net = models::conv_net({BATCH, 1, 28, 28});
+	auto net = models::conv_net({1, 28, 28});
 	auto optm = functional::create_gradient_descent_optimizer(2e-2, 0.9);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);
@@ -103,7 +103,7 @@ void train_autoencoder(
 {
 	constexpr int BATCH = 32;
 	constexpr int EPOCH = 3;
-	auto net = models::auto_encoder({BATCH, 28 * 28});
+	auto net = models::auto_encoder({28 * 28});
 	auto optm = functional::create_gradient_descent_optimizer(1e-2, 0.9);
 	auto loss = functional::squared_difference;
 	net.compile(optm, loss);

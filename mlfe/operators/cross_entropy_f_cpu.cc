@@ -17,10 +17,14 @@ public:
         loss = oac->get_output(0);
         logit = oac->get_input(0);
         label = oac->get_input(1);
+        resize();
+    }
 
+    void resize() override {
         m = logit.shape()[0];
         n = logit.shape()[1];
         size = m * n;
+        loss.resize({ m });
     }
 
     void Compute(op_algo_runtime_context& rc) override{
@@ -118,6 +122,10 @@ public:
         loss = oac->get_output(0);
         logit = oac->get_input(0);
         label = oac->get_input(1);
+        resize();
+    }
+
+    void resize() override{
         m = logit.shape()[0];
         n = logit.shape()[1];
         size = m * n;
@@ -132,6 +140,7 @@ public:
             static_cast<T>(1),
             sm->mutable_device_data<T>()
             );
+        loss.resize({ m });
     }
 
     void Compute(op_algo_runtime_context& rc) override{

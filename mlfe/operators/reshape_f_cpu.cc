@@ -1,5 +1,7 @@
 #include "../core/op_algo.h"
 #include "../core/device.h"
+#include <numeric>
+#include <stdexcept>
 
 namespace mlfe{
 namespace algorithm_cpu{
@@ -8,18 +10,43 @@ template <class Tp>
 class Reshape : public OpAlgo{
     using T = typename Tp::T;
 public:
-    Reshape(OpAlgoContext *oac) : OpAlgo(oac, "Reshape"){
-        //x = oac->get_input(0);
-        //y = oac->get_output(0);
+    Reshape(OpAlgoContext* oac) : OpAlgo(oac, "Reshape") {
+        x = oac->get_input(0);
+        shape = oac->get_input(1);
+        y = oac->get_output(0);
+        resize();
     }
 
-    // TODO : Do not use Copy.
-    void Compute(op_algo_runtime_context& rc) override{
-        //Device::Copy<Device::CPU>(x->GetDeviceMemory(), y->GetDeviceMemory());
+    void resize() override {
+        auto x_shape = x.shape();
+        auto x_size = x.size();
+        int sum = 1;
+        std::vector<int> new_shape;
+        int neg_axis = -1;
+        for (int n = 0; n < shape.size(); ++n) {
+            auto d = shape.data<int64_t>()[n];
+            if (d == -1 && neg_axis > -1) {
+                throw std::runtime_error("Reshape operator: wrong shape");
+            }
+            else if (d == -1) {
+                neg_axis = n;
+            }
+            new_shape.push_back(d);
+        }
+        if (neg_axis != -1) {
+            sum = std::accumulate(new_shape.begin(), new_shape.begin() + neg_axis,
+                sum, std::multiplies<int>());
+            sum = std::accumulate(new_shape.begin() + neg_axis + 1, new_shape.end(), sum,
+                std::multiplies<int>());
+            new_shape[neg_axis] = x_size / sum;
+        }
+        y.resize(new_shape);
     }
 
+    void Compute(op_algo_runtime_context& rc) override {}
 private:
     Tensor x;
+    Tensor shape;
     Tensor y;
 };
 

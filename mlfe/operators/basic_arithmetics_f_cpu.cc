@@ -95,11 +95,17 @@ public:
         y = oac->get_output(0);
         x1 = oac->get_input(0);
         x2 = oac->get_input(1);
+        resize();
+    }
+
+    void resize() override{
+        auto x1_shape = x1.shape();
+        auto x2_shape = x2.shape();
+        auto y_shape = math::check_broadcasting(&x1_shape , &x2_shape);
+        y.resize(y_shape);
         size = y.size();
-        from_shape.resize(4);
-        to_shape.resize(4);
-        std::fill(from_shape.begin(), from_shape.end(), 1);
-        std::fill(to_shape.begin(), to_shape.end(), 1);
+        from_shape.resize(x2.dims());
+        to_shape.resize(y.dims());
         std::copy(x2.shape().begin(), x2.shape().end(), from_shape.begin());
         std::copy(y.shape().begin(), y.shape().end(), to_shape.begin());
     }
@@ -240,11 +246,16 @@ public:
         y = oac->get_output(0);
         mat = oac->get_input(0);
         vec = oac->get_input(1);
+        resize();
+    }
+
+    void resize() override{
         m = mat.shape()[0];
         n = mat.shape()[1];
         multiplier = create_memory(m * Tp::size);
         math::set<T, CPUContext>(m, T(1), 
                                  multiplier->mutable_device_data<T>());
+        y.resize({ m, n });
     }
 
     void Compute(op_algo_runtime_context& rc) override{

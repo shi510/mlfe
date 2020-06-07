@@ -19,12 +19,16 @@ public:
         strides = oac->get_attr<IntVec>("stride");
         pads = oac->get_attr<IntVec>("padding");
         idx = oac->get_attr<Tensor>("idx");
+        resize();
+    }
 
+    void resize() override {
+        out_h = (x.shape()[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
+        out_w = (x.shape()[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
         in_c = x.shape()[1];
         in_h = x.shape()[2];
         in_w = x.shape()[3];
-        out_h = y.shape()[2];
-        out_w = y.shape()[3];
+        y.resize({ x.shape()[0], x.shape()[1], out_h, out_w });
     }
 
     void Compute(op_algo_runtime_context& rc) override{

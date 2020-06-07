@@ -17,34 +17,39 @@ public:
         y = oac->get_output(0);
         trans_a = oac->get_attr<bool>("trans_a");
         trans_b = oac->get_attr<bool>("trans_b");
-        if(trans_a && !trans_b){
+        resize();
+    }
+
+    void resize() override{
+        if (trans_a && !trans_b) {
             m = a.shape()[1];
             n = b.shape()[1];
             k = a.shape()[0];
             runtime_assert(k == b.shape()[0],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
-        else if(!trans_a && trans_b){
+        else if (!trans_a && trans_b) {
             m = a.shape()[0];
             n = b.shape()[0];
             k = a.shape()[1];
             runtime_assert(k == b.shape()[1],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
-        else if(trans_a && trans_b){
+        else if (trans_a && trans_b) {
             m = a.shape()[1];
             n = b.shape()[0];
             k = a.shape()[0];
             runtime_assert(k == b.shape()[1],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
-        else{
+        else {
             m = a.shape()[0];
             n = b.shape()[1];
             k = a.shape()[1];
             runtime_assert(k == a.shape()[1],
                 "MatMul Op : Matrix Shape A and B not matches.");
         }
+        y.resize({ m, n });
     }
 
     void Compute(op_algo_runtime_context& rc) override{

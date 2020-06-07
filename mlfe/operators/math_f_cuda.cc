@@ -16,10 +16,11 @@ public:
         y = oac->get_output(0);
         x1 = oac->get_input(0);
         x2 = oac->get_input(1);
-        size = x1.size();
+        resize();
     }
 
     void resize() override {
+        size = x1.size();
         y.resize(x1.shape());
     }
 

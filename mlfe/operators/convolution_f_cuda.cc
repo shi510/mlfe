@@ -16,27 +16,30 @@ public:
         y = oac->get_output(0);
         x = oac->get_input(0);
         w = oac->get_input(1);
+        strides = oac->get_attr<std::vector<int>>("strides");
+        pads = oac->get_attr<std::vector<int>>("pads");
+        resize();
+    }
+    
+    void resize() override {
         auto x_shape = x.shape();
         auto w_shape = w.shape();
-        auto y_shape = y.shape();
+        int out_h = (x.shape()[2] - w.shape()[2] + 2 * pads[0]) / strides[0] + 1;
+        int out_w = (x.shape()[3] - w.shape()[3] + 2 * pads[1]) / strides[1] + 1;
+        y.resize({ x.shape()[0], w.shape()[0], out_h, out_w });
         filters_hw.resize(2);
         filters_hw[0] = w_shape[2];
         filters_hw[1] = w_shape[3];
-        strides = oac->get_attr<std::vector<int>>("strides");
-        pads = oac->get_attr<std::vector<int>>("pads");
-
         // Output Filters.
         m = w_shape[0];
         // Output Feature Map Size.
-        n = y_shape[2] * y_shape[3];
+        n = y.shape()[2] * y.shape()[3];
         // Weight Size.
-        k = w_shape[1] * w_shape[2] * w_shape[3];
-
+        k = w.size() / w.shape()[0];
         batch = x_shape[0];
         in_c = x_shape[1];
         in_h = x_shape[2];
         in_w = x_shape[3];
-
         col_buf = create_memory(k * n * Tp::size);
     }
 

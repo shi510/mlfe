@@ -25,7 +25,7 @@ void flatten::build(std::vector<int> input_shape)
 
 Tensor flatten::call(Tensor input)
 {
-	return fn::reshape(input, {__batch, __out_elements});
+	return fn::reshape(input, {-1, __out_elements});
 }
 } // end namespace layer
 } // end namespace module

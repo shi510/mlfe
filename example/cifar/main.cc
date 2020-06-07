@@ -86,8 +86,8 @@ void train_convnet(
 {
 	constexpr int BATCH = 64;
 	constexpr int EPOCH = 30;
-	auto net = models::conv_bn_net({ BATCH, 3, 32, 32});
-	//auto net = models::conv_dropout_net({ BATCH, 3, 32, 32 });
+	auto net = models::conv_dropout_net({3, 32, 32});
+	//auto net = models::conv_bn_net({ 3, 32, 32 });
 	auto optm = functional::create_gradient_descent_optimizer(5e-3, 0.9);
 	auto loss = functional::softmax_cross_entropy;
 	net.compile(optm, loss, categorical_accuracy);

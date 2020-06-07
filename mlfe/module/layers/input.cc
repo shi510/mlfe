@@ -13,6 +13,7 @@ input::input(std::vector<int> shape, std::string name)
 
 void input::build()
 {
+	_shape.insert(_shape.begin(), 1);
 	_in = add_variable(
 		"input",
 		_shape,

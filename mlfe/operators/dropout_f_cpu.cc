@@ -15,8 +15,13 @@ public:
         x = oac->get_input(0);
         mask = oac->get_attr<Tensor>("mask");
         prob = oac->get_attr<Tensor>("prob");
+        resize();
+    }
+
+    void resize() override {
+        mask.resize(x.shape());
+        y.resize(x.shape());
         size = x.size();
-        
     }
 
     void Compute(op_algo_runtime_context& rc) override{

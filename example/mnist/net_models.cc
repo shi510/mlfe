@@ -57,7 +57,7 @@ model auto_encoder(std::vector<int> input_shape)
 			return model(in, dec);
 		};
 	
-	return decoder(encoder(in), input_shape[1]);
+	return decoder(encoder(in), input_shape[0]);
 }
 
 } // end namespace models

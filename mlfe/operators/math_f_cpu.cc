@@ -15,7 +15,12 @@ public:
         y = oac->get_output(0);
         x1 = oac->get_input(0);
         x2 = oac->get_input(1);
+        resize();
+    }
+
+    void resize() override {
         size = x1.size();
+        y.resize(x1.shape());
     }
     
     void Compute(op_algo_runtime_context& rc) override{
@@ -81,7 +86,12 @@ public:
     ReduceMean(OpAlgoContext *oac) : OpAlgo(oac, "ReduceMean"){
         y = oac->get_output(0);
         x = oac->get_input(0);
+        resize();
+    }
+
+    void resize() override {
         size = x.size();
+        y.resize(x.shape());
     }
     
     void Compute(op_algo_runtime_context& rc) override{

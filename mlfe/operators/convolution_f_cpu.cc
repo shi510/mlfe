@@ -23,13 +23,19 @@ public:
         y = oac->get_output(0);
         x = oac->get_input(0);
         w = oac->get_input(1);
+        strides = oac->get_attr<IntVec>("strides");
+        pads = oac->get_attr<IntVec>("pads");
+        resize();
+    }
+
+    void resize() override{
         filters = w.shape()[0];
         filters_hw.resize(2);
         filters_hw[0] = w.shape()[2];
         filters_hw[1] = w.shape()[3];
-        strides = oac->get_attr<IntVec>("strides");
-        pads = oac->get_attr<IntVec>("pads");
-
+        int out_h = (x.shape()[2] - w.shape()[2] + 2 * pads[0]) / strides[0] + 1;
+        int out_w = (x.shape()[3] - w.shape()[3] + 2 * pads[1]) / strides[1] + 1;
+        y.resize({ x.shape()[0], w.shape()[0], out_h, out_w });
         y_t = T4R(
             y.shape()[0],
             y.shape()[2],

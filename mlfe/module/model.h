@@ -99,6 +99,10 @@ public:
 		typedef typename std::remove_reference<
 			decltype(std::get<1>(train_set(0))[0])>::type _TypeY;
 		std::map<std::string, float> logs;
+		if (__input.shape()[0] != batch_size)
+		{
+			resize(batch_size);
+		}
 		std::for_each(callbacks.params.begin(), callbacks.params.end(),
 			[this](std::shared_ptr<callback> cb) {cb->set_model(this); });
 		for(int n = 0; n < epoch; ++n)
@@ -167,31 +171,23 @@ private:
 		float total_loss = 0.f;
 		float accuracy = 0.f;
 		const int num_iter = data_set.size() / batch_size;
-		if(__input.shape()[0] != batch_size)
-		{
-			resize(batch_size);
-		}
 		for (int n = 0; n < num_iter; ++n)
 		{
 			__fill_batch<_Callable, _TypeX, _TypeY>(data_set, n, batch_size);
 			__loss.get_graph()->set_training(train);
-			if(!train)
-			{
+			if(!train){
 				__loss.eval();
 			}
-			else
-			{
-				for_each(__train_seq.begin(), __train_seq.end(), [](node n) {
+			else{
+				for(auto& n : __train_seq){
 					n.run_without_dependencies();
-					});
-				for(auto& var : __train_vars)
-				{
+				}
+				for(auto& var : __train_vars){
 					__optim->apply(var, var.grad());
 				}
 			}
 			total_loss += __loss.data<float>()[0];
-			if(__metric_fn)
-			{
+			if(__metric_fn){
 				accuracy += __metric_fn(__true, __output);
 			}
 		}
