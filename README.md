@@ -67,11 +67,11 @@ See examples/mnist/main.cc for more details.
 ```c++
 constexpr int B = 64;
 constexpr int EPOCHS = 5;
-auto net = models::conv_net({B, 1, 28, 28});
+auto net = models::conv_net({1, 28, 28});
 auto optm = functional::create_gradient_descent_optimizer(2e-2, 0.9);
 auto loss = functional::softmax_cross_entropy;
 net.compile(optm, loss, categorical_accuracy);
-net.fit(train_set, valid_set, EPOCHS, B);
+net.fit(train_set, valid_set, B, EPOCHS);
 ```
 ## Tensorboard
 MLFE supports tensorboard.  
@@ -108,9 +108,9 @@ private:
 The model class will call on_epoch_end function at every end of epoch.  
 See the example in examples/cifar/main.cc for more details.  
 ```c++
-net.fit(train_set, valid_set, 100, _BatchSize,
-    { reduce_lr("valid/loss", 3), tensorboard("cifar10_logs"),
-        custom_histo_weights("cifar10_logs") });
+net.fit(train_set, valid_set, B, EPOCHS,
+    { reduce_lr("valid/loss", 3), tensorboard("logs/cifar10"),
+        custom_histo_weights("logs/cifar10") });
 ```
 ![tensorboard_scalar](https://raw.githubusercontent.com/shi510/mlfe/master/figures/fig_tensorboard_scalar.jpg)
 ![tensorboard_histogram](https://raw.githubusercontent.com/shi510/mlfe/master/figures/fig_tensorboard_histo.jpg)
