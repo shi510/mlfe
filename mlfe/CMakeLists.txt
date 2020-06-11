@@ -35,6 +35,8 @@ elseif(USE_CUDA)
     target_compile_definitions(${the_library} PRIVATE OPTION_USE_CUDA)
 elseif(USE_INTEL_MKLDNN)
     target_compile_definitions(${the_library} PRIVATE OPTION_USE_MKLDNN)
+elseif(USE_NNPACK)
+    target_compile_definitions(${the_library} PRIVATE OPTION_USE_NNPACK)
 endif()
 mlfe_build_flatbuffers(flat_gen_headers
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"

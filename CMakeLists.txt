@@ -15,6 +15,7 @@ option(BUILD_EXAMPLE "Build mlfe EXAMPLE (require opencv)" OFF)
 option(USE_CUDA "NVIDIA CUDA USE" OFF)
 option(USE_CUDNN "NVIDIA CUDNN USE" OFF)
 option(USE_INTEL_MKLDNN "INTEL MKL-DNN Library USE" OFF)
+option(USE_NNPACK "NNPACK Library USE" OFF)
 option(USE_INSTALLED_LIBRARY "Build with installed library on your system" OFF)
 
 if(MSVC)

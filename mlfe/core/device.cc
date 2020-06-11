@@ -28,6 +28,9 @@ enabled_device::enabled_device(){
 #elif defined(OPTION_USE_MKLDNN)
     _dev_name = "CPU";
     _accel_name = "MKLDNN";
+#elif defined(OPTION_USE_NNPACK)
+    _dev_name = "CPU";
+    _accel_name = "NNPACK";
 #else
     _dev_name = "CPU";
     _accel_name = "NONE";
