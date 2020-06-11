@@ -91,7 +91,7 @@ public:
 
     void resize() override {
         size = x.size();
-        y.resize(x.shape());
+        y.resize({1});
     }
     
     void Compute(op_algo_runtime_context& rc) override{
