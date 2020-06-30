@@ -13,9 +13,6 @@
 [submodule "third_party/mkldnn"]
 	path = third_party/mkldnn
 	url = https://github.com/intel/mkl-dnn
-[submodule "third_party/ComputeLibrary"]
-	path = third_party/ComputeLibrary
-	url = https://github.com/ARM-software/ComputeLibrary
 [submodule "third_party/protobuf"]
 	path = third_party/protobuf
 	url = https://github.com/protocolbuffers/protobuf
