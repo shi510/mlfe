@@ -37,6 +37,8 @@ elseif(USE_INTEL_MKLDNN)
     target_compile_definitions(${the_library} PRIVATE OPTION_USE_MKLDNN)
 elseif(USE_NNPACK)
     target_compile_definitions(${the_library} PRIVATE OPTION_USE_NNPACK)
+elseif(USE_XNNPACK)
+    target_compile_definitions(${the_library} PRIVATE OPTION_USE_XNNPACK)
 endif()
 mlfe_build_flatbuffers(flat_gen_headers
         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"

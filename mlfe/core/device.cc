@@ -31,6 +31,9 @@ enabled_device::enabled_device(){
 #elif defined(OPTION_USE_NNPACK)
     _dev_name = "CPU";
     _accel_name = "NNPACK";
+#elif defined(OPTION_USE_XNNPACK)
+    _dev_name = "CPU";
+    _accel_name = "XNNPACK";
 #else
     _dev_name = "CPU";
     _accel_name = "NONE";

@@ -67,7 +67,7 @@ endif()
 
 include(${PROJECT_SOURCE_DIR}/cmake/cudnn.cmake)
 
-if(USE_CUDA)
+if(USE_CUDA OR USE_CUDNN)
     find_package(CUDA REQUIRED)
     if(CUDA_FOUND)
         FindCudnn(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR}/lib/x64)
