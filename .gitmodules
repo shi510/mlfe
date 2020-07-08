@@ -28,3 +28,6 @@
 [submodule "third_party/XNNPACK"]
 	path = third_party/XNNPACK
 	url = https://github.com/google/XNNPACK
+[submodule "third_party/hptt"]
+	path = third_party/hptt
+	url = https://github.com/springer13/hptt

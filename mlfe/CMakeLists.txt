@@ -40,12 +40,12 @@ elseif(USE_NNPACK)
 elseif(USE_XNNPACK)
     target_compile_definitions(${the_library} PRIVATE OPTION_USE_XNNPACK)
 endif()
-mlfe_build_flatbuffers(flat_gen_headers
-        "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
-        "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
-        gen_fb_target)
+# mlfe_build_flatbuffers(flat_gen_headers
+#         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
+#         "${CMAKE_CURRENT_LIST_DIR}/flatbuffers"
+#         gen_fb_target)
 
-add_dependencies(${the_library} gen_fb_target)
+# add_dependencies(${the_library} gen_fb_target)
 add_dependencies(${the_library} tensorboard_dep)
 add_dependencies(${the_library} onnx_dep)
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
