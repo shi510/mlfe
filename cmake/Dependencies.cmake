@@ -29,8 +29,7 @@ if(BUILD_TEST)
   set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS})
 endif()
 
-find_package(flatbuffers QUIET)
-
+# find_package(flatbuffers QUIET)
 # if(FLATBUFFERS_FOUND)
 #   message(STATUS "Found flatbuffers : " ${FLATBUFFERS_INCLUDE_DIRS})
 #   list(APPEND mlfe_include_dirs ${FLATBUFFERS_INCLUDE_DIRS})
