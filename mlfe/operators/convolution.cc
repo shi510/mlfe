@@ -59,6 +59,22 @@ Tensor conv2d(Tensor x,
     return y;
 }
 
+Tensor depthwise_conv2d(Tensor x,
+    Tensor w,
+    std::vector<type::int32::T> strides,
+    std::vector<type::int32::T> pads
+    ){
+    Tensor y;
+    OpAlgoContext ctx("DepthwiseConv2d");
+    ctx.add_attr({"strides", strides});
+    ctx.add_attr({"pads", pads});
+    ctx.add_input(x);
+    ctx.add_input(w);
+    ctx.add_output(y);
+    y.set_context(ctx);
+    return y;
+}
+
 Tensor conv2d(Tensor x,
     Tensor w,
     std::vector<type::int32::T> strides,
