@@ -4,6 +4,7 @@
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/math/transform.h"
 #include "mlfe/device_context/cpu_context.h"
+#include "mlfe/operators/convolution_utils.h"
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace mlfe{
@@ -33,9 +34,13 @@ public:
         filters_hw.resize(2);
         filters_hw[0] = w.shape()[2];
         filters_hw[1] = w.shape()[3];
-        int out_h = (x.shape()[2] - w.shape()[2] + 2 * pads[0]) / strides[0] + 1;
-        int out_w = (x.shape()[3] - w.shape()[3] + 2 * pads[1]) / strides[1] + 1;
-        y.resize({ x.shape()[0], w.shape()[0], out_h, out_w });
+        int out_h = util::calc_conv2d_output(
+            x.shape()[2], w.shape()[2], strides[0], pads[0]
+        );
+        int out_w = util::calc_conv2d_output(
+            x.shape()[3], w.shape()[3], strides[1], pads[1]
+        );
+        y.resize({x.shape()[0], w.shape()[0], out_h, out_w});
         y_t = T4R(
             y.shape()[0],
             y.shape()[2],

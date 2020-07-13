@@ -1,5 +1,6 @@
 #include "../core/op_algo.h"
 #include "../core/device.h"
+#include "mlfe/operators/convolution_utils.h"
 #include "third_party/mkldnn/include/mkldnn.hpp"
 #include "third_party/mkldnn/src/common/stream.hpp"
 #include "third_party/mkldnn/src/common/event.hpp"
@@ -17,7 +18,7 @@ using IntVec = std::vector<type::int32::T>;
 public:
     Convolution(OpAlgoContext *oac) : OpAlgo(oac, "Convolution"){
         using data_type = mkldnn::memory::data_type;
-        using data_order = mkldnn::memory::format;
+        using format = mkldnn::memory::format;
         using mem_desc = mkldnn::memory::desc;
         using mem_prim_desc = mkldnn::memory::primitive_desc;
         using fwd_algo = convolution_forward;
@@ -31,10 +32,16 @@ public:
                 return std::make_shared<mkldnn::memory>(arg, ptr);
             }
         };
-        auto strides = oac->get_attr<IntVec>("strides");
-        auto padding = oac->get_attr<IntVec>("pads");
+        y = oac->get_output(0);
+        x = oac->get_input(0);
+        w = oac->get_input(1);
+        strides = oac->get_attr<IntVec>("strides");
+        padding = oac->get_attr<IntVec>("pads");
+    }
+
+    void resize() override{
         auto make_mem_prim_desc = [this](IntVec shape,
-                                         data_order order
+                                         format order
                                          )
         {
             return mem_prim_desc{
@@ -46,23 +53,28 @@ public:
                 *cpu_engine
             };
         };
-        y = oac->get_output(0);
-        x = oac->get_input(0);
-        w = oac->get_input(1);
+        int out_h = util::calc_conv2d_output(
+            x.shape()[2], w.shape()[2], strides[0], pads[0]
+        );
+        int out_w = util::calc_conv2d_output(
+            x.shape()[3], w.shape()[3], strides[1], pads[1]
+        );
+        y.resize({x.shape()[0], w.shape()[0], out_h, out_w});
+
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
 
-        x_memory = make_smem(make_mem_prim_desc(x.shape(), data_order::nchw),
+        x_memory = make_smem(make_mem_prim_desc(x.shape(), format::nchw),
                              x.mutable_data<T>());
 
-        w_memory = make_smem(make_mem_prim_desc(w.shape(),data_order::oihw),
+        w_memory = make_smem(make_mem_prim_desc(w.shape(),format::oihw),
                              w.mutable_data<T>());
 
-        y_memory = make_smem(make_mem_prim_desc(y.shape(), data_order::nchw),
+        y_memory = make_smem(make_mem_prim_desc(y.shape(), format::nchw),
                              y.mutable_data<T>());
 
-        auto x_md = mem_desc(x.shape(), data_type::f32, data_order::any);
-        auto w_md = mem_desc(w.shape(), data_type::f32, data_order::any);
-        auto y_md = mem_desc(y.shape(), data_type::f32, data_order::any);
+        auto x_md = mem_desc(x.shape(), data_type::f32, format::any);
+        auto w_md = mem_desc(w.shape(), data_type::f32, format::any);
+        auto y_md = mem_desc(y.shape(), data_type::f32, format::any);
 
         auto desc = fwd_desc(prop_kind::forward_inference,
                              convolution_direct, x_md,
@@ -111,6 +123,8 @@ private:
     Tensor x;
     Tensor w;
     Tensor y;
+    std::vector<int32_t> strides;
+    std::vector<int32_t> padding;
     impl::event_t e;
     std::vector<primitive> net;
     std::shared_ptr<engine> cpu_engine;
@@ -140,7 +154,7 @@ using T = typename Tp::T;
 public:
     Conv2DGradientInput(OpAlgoContext *oac) : OpAlgo(oac){
         using data_type = mkldnn::memory::data_type;
-        using data_order = mkldnn::memory::format;
+        using format = mkldnn::memory::format;
         using mem_desc = mkldnn::memory::desc;
         using mem_prim_desc = mkldnn::memory::primitive_desc;
         using fwd_desc = convolution_forward::desc;
@@ -158,7 +172,7 @@ public:
             }
         };
         auto make_mem_prim_desc = [this](IntVec shape,
-                                         data_order order
+                                         format order
                                          )
         {
             return mem_prim_desc{
@@ -177,18 +191,18 @@ public:
         dy = oac->get_input(1);
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
 
-        dx_memory = make_smem(make_mem_prim_desc(dx.shape(), data_order::nchw),
+        dx_memory = make_smem(make_mem_prim_desc(dx.shape(), format::nchw),
                              dx.mutable_data<T>());
 
-        w_memory = make_smem(make_mem_prim_desc(w.shape(), data_order::oihw),
+        w_memory = make_smem(make_mem_prim_desc(w.shape(), format::oihw),
                             const_cast<T *>(w.data<T>()));
 
-        dy_memory = make_smem(make_mem_prim_desc(dy.shape(), data_order::nchw),
+        dy_memory = make_smem(make_mem_prim_desc(dy.shape(), format::nchw),
                              const_cast<T *>(dy.data<T>()));
 
-        auto dx_md = mem_desc(dx.shape(), data_type::f32, data_order::any);
-        auto w_md = mem_desc(w.shape(), data_type::f32, data_order::any);
-        auto dy_md = mem_desc(dy.shape(), data_type::f32, data_order::any);
+        auto dx_md = mem_desc(dx.shape(), data_type::f32, format::any);
+        auto w_md = mem_desc(w.shape(), data_type::f32, format::any);
+        auto dy_md = mem_desc(dy.shape(), data_type::f32, format::any);
         auto desc = bwd_desc(convolution_direct, dx_md,
                              w_md, dy_md, strides,
                              padding, padding,

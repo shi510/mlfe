@@ -1,5 +1,6 @@
 #include "mlfe/core/op_algo.h"
 #include "mlfe/core/device.h"
+#include "mlfe/operators/convolution_utils.h"
 #include <memory>
 #include <limits>
 #include <iostream>
@@ -29,7 +30,19 @@ public:
         x = oac->get_input(0);
         w = oac->get_input(1);
         strides = oac->get_attr<IntVec>("strides");
-        pads = oac->get_attr<IntVec>("pads");
+        if(oac->has_attr("same_out")){
+            auto pad_h = util::calc_conv2d_pad_size_for_same_output(
+                x.shape()[1], w.shape()[1], strides[0]
+            );
+            auto pad_w = util::calc_conv2d_pad_size_for_same_output(
+                x.shape()[2], w.shape()[2], strides[1]
+            );
+            pads.push_back(pad_h);
+            pads.push_back(pad_w);
+        }
+        else{
+            pads = oac->get_attr<IntVec>("pads");
+        }
         resize();
     }
 
@@ -38,10 +51,15 @@ public:
         in_h = x.shape()[1];
         in_w = x.shape()[2];
         in_c = x.shape()[3];
-        out_c = y.shape()[3];
         kh = w.shape()[1];
         kw = w.shape()[2];
-
+        int out_h = util::calc_conv2d_output(
+            in_h, kh, strides[0], pads[0]
+        );
+        int out_w = util::calc_conv2d_output(
+            in_w, kw, strides[1], pads[1]
+        );
+        y.resize({x.shape()[0], out_h, out_w, w.shape()[0]});
         auto status = xnn_create_convolution2d_nhwc_f32(
             pads[0], pads[1], pads[0], pads[1],
             kh, kw,
@@ -49,8 +67,8 @@ public:
             /*dilation height=*/1, /*dilation width=*/1,
             /*groups=*/1,
             /*group_input_channels=*/in_c,
-            /*group_output_channels=*/out_c,
-            /*input_pixel_stride=*/in_c, /*output_pixel_stride=*/out_c,
+            /*group_output_channels=*/y.shape()[3],
+            /*input_pixel_stride=*/in_c, /*output_pixel_stride=*/y.shape()[3],
             w.device_data<float>(), /*bias ptr=*/nullptr,
             /*output_min=*/std::numeric_limits<float>::min(),
             /*output_max=*/std::numeric_limits<float>::max(),
@@ -142,8 +160,12 @@ public:
         int in_h = x.shape()[1];
         int in_w = x.shape()[2];
         int in_c = x.shape()[3];
-        int out_h = (x.shape()[1] - w.shape()[0] + 2 * pads[0]) / strides[0] + 1;
-        int out_w = (x.shape()[2] - w.shape()[1] + 2 * pads[1]) / strides[1] + 1;
+        int out_h = util::calc_conv2d_output(
+            in_h, w.shape()[0], strides[0], pads[0]
+        );
+        int out_w = util::calc_conv2d_output(
+            in_w, w.shape()[1], strides[1], pads[1]
+        );
         y.resize({x.shape()[0], out_h, out_w, in_c});
         auto status = xnn_create_convolution2d_nhwc_f32(
             pads[0], pads[1], pads[0], pads[1],

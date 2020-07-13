@@ -1,6 +1,7 @@
 #include "convolution.h"
-#include "../core/op_algo.h"
-#include "../core/gradient_helper.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/gradient_helper.h"
+#include "mlfe/operators/convolution_utils.h"
 #include <cmath>
 
 namespace mlfe{ namespace functional{
@@ -44,11 +45,7 @@ Tensor conv2d(Tensor x,
               std::vector<type::int32::T> strides,
               std::vector<type::int32::T> pads
               ){
-    auto x_shape = x.shape();
-    auto w_shape = w.shape();
-    int out_h = (x_shape[2] - w_shape[2] + 2 * pads[0]) / strides[0] + 1;
-    int out_w = (x_shape[3] - w_shape[3] + 2 * pads[1]) / strides[1] + 1;
-    Tensor y = create_variable({x_shape[0], w_shape[0], out_h, out_w});
+    Tensor y;
     OpAlgoContext ctx("Convolution");
     ctx.add_attr({"strides", strides});
     ctx.add_attr({"pads", pads});
@@ -59,10 +56,46 @@ Tensor conv2d(Tensor x,
     return y;
 }
 
+Tensor conv2d(Tensor x,
+    Tensor w,
+    std::vector<int32_t> strides,
+    bool same_out)
+{
+    Tensor y;
+    int32_t kernel_h = w.shape()[2];
+    int32_t kernel_w = w.shape()[3];
+    int32_t input_h = x.shape()[2];
+    int32_t input_w = x.shape()[3];
+    int32_t pad_h = 0;
+    int32_t pad_w = 0;
+    if(get_data_order_prefer() == data_order::nhwc){
+        kernel_h = w.shape()[1];
+        kernel_w = w.shape()[2];
+        input_h = x.shape()[1];
+        input_h = x.shape()[2];
+    }
+    if(same_out){
+        pad_h = util::calc_conv2d_pad_size_for_same_output(
+            input_h, kernel_h, strides[0]
+        );
+        pad_w = util::calc_conv2d_pad_size_for_same_output(
+            input_w, kernel_w, strides[1]
+        );
+    }
+    OpAlgoContext ctx("Convolution");
+    ctx.add_attr({"strides", strides});
+    ctx.add_attr({"pads", std::vector<int32_t>{pad_h, pad_w}});
+    ctx.add_input(x);
+    ctx.add_input(w);
+    ctx.add_output(y);
+    y.set_context(ctx);
+    return y;
+}
+
 Tensor depthwise_conv2d(Tensor x,
     Tensor w,
-    std::vector<type::int32::T> strides,
-    std::vector<type::int32::T> pads
+    std::vector<int32_t> strides,
+    std::vector<int32_t> pads
     ){
     Tensor y;
     OpAlgoContext ctx("DepthwiseConv2d");
@@ -75,33 +108,35 @@ Tensor depthwise_conv2d(Tensor x,
     return y;
 }
 
-Tensor conv2d(Tensor x,
+Tensor depthwise_conv2d(Tensor x,
     Tensor w,
-    std::vector<type::int32::T> strides,
+    std::vector<int32_t> strides,
     bool same_out)
 {
-    auto x_shape = x.shape();
-    auto w_shape = w.shape();
-    int out_w = std::floor(x_shape[2] / (float)strides[0]);
-    int out_h = std::floor(x_shape[3] / (float)strides[1]);
-    int pad_w;
-    int pad_h;
-
-    if(same_out)
-    {
-        pad_w = std::max(out_w * strides[0] + w_shape[2] - x_shape[2], 0) / 2;
-        pad_h = std::max(out_h * strides[1] + w_shape[3] - x_shape[3], 0) / 2;
+    Tensor y;
+    int32_t kernel_h = w.shape()[2];
+    int32_t kernel_w = w.shape()[3];
+    int32_t input_h = x.shape()[2];
+    int32_t input_w = x.shape()[3];
+    int32_t pad_h = 0;
+    int32_t pad_w = 0;
+    if(get_data_order_prefer() == data_order::nhwc){
+        kernel_h = w.shape()[1];
+        kernel_w = w.shape()[2];
+        input_h = x.shape()[1];
+        input_h = x.shape()[2];
     }
-    else
-    {
-        pad_w = pad_h = 0;
+    if(same_out){
+        pad_h = util::calc_conv2d_pad_size_for_same_output(
+            input_h, kernel_h, strides[0]
+        );
+        pad_w = util::calc_conv2d_pad_size_for_same_output(
+            input_w, kernel_w, strides[1]
+        );
     }
-    out_w = (x_shape[2] - w_shape[2] + 2 * pad_w) / strides[0] + 1;
-    out_h = (x_shape[3] - w_shape[3] + 2 * pad_h) / strides[1] + 1;
-    Tensor y = create_variable({ x_shape[0], w_shape[0], out_h, out_w });
-    OpAlgoContext ctx("Convolution");
-    ctx.add_attr({ "strides", strides });
-    ctx.add_attr({ "pads", std::vector<int>{pad_w, pad_h} });
+    OpAlgoContext ctx("DepthwiseConv2d");
+    ctx.add_attr({"strides", strides});
+    ctx.add_attr({"pads", std::vector<int32_t>{pad_h, pad_w}});
     ctx.add_input(x);
     ctx.add_input(w);
     ctx.add_output(y);

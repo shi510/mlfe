@@ -5,19 +5,33 @@
 namespace mlfe{
 namespace functional{
 
-Tensor conv2d(Tensor x,
-              Tensor w,
-              std::vector<type::int32::T> strides,
-              std::vector<type::int32::T> pads
-              );
-
-Tensor depthwise_conv2d(Tensor x,
+Tensor conv2d(
+    Tensor x,
     Tensor w,
     std::vector<type::int32::T> strides,
     std::vector<type::int32::T> pads
     );
 
-Tensor conv2d(Tensor x, Tensor w, std::vector<int32_t> strides, bool same_out);
+Tensor conv2d(
+    Tensor x,
+    Tensor w,
+    std::vector<int32_t> strides,
+    bool same_out
+    );
+
+Tensor depthwise_conv2d(
+    Tensor x,
+    Tensor w,
+    std::vector<type::int32::T> strides,
+    std::vector<type::int32::T> pads
+    );
+
+Tensor depthwise_conv2d(
+    Tensor x,
+    Tensor w,
+    std::vector<int32_t> strides,
+    bool same_out
+    );
 
 } // end namespace functional
 } // end namespace mlfe
