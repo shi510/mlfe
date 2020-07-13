@@ -6,6 +6,10 @@
 
 namespace mlfe{
 
+enum class data_order{
+    nchw, nhwc
+};
+
 struct device{
     virtual std::string get_device_name() const = 0;
 
@@ -15,6 +19,8 @@ struct device{
 using device_ptr = std::shared_ptr<device>;
 
 device_ptr get_enabled_device();
+
+data_order get_data_order_prefer();
 
 // allocate device memory, not host memory.
 class memory{
