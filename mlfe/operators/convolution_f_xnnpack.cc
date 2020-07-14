@@ -30,19 +30,7 @@ public:
         x = oac->get_input(0);
         w = oac->get_input(1);
         strides = oac->get_attr<IntVec>("strides");
-        if(oac->has_attr("same_out")){
-            auto pad_h = util::calc_conv2d_pad_size_for_same_output(
-                x.shape()[1], w.shape()[1], strides[0]
-            );
-            auto pad_w = util::calc_conv2d_pad_size_for_same_output(
-                x.shape()[2], w.shape()[2], strides[1]
-            );
-            pads.push_back(pad_h);
-            pads.push_back(pad_w);
-        }
-        else{
-            pads = oac->get_attr<IntVec>("pads");
-        }
+        pads = oac->get_attr<IntVec>("pads");
         resize();
     }
 

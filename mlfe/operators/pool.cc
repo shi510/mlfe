@@ -63,5 +63,14 @@ Tensor pool_max(Tensor x,
     return y;
 }
 
+Tensor global_average_pool(Tensor x){
+    Tensor y;
+    OpAlgoContext ctx("GlobalAveragePool");
+    ctx.add_input(x);
+    ctx.add_output(y);
+    y.set_context(ctx);
+    return y;
+}
+
 } // end namespace functional
 } // end namespace mlfe

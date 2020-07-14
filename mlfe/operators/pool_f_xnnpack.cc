@@ -97,5 +97,89 @@ REGIST_OP_ALGO(MaxPool)
     })
     .Finish();
 
+
+/*
+ * Data order: NHWC
+ * Input: X
+ * Output: Y
+ */
+template <class Tp>
+class GlobalAveragePool : public OpAlgo{
+using T = typename Tp::T;
+public:
+    GlobalAveragePool(OpAlgoContext *oac)
+        : OpAlgo(oac, "GlobalAveragePool")
+    {
+        using IntVec = std::vector<type::int32::T>;
+        if(xnn_status_success != xnn_initialize(nullptr)){
+            std::cout<<"Fail xnn_initialize"<<std::endl;
+            exit(1);
+        }
+        y = oac->get_output(0);
+        x = oac->get_input(0);
+        resize();
+    }
+
+    void resize() override{
+        int batch = x.shape()[0];
+        int in_h = x.shape()[1];
+        int in_w = x.shape()[2];
+        int in_c = x.shape()[3];
+        y.resize({batch, in_c});
+        auto status = xnn_create_global_average_pooling_nwc_f32(
+            /*channels=*/in_c,
+            /*input_pixel_stride=*/in_c,
+            /*output_pixel_stride=*/in_c,
+            /*output_min=*/std::numeric_limits<T>::min(),
+            /*output_max=*/std::numeric_limits<T>::max(),
+            /*same_out_padding=*/0,
+            &gavg_op);
+        if(xnn_status_success != status){
+            std::cout<<"Fail xnn_create_global_average_pooling_nwc_f32"<<std::endl;
+            exit(1);
+        }
+        status = xnn_setup_global_average_pooling_nwc_f32(
+            gavg_op,
+            batch, in_h * in_w,
+            x.device_data<T>(),
+            y.mutable_device_data<T>(),
+            nullptr);
+        if(xnn_status_success != status){
+            std::cout<<"Fail xnn_setup_global_average_pooling_nwc_f32"<<std::endl;
+            exit(1);
+        }
+    }
+
+    void Compute(op_algo_runtime_context& rc) override{
+        if(xnn_status_success != xnn_run_operator(gavg_op, nullptr)){
+            std::cout<<"Fail xnn_run_operator"<<std::endl;
+            exit(1);
+        }
+    }
+
+    ~GlobalAveragePool(){
+        if(gavg_op){
+            if(xnn_status_success != xnn_delete_operator(gavg_op)){
+                std::cout<<"Fail xnn_delete_operator"<<std::endl;
+                exit(1);
+            }
+            gavg_op = nullptr;
+        }
+    }
+
+private:
+    Tensor x;
+    Tensor y;
+    xnn_operator_t gavg_op = nullptr;
+};
+
+REGIST_OP_ALGO(GlobalAveragePool)
+    .Device("CPU(XNNPACK)")
+    .CreatorFn([](OpAlgoContext *oac) -> std::shared_ptr<OpAlgo>{
+        using T = GlobalAveragePool<type::float32>;
+        return std::make_shared<T>(oac);
+    })
+    .Finish();
+
 } // end namespace algorithm_xnnpack
 } // end namespace mlfe

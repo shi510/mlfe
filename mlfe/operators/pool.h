@@ -12,6 +12,8 @@ Tensor pool_max(Tensor x,
                 std::vector<int> padding
                );
 
+Tensor global_average_pool(Tensor x);
+
 } // end namespace functional
 } // end namespace mlfe
 #endif // end ifndef __POOL_OP_HPP__
