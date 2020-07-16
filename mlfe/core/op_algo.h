@@ -115,6 +115,8 @@ public:
     template <class T>
     T get_attr(std::string name) const;
 
+    bool has_attr(std::string name) const;
+
 private:
     std::string _op_name;
     Attributes _attrs;

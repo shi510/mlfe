@@ -3,9 +3,8 @@
 #include "mlfe/core/attribute.h"
 #include <string>
 #include <vector>
-#include <queue>
-#include <unordered_set>
 #include <memory>
+#include <map>
 
 namespace mlfe{
 

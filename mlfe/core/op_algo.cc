@@ -123,6 +123,11 @@ void OpAlgoContext::set_attrs(Attributes attrs)
     _attrs = attrs;
 }
 
+bool OpAlgoContext::has_attr(std::string name) const
+{
+    return _attrs.Has(name);
+}
+
 using OAR = OpAlgoRegistry;
 
 void OAR::Register(std::string name, OpAlgoSchema oac){

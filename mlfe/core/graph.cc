@@ -1,4 +1,5 @@
 #include "graph.h"
+#include <algorithm>
 #include <queue>
 #include <sstream>
 #include <iostream>

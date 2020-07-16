@@ -54,16 +54,14 @@ Tensor::Tensor(std::vector<int> shape, const std::string name, const bool traina
     _pimpl->__g = get_default_graph();
 }
 
-Tensor::~Tensor(){}
-
 bool Tensor::operator==(const Tensor &v) const{
     return _pimpl.get() == v._pimpl.get();
 }
 
 void Tensor::set_context(OpAlgoContext ctx)
 {
-    auto op = find_op(ctx);
     _pimpl->_ctx = ctx;
+    auto op = find_op(ctx);
     this->get_node().set_task(make_task([](decltype(op) op, node n) {
         op_algo_runtime_context rc;
         rc.set_training(n.get_graph()->training());
@@ -229,16 +227,12 @@ void Tensor::backprop()
                 y.set_backprop_node(dy.get_node());
                 y.set_gradient(dy);
             }
-            //std::cout << op_name << std::endl;
-            //std::cout <<"\t"<< *dy.get_node().get_attr("op_name").data<std::string>() << std::endl;
-            //std::cout << "\t" << *y.grad().get_node().get_attr("op_name").data<std::string>() << std::endl;
             op_grad->compute_gradient(y, dy);
             for(auto& in : y.get_node().get_inputs())
             {
                 auto x = *in.get_attr("tensor").data<Tensor>();
                 dy_collector[x].push_back(x.grad());
             }
-            
         }
     }
 }

@@ -60,8 +60,7 @@ bool attribute::has(std::string key) const
     return true;
 }
 
-class attribute::item::impl{
-public:
+struct attribute::item::impl{
     impl();
     ~impl();
     void clear();
@@ -78,10 +77,11 @@ attribute::item::impl::~impl()
 
 void attribute::item::impl::clear()
 {
-    if(_ptr != nullptr)
+    if(_ptr != nullptr && _destructor != nullptr)
     {
         _destructor(_ptr);
         _ptr = nullptr;
+        _destructor = nullptr;
     }
 }
 

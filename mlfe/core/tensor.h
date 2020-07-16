@@ -42,8 +42,6 @@ public:
 
     Tensor(const Tensor &t) = default;
 
-    ~Tensor();
-
     bool operator==(const Tensor &v) const;
 
     void set_context(OpAlgoContext ctx);

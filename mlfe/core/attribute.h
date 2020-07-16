@@ -120,7 +120,7 @@ private:
     void *get() const;
 
 private:
-    class impl;
+    struct impl;
     std::shared_ptr<impl> _pimpl;
 };
 
