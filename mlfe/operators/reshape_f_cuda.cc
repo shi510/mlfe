@@ -1,5 +1,5 @@
-#include "../core/op_algo.h"
-#include "../core/device.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/device.h"
 #include <stdexcept>
 #include <numeric>
 
@@ -30,6 +30,9 @@ public:
             }
             else if (d == -1) {
                 neg_axis = n;
+            }
+            if(d == 0){
+                d = x.shape()[n];
             }
             new_shape.push_back(d);
         }
