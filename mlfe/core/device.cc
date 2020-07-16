@@ -43,9 +43,9 @@ enabled_device::enabled_device(){
 data_order get_data_order_prefer()
 {
 #if defined(OPTION_USE_XNNPACK)
-    return data_order::nchw;
-#else
     return data_order::nhwc;
+#else
+    return data_order::nchw;
 #endif
 }
 
