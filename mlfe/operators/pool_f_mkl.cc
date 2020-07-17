@@ -1,5 +1,6 @@
-#include "../core/op_algo.h"
-#include "../core/device.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/device.h"
+#include "mlfe/operators/convolution_utils.h"
 #include "third_party/mkldnn/include/mkldnn.hpp"
 #include "third_party/mkldnn/src/common/stream.hpp"
 #include "third_party/mkldnn/src/common/event.hpp"
@@ -14,14 +15,23 @@ class MaxPool : public OpAlgo{
 using T = typename Tp::T;
 public:
     MaxPool(OpAlgoContext *oac) : OpAlgo(oac, "MaxPool"){
+        using IntVec = std::vector<type::int32::T>;
+        strides = oac->get_attr<IntVec>("stride");
+        padding = oac->get_attr<IntVec>("padding");
+        filters_hw = oac->get_attr<IntVec>("kernel");
+        y = oac->get_output(0);
+        x = oac->get_input(0);
+        resize();
+    }
+
+    void resize() override{
         using data_type = mkldnn::memory::data_type;
-        using data_order = mkldnn::memory::format;
+        using format = mkldnn::memory::format;
         using mem_desc = mkldnn::memory::desc;
         using mem_prim_desc = mkldnn::memory::primitive_desc;
         using fwd_algo = pooling_forward;
         using fwd_desc = pooling_forward::desc;
         using fwd_prim_desc = pooling_forward::primitive_desc;
-        using IntVec = std::vector<type::int32::T>;
         auto make_smem = [](const mem_prim_desc arg, void *ptr = nullptr){
             if(ptr == nullptr){
                 return std::make_shared<mkldnn::memory>(arg);
@@ -30,11 +40,8 @@ public:
                 return std::make_shared<mkldnn::memory>(arg, ptr);
             }
         };
-        auto strides = oac->get_attr<IntVec>("stride");
-        auto padding = oac->get_attr<IntVec>("padding");
-        auto filters_hw = oac->get_attr<IntVec>("kernel");
         auto make_mem_prim_desc = [this](IntVec shape,
-                                         data_order order
+                                         format order
                                          )
         {
             return mem_prim_desc{
@@ -46,20 +53,24 @@ public:
                 *cpu_engine
             };
         };
-        y = oac->get_output(0);
-        x = oac->get_input(0);
-        idx = oac->get_attr<Tensor>("idx");
+        auto out_h = util::calc_conv2d_output(
+            x.shape()[2], filters_hw[0], strides[0], pads[0]
+        );
+        auto out_w = util::calc_conv2d_output(
+            x.shape()[3], filters_hw[1], strides[1], pads[1]
+        );
+        y.resize({ x.shape()[0], x.shape()[1], out_h, out_w });
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
         
-        x_memory = make_smem(make_mem_prim_desc(x.shape(), data_order::nchw),
+        x_memory = make_smem(make_mem_prim_desc(x.shape(), format::nchw),
                              const_cast<T *>(x.data<T>())
                              );
         
-        y_memory = make_smem(make_mem_prim_desc(y.shape(), data_order::nchw),
+        y_memory = make_smem(make_mem_prim_desc(y.shape(), format::nchw),
                              y.mutable_data<T>());
         
-        auto x_md = mem_desc(x.shape(), data_type::f32, data_order::nchw);
-        auto y_md = mem_desc(y.shape(), data_type::f32, data_order::nchw);
+        auto x_md = mem_desc(x.shape(), data_type::f32, format::nchw);
+        auto y_md = mem_desc(y.shape(), data_type::f32, format::nchw);
         
         auto desc = fwd_desc(prop_kind::forward,
                              algorithm::pooling_max, x_md,
@@ -89,7 +100,7 @@ public:
         if (y_memory_reorder != y_memory){
             net.push_back(reorder(*y_memory_reorder, *y_memory));
         }
-		oac->add_attr({"mkldnn_ws", ws_mem});
+        y.get_context().add_attr({"mkldnn_ws", ws_mem});
     }
 
     void Compute(op_algo_runtime_context& rc) override{
@@ -99,9 +110,11 @@ public:
     }
 private:
     Tensor x;
-    Tensor idx;
     Tensor y;
     impl::event_t e;
+    std::vector<type::int32::T> filters_hw;
+    std::vector<type::int32::T> strides;
+    std::vector<type::int32::T> pads;
     std::vector<primitive> net;
     std::shared_ptr<engine> cpu_engine;
     std::shared_ptr<mkldnn::memory> x_memory;
@@ -127,8 +140,20 @@ class MaxPoolGrad : public OpAlgo{
 using T = typename Tp::T;
 public:
     MaxPoolGrad(OpAlgoContext *oac) : OpAlgo(oac){
+        using IntVec = std::vector<type::int32::T>;
+        strides = oac->get_attr<IntVec>("stride");
+        padding = oac->get_attr<IntVec>("padding");
+        filters_hw = oac->get_attr<IntVec>("kernel");
+        dx = oac->get_output(0);
+        x = oac->get_input(0);
+        y = oac->get_input(1);
+        dy = oac->get_input(2);
+        resize();
+    }
+
+    void resize() override{
         using data_type = mkldnn::memory::data_type;
-        using data_order = mkldnn::memory::format;
+        using format = mkldnn::memory::format;
         using mem_desc = mkldnn::memory::desc;
         using mem_prim_desc = mkldnn::memory::primitive_desc;
         using fwd_desc = pooling_forward::desc;
@@ -136,10 +161,6 @@ public:
         using bwd_algo = pooling_backward;
         using bwd_desc = pooling_backward::desc;
         using bwd_prim_desc = pooling_backward::primitive_desc;
-        using IntVec = std::vector<type::int32::T>;
-        auto strides = oac->get_attr<IntVec>("stride");
-        auto padding = oac->get_attr<IntVec>("padding");
-        auto filters_hw = oac->get_attr<IntVec>("kernel");
         auto make_smem = [](const mem_prim_desc arg, void *ptr = nullptr){
             if(ptr == nullptr){
                 return std::make_shared<mkldnn::memory>(arg);
@@ -149,7 +170,7 @@ public:
             }
         };
         auto make_mem_prim_desc = [this](IntVec shape,
-                                         data_order order
+                                         format order
                                          )
         {
             return mem_prim_desc{
@@ -161,22 +182,18 @@ public:
                 *cpu_engine
             };
         };
-        dx = oac->get_output(0);
-        x = oac->get_input(0);
-        y = oac->get_input(1);
-        dy = oac->get_input(2);
         ws_mem = oac->get_attr<std::shared_ptr<mkldnn::memory>>("mkldnn_ws");
         cpu_engine = std::make_shared<engine>(engine::cpu, 0);
-        
-        dx_memory = make_smem(make_mem_prim_desc(dx.shape(), data_order::nchw),
+
+        dx_memory = make_smem(make_mem_prim_desc(dx.shape(), format::nchw),
                               dx.mutable_device_data<T>()
                               );
-        
-        dy_memory = make_smem(make_mem_prim_desc(dy.shape(), data_order::nchw),
+
+        dy_memory = make_smem(make_mem_prim_desc(dy.shape(), format::nchw),
                               dy.mutable_device_data<T>());
-        
-        auto dx_md = mem_desc(dx.shape(), data_type::f32, data_order::nchw);
-        auto dy_md = mem_desc(dy.shape(), data_type::f32, data_order::nchw);
+
+        auto dx_md = mem_desc(dx.shape(), data_type::f32, format::nchw);
+        auto dy_md = mem_desc(dy.shape(), data_type::f32, format::nchw);
         
         auto desc = bwd_desc(algorithm::pooling_max, dx_md,
                              dy_md, strides, filters_hw,

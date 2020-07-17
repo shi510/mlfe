@@ -1,8 +1,9 @@
-#include "../core/op_algo.h"
-#include "../core/device.h"
-#include "../math/blas.h"
-#include "../math/transform.h"
-#include "../device_context/cuda_context.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/device.h"
+#include "mlfe/math/blas.h"
+#include "mlfe/math/transform.h"
+#include "mlfe/device_context/cuda_context.h"
+#include "mlfe/operators/convolution_utils.h"
 
 namespace mlfe{
 namespace algorithm_cuda{
@@ -23,8 +24,12 @@ public:
     }
 
     void resize() override {
-        out_h = (x.shape()[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
-        out_w = (x.shape()[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
+        out_h = util::calc_conv2d_output(
+            x.shape()[2], filters_hw[0], strides[0], pads[0]
+        );
+        out_w = util::calc_conv2d_output(
+            x.shape()[3], filters_hw[1], strides[1], pads[1]
+        );
         in_c = x.shape()[1];
         in_h = x.shape()[2];
         in_w = x.shape()[3];

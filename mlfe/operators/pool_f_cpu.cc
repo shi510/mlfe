@@ -1,8 +1,9 @@
-#include "../core/op_algo.h"
-#include "../core/device.h"
-#include "../math/basic_functions.h"
-#include "../math/transform.h"
-#include "../device_context/cpu_context.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/device.h"
+#include "mlfe/math/basic_functions.h"
+#include "mlfe/math/transform.h"
+#include "mlfe/device_context/cpu_context.h"
+#include "mlfe/operators/convolution_utils.h"
 #include <algorithm>
 #include <cfloat>
 
@@ -20,19 +21,23 @@ public:
         filters_hw = oac->get_attr<IntVec>("kernel");
         strides = oac->get_attr<IntVec>("stride");
         pads = oac->get_attr<IntVec>("padding");
-        idx = oac->get_attr<Tensor>("idx");
         resize();
     }
 
     void resize() override {
-        out_h = (x.shape()[2] - filters_hw[0] + 2 * pads[0]) / strides[0] + 1;
-        out_w = (x.shape()[3] - filters_hw[1] + 2 * pads[1]) / strides[1] + 1;
+        out_h = util::calc_conv2d_output(
+            x.shape()[2], filters_hw[0], strides[0], pads[0]
+        );
+        out_w = util::calc_conv2d_output(
+            x.shape()[3], filters_hw[1], strides[1], pads[1]
+        );
         batch = x.shape()[0];
         in_c = x.shape()[1];
         in_h = x.shape()[2];
         in_w = x.shape()[3];
         y.resize({ x.shape()[0], x.shape()[1], out_h, out_w });
         idx.resize({ x.shape()[0], x.shape()[1], out_h, out_w });
+        y.get_context().add_attr({"idx", idx});
     }
 
     void Compute(op_algo_runtime_context& rc) override{

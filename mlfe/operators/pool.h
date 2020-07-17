@@ -1,6 +1,6 @@
 #ifndef __POOL_OP_HPP__
 #define __POOL_OP_HPP__
-#include "../core/tensor.h"
+#include "mlfe/core/tensor.h"
 #include <vector>
 
 namespace mlfe{

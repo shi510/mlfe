@@ -1,5 +1,6 @@
 #include "mlfe/core/op_algo.h"
 #include "mlfe/core/device.h"
+#include "mlfe/operators/convolution_utils.h"
 #include "xnnpack.h"
 #include <iostream>
 
@@ -34,6 +35,13 @@ public:
         int in_h = x.shape()[1];
         int in_w = x.shape()[2];
         int in_c = x.shape()[3];
+        auto out_h = util::calc_conv2d_output(
+            x.shape()[1], kernel[0], strides[0], pads[0]
+        );
+        auto out_w = util::calc_conv2d_output(
+            x.shape()[2], kernel[1], strides[1], pads[1]
+        );
+        y.resize({x.shape()[0], out_h, out_w, x.shape()[3]});
         auto status = xnn_create_max_pooling2d_nhwc_f32(
             /*top=*/pads[0], /*right=*/pads[1],
             /*bottom=*/pads[0], /*left=*/pads[1],
@@ -125,13 +133,13 @@ public:
         int in_h = x.shape()[1];
         int in_w = x.shape()[2];
         int in_c = x.shape()[3];
-        y.resize({batch, in_c});
+        y.resize({batch, 1, 1, in_c});
         auto status = xnn_create_global_average_pooling_nwc_f32(
             /*channels=*/in_c,
             /*input_pixel_stride=*/in_c,
             /*output_pixel_stride=*/in_c,
-            /*output_min=*/std::numeric_limits<T>::min(),
-            /*output_max=*/std::numeric_limits<T>::max(),
+            /*output_min=*/-std::numeric_limits<float>::infinity(),
+            /*output_max=*/std::numeric_limits<float>::infinity(),
             /*same_out_padding=*/0,
             &gavg_op);
         if(xnn_status_success != status){
