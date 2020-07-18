@@ -51,8 +51,8 @@ public:
             /*input_channels=*/in_c,
             /*input_pixel_stride=*/in_c,
             /*output_pixel_stride=*/in_c,
-            /*output_min=*/std::numeric_limits<T>::min(),
-            /*output_max=*/std::numeric_limits<T>::max(),
+            /*output_min=*/-std::numeric_limits<T>::infinity(),
+            /*output_max=*/std::numeric_limits<T>::infinity(),
             /*same_out_padding=*/0,
             &maxpool_op);
         if(xnn_status_success != status){
@@ -138,8 +138,8 @@ public:
             /*channels=*/in_c,
             /*input_pixel_stride=*/in_c,
             /*output_pixel_stride=*/in_c,
-            /*output_min=*/-std::numeric_limits<float>::infinity(),
-            /*output_max=*/std::numeric_limits<float>::infinity(),
+            /*output_min=*/-std::numeric_limits<T>::infinity(),
+            /*output_max=*/std::numeric_limits<T>::infinity(),
             /*same_out_padding=*/0,
             &gavg_op);
         if(xnn_status_success != status){
