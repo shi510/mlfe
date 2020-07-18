@@ -1,6 +1,7 @@
 #ifndef __TRANSFORM_HPP__
 #define __TRANSFORM_HPP__
 #include <vector>
+#include <cstdint>
 
 namespace mlfe{ namespace math{
 
@@ -47,6 +48,14 @@ template <class T, class D>
 void broadcast_gradient(const T* dy, T* dx,
                         int Ny, int Cy, int Hy, int Wy,
                         int Nx, int Cx, int Hx, int Wx);
+
+template<class T, class D>
+void transpose(
+    const T* x,
+    const std::vector<int> x_shape,
+    const std::vector<int> perm,
+    T* y,
+    const bool row_major = true);
 
 } /* namespace math */
 } /* namespace mlfe */
