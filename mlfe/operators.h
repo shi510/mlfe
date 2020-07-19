@@ -12,5 +12,6 @@
 #include "operators/basic_arithmetics.h"
 #include "operators/matmul.h"
 #include "operators/broadcasting.h"
+#include "operators/transpose.h"
 
 #endif // end #ifndef __OPERATORS_H__
