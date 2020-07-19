@@ -135,6 +135,12 @@ else()
   list(APPEND mlfe_library_dependencies XNNPACK)
 endif()
 
+set(HPTT_ROOT ${PROJECT_SOURCE_DIR}/third_party/hptt)
+set(ENABLE_ARM ${ENABLE_ARM} CACHE BOOL "HPTT ARM BUILD" FORCE)
+add_subdirectory(${HPTT_ROOT})
+list(APPEND mlfe_include_dirs ${HPTT_ROOT}/include)
+list(APPEND mlfe_library_dependencies hptt)
+
 if(UNIX AND NOT APPLE)
     list(APPEND mlfe_library_dependencies stdc++fs)
 endif()
