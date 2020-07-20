@@ -37,7 +37,7 @@ RUN cmake \
     -D BUILD_EXAMPLE=ON \
     -D USE_XNNPACK=ON \
     -D CMAKE_BUILD_TYPE=Release \
-    -D CMAKE_TOOLCHAIN_FILE=../cmake/tool_chain/arm_cross.cmake \
+    -D CMAKE_TOOLCHAIN_FILE=../cmake/tool_chain/armv8_cross.cmake \
     -D CMAKE_INSTALL_PREFIX=/root/mlfe_lib \
     -G Ninja ..
 RUN ninja
