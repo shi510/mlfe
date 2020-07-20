@@ -16,9 +16,9 @@ RUN cp -r ./share/cmake-3.17 /usr/share/
 
 # install host protoc
 WORKDIR ${HOME}
-RUN curl -L -O https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_32.zip
-RUN unzip protoc-3.11.4-linux-x86_32.zip -d protoc-3.11.4-linux-x86_32
-RUN cp protoc-3.11.4-linux-x86_32/bin/* /usr/bin/
+RUN curl -L -O https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
+RUN unzip protoc-3.11.4-linux-x86_64.zip -d protoc-3.11.4-linux-x86_64
+RUN cp protoc-3.11.4-linux-x86_64/bin/* /usr/bin/
 
 # clone mlfe library and update submodule.
 WORKDIR $HOME
