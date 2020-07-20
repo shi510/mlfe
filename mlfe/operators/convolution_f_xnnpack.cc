@@ -161,7 +161,7 @@ public:
             /*group_input_channels=*/1,
             /*group_output_channels=*/1,
             /*input_pixel_stride=*/in_c, /*output_pixel_stride=*/in_c,
-            w.device_data<tanhf128>(), /*bias ptr=*/nullptr,
+            w.device_data<T>(), /*bias ptr=*/nullptr,
             /*output_min=*/-std::numeric_limits<T>::infinity(),
             /*output_max=*/std::numeric_limits<T>::infinity(),
             /*flags=*/XNN_FLAG_DEPTHWISE_CONVOLUTION,
