@@ -185,6 +185,23 @@ private:
 
 bool maxpool_op::__is_registered = maxpool_op::regist("MaxPool");
 
+// global average pool
+class gavg_pool2d_op : public import_impl<gavg_pool2d_op> {
+public:
+    void convert(const ::onnx::NodeProto& nd_proto,
+        std::map<std::string, Tensor>& inputs) override
+    {
+        auto& x = inputs[nd_proto.input()[0]];
+        auto y = functional::global_average_pool(x);
+        inputs[nd_proto.output()[0]] = y;
+    }
+
+private:
+    static bool __is_registered;
+};
+
+bool gavg_pool2d_op::__is_registered = gavg_pool2d_op::regist("GlobalAveragePool");
+
 // batchnormalize
 class batchnorm_op : public import_impl<batchnorm_op> {
 public:
