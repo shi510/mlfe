@@ -1,6 +1,8 @@
 #include "mlfe/utils/onnx/onnx_helper.h"
 #include "mlfe/utils/onnx/onnx_registry.h"
 #include <fstream>
+#include <string>
+#include <vector>
 
 namespace mlfe {
 namespace onnx {
@@ -52,7 +54,7 @@ void fill_node_proto(node nd, ::onnx::NodeProto* nd_proto)
 }
 
 template <>
-std::vector<int>
+std::unique_ptr<std::vector<int>>
 get_node_proto_attr<std::vector<int>, AttributeProto_AttributeType_INTS>(
     const ::onnx::NodeProto* nd_proto, std::string name)
 {
@@ -65,28 +67,29 @@ get_node_proto_attr<std::vector<int>, AttributeProto_AttributeType_INTS>(
             {
                 vals.push_back(v);
             }
-            return vals;
+            return std::make_unique<std::vector<int>>(std::vector<int>(vals));
         }
     }
-    throw std::runtime_error("Can not find attribute : " + name);
+    return nullptr;
 }
 
 template <>
-int get_node_proto_attr<int, AttributeProto_AttributeType_INT>(
+std::unique_ptr<int>
+get_node_proto_attr<int, AttributeProto_AttributeType_INT>(
     const ::onnx::NodeProto* nd_proto, std::string name)
 {
     for(auto& attr : nd_proto->attribute())
     {
         if(attr.name() == name)
         {
-            return attr.i();
+            return std::make_unique<int>(int(attr.i()));
         }
     }
-    throw std::runtime_error("Can not find attribute : " + name);
+    return nullptr;
 }
 
 template <>
-std::string
+std::unique_ptr<std::string>
 get_node_proto_attr<std::string, AttributeProto_AttributeType_STRING>(
     const ::onnx::NodeProto* nd_proto, std::string name)
 {
@@ -94,10 +97,10 @@ get_node_proto_attr<std::string, AttributeProto_AttributeType_STRING>(
     {
         if(attr.name() == name)
         {
-            return attr.s();
+            return std::make_unique<std::string>(std::string(attr.s()));
         }
     }
-    throw std::runtime_error("Can not find attribute : " + name);
+    return nullptr;
 }
 
 type::TypeInfo get_type_byte_size(int32_t enum_type)

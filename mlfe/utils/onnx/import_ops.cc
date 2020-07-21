@@ -1,5 +1,8 @@
 #include "mlfe/utils/onnx/onnx_registry.h"
 #include "mlfe/utils/onnx/onnx_helper.h"
+#include "mlfe/math/transform.h"
+#include "mlfe/device_context/cpu_context.h"
+#include "mlfe/operators/convolution_utils.h"
 #include "mlfe/operators.h"
 
 namespace mlfe {
@@ -141,16 +144,60 @@ public:
             ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "strides");
         auto auto_pad = get_node_proto_attr<std::string,
             ::onnx::AttributeProto_AttributeType_STRING>(&nd_proto, "auto_pad");
-        bool same_out = auto_pad == "SAME_UPPER" ? true : false;
-        int group = get_node_proto_attr<int,
+        auto group = get_node_proto_attr<int,
             ::onnx::AttributeProto_AttributeType_INT>(&nd_proto, "group");
         auto dilations = get_node_proto_attr<std::vector<int>,
             ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "dilations");
-        assert(group == 1);
-        assert(dilations.size() == 2);
-        assert(dilations[0] == 1);
-        assert(dilations[1] == 1);
-        auto y = functional::conv2d(x, w, strides, same_out);
+        auto pads = get_node_proto_attr<std::vector<int>,
+            ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "pads");
+        bool same_out = false;
+        if(auto_pad){
+            pads = std::make_unique<std::vector<int>>();
+            if(*auto_pad == "SAME_UPPER" || *auto_pad == "SAME_LOWER"){
+                int in_h = x.shape()[2];
+                int in_w = x.shape()[3];
+                if(get_data_order_prefer() == data_order::nhwc){
+                    in_h = x.shape()[1];
+                    in_w = x.shape()[2];
+                }
+                int pad_h = util::calc_conv2d_pad_size_for_same_output(
+                    in_h, w.shape()[2], strides->at(0));
+                int pad_w = util::calc_conv2d_pad_size_for_same_output(
+                    in_w, w.shape()[3], strides->at(1));
+                pads->push_back(pad_h);
+                pads->push_back(pad_w);
+            }
+            else{
+                pads->push_back(0);
+                pads->push_back(0);
+            }
+        }
+        Tensor y;
+        assert(dilations->size() == 2);
+        assert(dilations->at(0) == 1);
+        assert(dilations->at(1) == 1);
+        if(*group == 1){
+            Tensor tw = w;
+            if(get_data_order_prefer() == data_order::nhwc){
+                auto wo = w.shape()[0];
+                auto wi = w.shape()[1];
+                auto wh = w.shape()[2];
+                auto ww = w.shape()[3];
+                tw = functional::create_variable({wo, wh, ww, wi});
+                math::transpose<float, CPUContext>(
+                    w.data<float>(),
+                    w.shape(),
+                    {0, 2, 3, 1},
+                    tw.mutable_data<float>()
+                    );
+            }
+            y = functional::conv2d(x, tw, *strides, *pads);
+            inputs[nd_proto.input()[1]] = tw;
+        }
+        else if(*group == w.shape()[0] && w.shape()[1] == 1){
+            w.reshape({w.shape()[2], w.shape()[3], w.shape()[0]});
+            y = functional::depthwise_conv2d(x, w, *strides, *pads);
+        }
         inputs[nd_proto.output()[0]] = y;
     }
 
@@ -171,11 +218,33 @@ public:
             ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "kernel_shape");
         auto strides = get_node_proto_attr<std::vector<int>,
             ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "strides");
+        auto pads = get_node_proto_attr<std::vector<int>,
+            ::onnx::AttributeProto_AttributeType_INTS>(&nd_proto, "pads");
         auto auto_pad = get_node_proto_attr<std::string,
             ::onnx::AttributeProto_AttributeType_STRING>(&nd_proto, "auto_pad");
-        bool same_out = auto_pad == "SAME_UPPER" ? true : false;
-        assert(auto_pad == "NOSET");
-        auto y = functional::pool_max(x, kshape, strides, { 0, 0 });
+        bool same_out = false;
+        if(auto_pad){
+            pads = std::make_unique<std::vector<int>>();
+            if(*auto_pad == "SAME_UPPER" || *auto_pad == "SAME_LOWER"){
+                int in_h = x.shape()[2];
+                int in_w = x.shape()[3];
+                if(get_data_order_prefer() == data_order::nhwc){
+                    in_h = x.shape()[1];
+                    in_w = x.shape()[2];
+                }
+                int pad_h = util::calc_conv2d_pad_size_for_same_output(
+                    in_h, kshape->at(0), strides->at(0));
+                int pad_w = util::calc_conv2d_pad_size_for_same_output(
+                    in_w, kshape->at(1), strides->at(1));
+                pads->push_back(pad_h);
+                pads->push_back(pad_w);
+            }
+            else{
+                pads->push_back(0);
+                pads->push_back(0);
+            }
+        }
+        auto y = functional::pool_max(x, *kshape, *strides, { 0, 0 });
         inputs[nd_proto.output()[0]] = y;
     }
 

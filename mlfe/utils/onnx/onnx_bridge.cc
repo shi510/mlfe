@@ -1,7 +1,10 @@
 #include "mlfe/utils/onnx/onnx_bridge.h"
 #include "mlfe/utils/onnx/onnx_helper.h"
 #include "mlfe/utils/onnx/onnx_registry.h"
+#include "mlfe/core/device.h"
 #include "mlfe/core/tensor.h"
+#include "mlfe/math/transform.h"
+#include "mlfe/device_context/cpu_context.h"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -230,6 +233,16 @@ module::model import_onnx_model(std::string file_name)
             reinterpret_cast<const uint8_t*>(ptr) + byte_size, t.begin<uint8_t>());
     } // end for-loop
 
+    model_in = collector[onnx_model->graph().input()[0].name()];
+    if(get_data_order_prefer() == data_order::nhwc){
+        auto N = model_in.shape()[0];
+        auto C = model_in.shape()[1];
+        auto H = model_in.shape()[2];
+        auto W = model_in.shape()[3];
+        model_in.reshape({N, H, W, C});
+    }
+    collector[onnx_model->graph().input()[0].name()] = model_in;
+
     for(auto& nd_proto : onnx_model->graph().node())
     {
         std::string op_name = nd_proto.op_type();
@@ -240,9 +253,7 @@ module::model import_onnx_model(std::string file_name)
         }
         cvt->convert(nd_proto, collector);
     }
-    model_in = collector[onnx_model->graph().input()[0].name()];
     model_out = collector[onnx_model->graph().output()[0].name()];
-    
     return module::model(model_in, model_out, onnx_model->graph().name());
 }
 

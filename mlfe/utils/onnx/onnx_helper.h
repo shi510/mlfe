@@ -16,7 +16,10 @@ bool read_onnx_model(std::string file_name, ::onnx::ModelProto* model);
 void fill_node_proto(node nd, ::onnx::NodeProto* nd_proto);
 
 template <typename T, ::onnx::AttributeProto_AttributeType AttrType>
-T get_node_proto_attr(const ::onnx::NodeProto* nd_proto, std::string name);
+std::unique_ptr<T> get_node_proto_attr(
+    const ::onnx::NodeProto* nd_proto,
+    std::string name
+    );
 
 type::TypeInfo get_type_byte_size(int32_t type);
 
