@@ -39,7 +39,7 @@ public:
 	void resize(int batch);
 
 	template <typename T>
-	std::vector<T> operator()(std::vector<T> x, std::vector<int> shape)
+	std::vector<T> operator()(const std::vector<T>& x, const std::vector<int> shape)
 	{
 		if(x.size() != __input.size() || shape.size() != __input.dims())
 		{
