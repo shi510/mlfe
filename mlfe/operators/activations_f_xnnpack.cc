@@ -29,9 +29,8 @@ public:
     }
 
     void resize() override {
-        size = x.size();
         batch = x.shape()[0];
-        channel = std::accumulate(x.shape().begin()+1, x.shape().end(), 0);
+        channel = x.size() / batch;
         w.resize(channel);
         y.resize(x.shape());
         std::fill(w.begin(), w.end(), 0.f);
@@ -53,8 +52,6 @@ public:
     }
 
     void Compute(op_algo_runtime_context& rc) override{
-        auto x_ptr = x.device_data<T>();
-        auto y_ptr = y.mutable_device_data<T>();
         if(xnn_status_success != xnn_run_operator(prelu_op, nullptr)){
             std::cout<<"xnn_status_success != xnn_run_operator"<<std::endl;
             exit(1);
@@ -74,7 +71,6 @@ private:
     std::vector<float> w;
     int batch;
     int channel;
-    int size;
     xnn_operator_t prelu_op = nullptr;
 };
 
