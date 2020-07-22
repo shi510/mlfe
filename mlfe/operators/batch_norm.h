@@ -9,7 +9,7 @@ Tensor batch_normalize(Tensor x);
 Tensor batch_normalize(Tensor x, Tensor scales, Tensor biases);
 
 Tensor batch_normalize(Tensor x, Tensor scales, Tensor biases,
-    Tensor mean, Tensor var);
+    Tensor mean, Tensor var, float eps=1e-5);
 
 } // end namespace functional
 } // end namespace mlfe

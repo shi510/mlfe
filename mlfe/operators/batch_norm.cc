@@ -76,7 +76,7 @@ Tensor batch_normalize(Tensor x, Tensor scales, Tensor biases)
 }
 
 Tensor batch_normalize(Tensor x, Tensor scales, Tensor biases,
-    Tensor mean, Tensor var)
+    Tensor mean, Tensor var, float eps)
 {
     Tensor y = create_variable(x.shape());
     OpAlgoContext ctx("BatchNormSpatial");
@@ -86,6 +86,7 @@ Tensor batch_normalize(Tensor x, Tensor scales, Tensor biases,
     ctx.add_output(y);
     ctx.add_attr({ "running_mean", mean });
     ctx.add_attr({ "running_var", var });
+    ctx.add_attr({ "eps", eps });
     y.set_context(ctx);
     return y;
 }

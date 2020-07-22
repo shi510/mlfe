@@ -89,6 +89,21 @@ get_node_proto_attr<int, AttributeProto_AttributeType_INT>(
 }
 
 template <>
+std::unique_ptr<float>
+get_node_proto_attr<float, AttributeProto_AttributeType_FLOAT>(
+    const ::onnx::NodeProto* nd_proto, std::string name)
+{
+    for(auto& attr : nd_proto->attribute())
+    {
+        if(attr.name() == name)
+        {
+            return std::make_unique<float>(float(attr.f()));
+        }
+    }
+    return nullptr;
+}
+
+template <>
 std::unique_ptr<std::string>
 get_node_proto_attr<std::string, AttributeProto_AttributeType_STRING>(
     const ::onnx::NodeProto* nd_proto, std::string name)

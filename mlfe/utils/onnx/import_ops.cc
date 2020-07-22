@@ -282,7 +282,9 @@ public:
         auto& biases = inputs[nd_proto.input()[2]];
         auto& mean = inputs[nd_proto.input()[3]];
         auto& var = inputs[nd_proto.input()[4]];
-        auto y = functional::batch_normalize(x, scales, biases, mean, var);
+        auto eps = get_node_proto_attr<float,
+            ::onnx::AttributeProto_AttributeType_FLOAT>(&nd_proto, "epsilon");
+        auto y = functional::batch_normalize(x, scales, biases, mean, var, *eps);
         inputs[nd_proto.output()[0]] = y;
     }
 
