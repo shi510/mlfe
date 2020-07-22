@@ -195,8 +195,23 @@ public:
             inputs[nd_proto.input()[1]] = tw;
         }
         else if(*group == w.shape()[0] && w.shape()[1] == 1){
-            w.reshape({w.shape()[2], w.shape()[3], w.shape()[0]});
-            y = functional::depthwise_conv2d(x, w, *strides, *pads);
+            Tensor tw = w;
+            if(get_data_order_prefer() == data_order::nhwc){
+                auto wo = w.shape()[0];
+                auto wi = w.shape()[1];
+                auto wh = w.shape()[2];
+                auto ww = w.shape()[3];
+                tw = functional::create_variable({wi, wh, ww, wo});
+                math::transpose<float, CPUContext>(
+                    w.data<float>(),
+                    w.shape(),
+                    {1, 2, 3, 0},
+                    tw.mutable_data<float>()
+                    );
+                tw.reshape({tw.shape()[1], tw.shape()[2], tw.shape()[3]});
+            }
+            y = functional::depthwise_conv2d(x, tw, *strides, *pads);
+            inputs[nd_proto.input()[1]] = tw;
         }
         inputs[nd_proto.output()[0]] = y;
     }
