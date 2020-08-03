@@ -1,7 +1,7 @@
-#include "../core/op_algo.h"
-#include "../math/blas.h"
-#include "../device_context/cpu_context.h"
-#include "../core/device.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/math/blas.h"
+#include "mlfe/device_context/cpu_context.h"
+#include "mlfe/core/device.h"
 
 namespace mlfe{
 namespace algorithm_cpu{
@@ -14,7 +14,7 @@ public:
         y = oac->get_output(0);
         x = oac->get_input(0);
         mask = oac->get_attr<Tensor>("mask");
-        prob = oac->get_attr<Tensor>("prob");
+        keep_prob = oac->get_attr<Tensor>("keep_prob");
         resize();
     }
 
@@ -29,13 +29,13 @@ public:
         auto y_ptr = y.mutable_device_data<T>();
         auto mask_ptr = mask.mutable_device_data<T>();
 
-        drop_ratio = prob.data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
-        b_dist = std::bernoulli_distribution(T(1) - drop_ratio);
-        if(drop_ratio != 0){
+        keep_ratio = keep_prob.data<T>()[0];
+        keep_ratio_inv = T(1) / keep_ratio;
+        if(keep_ratio != T(1)){
+            b_dist = std::bernoulli_distribution(keep_ratio);
             for(int n = 0; n < size; ++n){
                 T mask_val = mask_ptr[n] = b_dist(CPUContext::rng);
-                y_ptr[n] = x_ptr[n] * mask_val * drop_ratio_inv;
+                y_ptr[n] = x_ptr[n] * mask_val * keep_ratio_inv;
             }
         }
         else{
@@ -46,9 +46,9 @@ private:
     Tensor x;
     Tensor y;
     Tensor mask;
-    Tensor prob;
+    Tensor keep_prob;
     std::bernoulli_distribution b_dist;
-    T drop_ratio, drop_ratio_inv;
+    T keep_ratio, keep_ratio_inv;
     int size;
 };
 
@@ -71,7 +71,7 @@ public:
         dx = oac->get_output(0);
         dy = oac->get_input(1);
         mask = oac->get_attr<Tensor>("mask");
-        prob = oac->get_attr<Tensor>("prob");
+        keep_prob = oac->get_attr<Tensor>("keep_prob");
         size = dy.size();
     }
 
@@ -80,11 +80,11 @@ public:
         auto dx_ptr = dx.mutable_device_data<T>();
         auto mask_ptr = mask.device_data<T>();
 
-        drop_ratio = prob.data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
-        if(drop_ratio != T(0)){
+        keep_ratio = keep_prob.data<T>()[0];
+        keep_ratio_inv = T(1) / (keep_ratio);
+        if(keep_ratio != T(1)){
             for(int n = 0; n < size; ++n){
-                dx_ptr[n] = dy_ptr[n] * mask_ptr[n] * drop_ratio_inv;
+                dx_ptr[n] = dy_ptr[n] * mask_ptr[n] * keep_ratio_inv;
             }
         }
         else{
@@ -95,11 +95,11 @@ public:
     }
 
 private:
-    Tensor prob;
+    Tensor keep_prob;
     Tensor mask;
     Tensor dy;
     Tensor dx;
-    T drop_ratio, drop_ratio_inv;
+    T keep_ratio, keep_ratio_inv;
     int size;
 };
 

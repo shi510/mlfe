@@ -1,6 +1,6 @@
 #include "dropout.h"
-#include "../core/op_algo.h"
-#include "../core/gradient_helper.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/core/gradient_helper.h"
 
 namespace mlfe{ namespace functional{
 
@@ -16,7 +16,7 @@ public:
         ctx_dx.add_input(dy);
         ctx_dx.add_output(dx);
         ctx_dx.add_attr({"mask", ctx_y.get_attr<Tensor>("mask")});
-        ctx_dx.add_attr({"prob", ctx_y.get_attr<Tensor>("prob")});
+        ctx_dx.add_attr({"keep_prob", ctx_y.get_attr<Tensor>("keep_prob")});
         dx.set_context(ctx_dx);
         x.set_backprop_node(dx.get_node());
         x.set_gradient(dx);
@@ -26,14 +26,14 @@ public:
 
 REGIST_GRADIENT_HELPER(Dropout, DropoutGradient)
 
-Tensor dropout(Tensor x, Tensor prob){
+Tensor dropout(Tensor x, Tensor keep_prob){
     Tensor y = create_variable(x.shape());
     Tensor dropout_mask = create_variable(x.shape());
     OpAlgoContext ctx("Dropout");
     ctx.add_input(x);
     ctx.add_output(y);
     ctx.add_attr({"mask", dropout_mask});
-    ctx.add_attr({"prob", prob});
+    ctx.add_attr({"keep_prob", keep_prob});
     y.set_context(ctx);
 
     return y;

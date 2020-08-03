@@ -8,19 +8,19 @@ using namespace mlfe;
 using namespace mlfe::module;
 using namespace mlfe::module::layers;
 
-Tensor conv_relu_dropout_block(Tensor in, int channels, float drop_ratio)
+Tensor conv_relu_dropout_block(Tensor in, int channels, float keep_ratio)
 {
 	Tensor out = conv2d(channels, 3, 1, true)(in);
 	out = relu()(out);
-	out = dropout(drop_ratio)(out);
+	out = dropout(keep_ratio)(out);
 	return out;
 }
 
-Tensor dense_relu_dropout_block(Tensor in, int out_neurons, float drop_ratio)
+Tensor dense_relu_dropout_block(Tensor in, int out_neurons, float keep_ratio)
 {
 	Tensor out = dense(out_neurons)(in);
 	out = relu()(out);
-	out = dropout(drop_ratio)(out);
+	out = dropout(keep_ratio)(out);
 	return out;
 }
 

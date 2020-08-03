@@ -1,12 +1,10 @@
-#ifndef __DROPOUT_OP_HPP__
-#define __DROPOUT_OP_HPP__
-#include "../core/tensor.h"
+#pragma once
+#include "mlfe/core/tensor.h"
 
 namespace mlfe{
 namespace functional{
 
-Tensor dropout(Tensor x, Tensor prob);
+Tensor dropout(Tensor x, Tensor keep_prob);
 
 } // end namespace functional
 } // end namespace mlfe
-#endif // end #ifndef __DROPOUT_OP_HPP__

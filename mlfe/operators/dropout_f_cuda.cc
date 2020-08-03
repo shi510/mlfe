@@ -1,8 +1,8 @@
-#include "../core/op_algo.h"
-#include "../math/blas.h"
-#include "../math/basic_functions.h"
-#include "../device_context/cuda_context.h"
-#include "../core/device.h"
+#include "mlfe/core/op_algo.h"
+#include "mlfe/math/blas.h"
+#include "mlfe/math/basic_functions.h"
+#include "mlfe/device_context/cuda_context.h"
+#include "mlfe/core/device.h"
 
 namespace mlfe{ namespace algorithm_cuda{
 
@@ -14,7 +14,7 @@ public:
         y = oac->get_output(0);
         x = oac->get_input(0);
         mask = oac->get_attr<Tensor>("mask");
-        prob = oac->get_attr<Tensor>("prob");
+        keep_prob = oac->get_attr<Tensor>("keep_prob");
         resize();
     }
 
@@ -30,11 +30,11 @@ public:
         auto mask_ptr = mask.mutable_device_data<T>();
         auto bernouli_fn = math::bernoulli_distribution<T, CUDAContext>;
 
-        drop_ratio = prob.data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
-        if(drop_ratio != T(0)){
-            bernouli_fn(size, T(1) - drop_ratio, mask_ptr);
-            math::scal<T, CUDAContext>(size, drop_ratio_inv, mask_ptr, y_ptr);
+        keep_ratio = keep_prob.data<T>()[0];
+        keep_ratio_inv = T(1) / keep_ratio;
+        if(keep_ratio != T(1)){
+            bernouli_fn(size, keep_ratio, mask_ptr);
+            math::scal<T, CUDAContext>(size, keep_ratio_inv, mask_ptr, y_ptr);
             math::elementwise_mul<T, CUDAContext>(size, x_ptr, y_ptr, y_ptr);
         }
         else{
@@ -46,8 +46,8 @@ private:
     Tensor x;
     Tensor y;
     Tensor mask;
-    Tensor prob;
-    T drop_ratio, drop_ratio_inv;
+    Tensor keep_prob;
+    T keep_ratio, keep_ratio_inv;
     int size;
 };
 
@@ -70,7 +70,7 @@ public:
         dx = oac->get_output(0);
         dy = oac->get_input(1);
         mask = oac->get_attr<Tensor>("mask");
-        prob = oac->get_attr<Tensor>("prob");
+        keep_prob = oac->get_attr<Tensor>("keep_prob");
         size = dy.size();
     }
 
@@ -78,10 +78,10 @@ public:
         auto dy_ptr = dy.device_data<T>();
         auto dx_ptr = dx.mutable_device_data<T>();
         auto mask_ptr = mask.device_data<T>();
-        drop_ratio = prob.data<T>()[0];
-        drop_ratio_inv = T(1) / (T(1) - drop_ratio);
-        if(drop_ratio != T(0)){
-            math::scal<T, CUDAContext>(size, drop_ratio_inv, mask_ptr, dx_ptr);
+        keep_ratio = keep_prob.data<T>()[0];
+        keep_ratio_inv = T(1) / keep_ratio;
+        if(keep_ratio != T(1)){
+            math::scal<T, CUDAContext>(size, keep_ratio_inv, mask_ptr, dx_ptr);
             math::elementwise_mul<T, CUDAContext>(size, dy_ptr, dx_ptr, dx_ptr);
         }
         else{
@@ -90,11 +90,11 @@ public:
     }
 
 private:
-    Tensor prob;
+    Tensor keep_prob;
     Tensor mask;
     Tensor dy;
     Tensor dx;
-    T drop_ratio, drop_ratio_inv;
+    T keep_ratio, keep_ratio_inv;
     int size;
 };
 
