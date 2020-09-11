@@ -16,6 +16,7 @@ public:
         cudnnCreate(&handle);
         cudnnCreateTensorDescriptor(&x_desc);
         cudnnCreateActivationDescriptor(&act_desc);
+        resize();
     }
 
     void resize() override{
@@ -164,6 +165,7 @@ public:
         cudnnCreate(&handle);
         cudnnCreateTensorDescriptor(&x_desc);
         cudnnCreateActivationDescriptor(&act_desc);
+        resize();
     }
 
     void resize() override {

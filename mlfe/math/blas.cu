@@ -34,7 +34,7 @@ void gemm<float, CUDAContext>(const bool trans_a,
         n, m, k,
         &alpha, b_ptr, (!trans_b) ? n : k,
         a_ptr, (!trans_a) ? k : m,
-        &beta, c_ptr, n) != cudaSuccess) {
+        &beta, c_ptr, n) != CUBLAS_STATUS_SUCCESS) {
         throw std::string("gemm<float, CUDAContext> : cublasSgemm failed.");
     }
 }
@@ -65,7 +65,7 @@ void gemm<double, CUDAContext>(const bool trans_a,
         n, m, k,
         &alpha, b_ptr, (!trans_b) ? n : k,
         a_ptr, (!trans_a) ? k : m,
-        &beta, c_ptr, n) != cudaSuccess) {
+        &beta, c_ptr, n) != CUBLAS_STATUS_SUCCESS) {
         throw std::string("gemm<float, CUDAContext> : cublasDgemm failed.");
     }
 }
@@ -90,7 +90,7 @@ void gemv<float, CUDAContext>(const bool trans_a,
         cuTransA, n, m,
         &alpha, a_ptr,
         n, b_ptr, 1,
-        &beta, c_ptr, 1) != cudaSuccess) {
+        &beta, c_ptr, 1) != CUBLAS_STATUS_SUCCESS) {
         throw std::string("gemv<float, CUDAContext> : cublasSgemv failed.");
     }
 }
@@ -115,7 +115,7 @@ void gemv<double, CUDAContext>(const bool trans_a,
         cuTransA, n, m,
         &alpha, a_ptr,
         n, b_ptr, 1,
-        &beta, c_ptr, 1) != cudaSuccess) {
+        &beta, c_ptr, 1) != CUBLAS_STATUS_SUCCESS) {
         throw std::string("gemv<float, CUDAContext> : cublasDgemv failed.");
     }
 }

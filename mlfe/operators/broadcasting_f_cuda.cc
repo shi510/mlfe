@@ -17,11 +17,12 @@ public:
         if (x.dims() > 4 || y.dims() > 4) {
             throw std::runtime_error("broadcasting only supports upto 4 dimensions.");
         }
-        x_shape.resize(x.shape().size());
-        y_shape.resize(y.shape().size());
+        x_shape.resize(4);
+        y_shape.resize(4);
+        std::fill(x_shape.begin(), x_shape.end(), 1);
+        std::fill(y_shape.begin(), y_shape.end(), 1);
         std::copy(x.shape().begin(), x.shape().end(), x_shape.begin());
         std::copy(y.shape().begin(), y.shape().end(), y_shape.begin());
-        math::check_broadcasting(&x_shape, &y_shape);
     }
 
     void Compute(op_algo_runtime_context& rc) override{
@@ -59,11 +60,12 @@ public:
         if (dy.dims() > 4 || dx.dims() > 4) {
             throw std::runtime_error("broadcasting only supports upto 4 dimensions.");
         }
-        dy_shape.resize(dy.dims());
-        dx_shape.resize(dx.dims());
+        dy_shape.resize(4);
+        dx_shape.resize(4);
+        std::fill(dy_shape.begin(), dy_shape.end(), 1);
+        std::fill(dx_shape.begin(), dx_shape.end(), 1);
         std::copy(dy.shape().begin(), dy.shape().end(), dy_shape.begin());
         std::copy(dx.shape().begin(), dx.shape().end(), dx_shape.begin());
-        math::check_broadcasting(&dx_shape, &dy_shape);
     }
 
     void Compute(op_algo_runtime_context& rc) override{
