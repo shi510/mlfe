@@ -141,6 +141,6 @@ add_subdirectory(${HPTT_ROOT})
 list(APPEND mlfe_include_dirs ${HPTT_ROOT}/include)
 list(APPEND mlfe_library_dependencies hptt)
 
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT MLFE_LITE)
     list(APPEND mlfe_library_dependencies stdc++fs)
 endif()
