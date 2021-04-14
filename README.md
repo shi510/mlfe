@@ -3,6 +3,15 @@
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/shi510/mlfe.svg?branch=master)](https://travis-ci.org/shi510/mlfe)  
 
+## Redesigning the architecture for dynamic execution is in progress now.
+ - The core architecture will be changed massively.  
+ - A large neural network architectures for basic example will be added for large dataset.  
+ - A state of art loss functions will be added.  
+ - ONNX import/export features will get strong.  
+ - The updated commits are merged first to developer_preview branch.  
+
+---
+
 MLFE is a framework for machine learning written by modern C++.  
 Initially this project was for studying on backpropagation algorithm of deep learning, but we decided to develop deeper for mobile platform.  
 So, our goal is to optimize a neural network on mobile platform by quantizing or compressing a neural network.  
