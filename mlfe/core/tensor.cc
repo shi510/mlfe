@@ -28,6 +28,7 @@ struct Tensor::impl{
     std::shared_ptr<class graph> __g;
     node n;
     node backprop_n;
+    std::shared_ptr<Tensor> __grad_v2;
 };
 
 Tensor::Tensor(const bool trainable)
@@ -172,6 +173,11 @@ void Tensor::set_gradient(Tensor t)
     _pimpl->_gradient = std::make_shared<Tensor>(t);
 }
 
+void Tensor::set_gradient_v2()
+{
+    _pimpl->__grad_v2 = std::make_shared<Tensor>();
+}
+
 void Tensor::set_node(node n)
 {
     _pimpl->n = n;
@@ -241,7 +247,79 @@ Tensor Tensor::grad(){
     return *_pimpl->_gradient;
 }
 
-const void *Tensor::_host_data(){
+template <>
+void Tensor::copy_from(std::vector<float> vec){
+    std::copy(vec.begin(), vec.end(), begin<float>());
+}
+
+void Tensor::zero(){
+    using T = float;
+    std::transform(cbegin<T>(), cend<T>(),
+        begin<T>(), [](const T & x){ return T(0);});
+}
+
+void Tensor::one(){
+    using T = float;
+    std::transform(cbegin<T>(), cend<T>(),
+        begin<T>(), [](const T & x){ return T(1);});
+}
+
+void Tensor::add_grad_marker(std::function<void (Tensor)> marker)
+{
+    using T = std::vector<std::function<void (Tensor)>>;
+    (*_pimpl->n.get_attr("grad_marker").data<T>()).push_back(marker);
+}
+
+/*
+    It back-propagates gradient-information to leaf-nodes.
+
+    TODO: this function should only be enabled on root node.
+        1. Check if this node is root.
+*/
+void Tensor::backprop_v2() const
+{
+    using T = std::vector<std::function<void (Tensor)>>;
+    auto topo_list = topological_sort_v2(get_node(), true);
+    auto dy = grad_v2();
+    //
+    // self gradient is 1.
+    //
+    dy.one();
+    for(auto n : topo_list)
+    {
+        T gm_markers = *n.get_attr("grad_marker").data<T>();
+        auto cur_ten = *n.get_attr("tensor").data<Tensor>();
+        dy = cur_ten.grad_v2();
+        // if(gm_markers.size() > 0){
+        //     std::string op_name = *n.get_attr("op_name").data<std::string>();
+            
+        //     std::cout<<op_name<<": ";
+        //     for(int n = 0; n < cur_ten.shape().size(); ++n){
+        //         std::cout<<cur_ten.shape()[n]<<" ";
+        //     }
+        //     std::cout<<" -> dy : ";
+        //     for(int n = 0; n < dy.shape().size(); ++n){
+        //         std::cout<<dy.shape()[n]<<" ";
+        //     }
+        //     std::cout<<std::endl;
+        // }
+        for(auto & gm : gm_markers)
+        {
+            gm(dy);
+        }
+    }
+}
+
+/*
+    This function calculates its gradients.
+    backprop_v2 should be called before calling this function.
+*/
+Tensor Tensor::grad_v2() const
+{
+    return *_pimpl->__grad_v2;
+}
+
+const void *Tensor::_host_data() const {
     return _pimpl->_mem->host_data<void>();
 }
 
@@ -253,7 +331,7 @@ void *Tensor::_mutable_host_data(){
     return _pimpl->_mem->mutable_host_data<void>();
 }
 
-const void *Tensor::_device_data(){
+const void *Tensor::_device_data() const {
     return _pimpl->_mem->device_data<void>();
 }
 
@@ -272,8 +350,12 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
     OpAlgoContext ctx("Identity");
     ctx.add_output(var);
     var.set_trainable(trainable);
+    var.set_gradient_v2();
     var.resize(shape);
+    var.grad_v2().resize(shape);
     var.set_context(ctx);
+    var.get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor)>>());
+    var.get_node().add_attr("tensor", var);
     return var;
 }
 
@@ -282,8 +364,12 @@ Tensor create_variable(std::vector<int> shape, type::TypeInfo ti, const bool tra
     OpAlgoContext ctx("Identity");
     ctx.add_output(var);
     var.set_trainable(trainable);
+    var.set_gradient_v2();
     var.resize(shape, ti);
+    var.grad_v2().resize(shape);
     var.set_context(ctx);
+    var.get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor)>>());
+    var.get_node().add_attr("tensor", var);
     return var;
 }
 

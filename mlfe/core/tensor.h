@@ -78,6 +78,8 @@ public:
 
     void set_gradient(Tensor t);
 
+    void set_gradient_v2();
+
     void set_node(node n);
 
     node& get_node() const;
@@ -99,13 +101,13 @@ public:
     const_iterator<T> cend();
 
     template <typename T>
-    inline const T *data();
+    inline const T *data() const;
 
     template <typename T>
     inline T *mutable_data();
 
     template <typename T>
-    inline const T *device_data();
+    inline const T *device_data() const;
 
     template <typename T>
     inline T *mutable_device_data();
@@ -116,12 +118,25 @@ public:
 
     Tensor grad();
 
+    void zero();
+
+    void one();
+
+    template <typename T>
+    void copy_from(std::vector<T> vec);
+
+    void add_grad_marker(std::function<void (Tensor)> marker);
+
+    void backprop_v2() const;
+
+    Tensor grad_v2() const;
+
 protected:
-    const void *_host_data();
+    const void *_host_data() const;
 
     void *_mutable_host_data();
 
-    const void *_device_data();
+    const void *_device_data() const;
 
     void *_mutable_device_data();
 
@@ -155,7 +170,7 @@ Tensor::const_iterator<T> Tensor::cend(){
 }
 
 template <typename T>
-inline const T *Tensor::data(){
+inline const T *Tensor::data() const {
     return static_cast<const T *>(_host_data());
 }
 
@@ -165,7 +180,7 @@ inline T *Tensor::mutable_data(){
 }
 
 template <typename T>
-inline const T *Tensor::device_data(){
+inline const T *Tensor::device_data() const {
     return static_cast<const T *>(_device_data());
 }
 
