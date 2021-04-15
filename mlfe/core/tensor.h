@@ -44,6 +44,12 @@ public:
 
     bool operator==(const Tensor &v) const;
 
+    template <typename T>
+    Tensor & operator=(const std::vector<T> vals){
+        this->copy_from(vals);
+        return *this;
+    }
+
     void set_context(OpAlgoContext ctx);
 
     OpAlgoContext& get_context() const;
@@ -130,6 +136,25 @@ public:
     void backprop_v2() const;
 
     Tensor grad_v2() const;
+
+    Tensor & operator-=(const mlfe::Tensor & x){
+        using T = float;
+        const T * in_ptr = x.data<T>();
+        T * out_ptr = mutable_data<T>();
+        for(int n = 0; n < x.size(); ++n){
+            out_ptr[n] -= in_ptr[n];
+        }
+        return *this;
+    }
+
+    template <typename T,
+        typename = std::enable_if_t<std::is_same<T, float>::value>
+    >
+    static Tensor from_vector(std::vector<T> vec, std::vector<int> shape){
+        Tensor out = functional::create_variable(shape);
+        out.copy_from(vec);
+        return out;
+    }
 
 protected:
     const void *_host_data() const;

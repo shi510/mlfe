@@ -290,19 +290,6 @@ void Tensor::backprop_v2() const
         T gm_markers = *n.get_attr("grad_marker").data<T>();
         auto cur_ten = *n.get_attr("tensor").data<Tensor>();
         dy = cur_ten.grad_v2();
-        // if(gm_markers.size() > 0){
-        //     std::string op_name = *n.get_attr("op_name").data<std::string>();
-            
-        //     std::cout<<op_name<<": ";
-        //     for(int n = 0; n < cur_ten.shape().size(); ++n){
-        //         std::cout<<cur_ten.shape()[n]<<" ";
-        //     }
-        //     std::cout<<" -> dy : ";
-        //     for(int n = 0; n < dy.shape().size(); ++n){
-        //         std::cout<<dy.shape()[n]<<" ";
-        //     }
-        //     std::cout<<std::endl;
-        // }
         for(auto & gm : gm_markers)
         {
             gm(dy);
@@ -311,7 +298,7 @@ void Tensor::backprop_v2() const
 }
 
 /*
-    This function calculates its gradients.
+    Return its gradients.
     backprop_v2 should be called before calling this function.
 */
 Tensor Tensor::grad_v2() const

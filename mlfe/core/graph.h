@@ -34,7 +34,13 @@ public:
 
     void add_output(node& n);
 
+    void add_input_v2(node& n);
+
+    void add_output_v2(node& n);
+
     std::vector<node>& get_inputs() const;
+
+    std::vector<node> get_inputs_v2() const;
 
     node get_input(int idx) const;
 
@@ -62,7 +68,10 @@ public:
 
     std::string dump() const;
 
+    std::string dump_v2() const;
+
 private:
+    friend struct std::hash<node>;
     struct pimpl;
     std::shared_ptr<pimpl> __pimpl;
 };
@@ -72,6 +81,8 @@ private:
 //
 
 std::vector<node> topological_sort(const node& r);
+
+std::vector<node> topological_sort_v2(const node& r, bool reverse=false);
 
 class graph
 {
@@ -91,3 +102,13 @@ private:
 std::shared_ptr<graph> get_default_graph();
 
 } // end namespace mlfe
+
+
+namespace std{
+
+template <>
+struct hash<mlfe::node>{
+    size_t operator()(const mlfe::node &n) const;
+};
+
+} // end namespace std
