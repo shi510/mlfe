@@ -1,14 +1,11 @@
 #include <gtest/gtest.h>
 #include <mlfe/operators_v2/relu.h>
-#include <mlfe/math/basic_functions.h>
 #include <mlfe/utils/gradient_checker.h>
-#include <cmath>
 #include <random>
-#include <chrono>
 
-namespace fn = mlfe::functional;
+using namespace mlfe;
 using namespace mlfe::operators_v2;
-
+namespace fn = mlfe::functional;
 
 TEST(operator_v2, relu){
     using T = float;
@@ -26,7 +23,7 @@ TEST(operator_v2, relu_grad){
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
     auto x = fn::create_variable({2, 2});
-    auto analytical = std::vector<T>(x.size());
+    auto analytical = fn::create_variable(x.shape());
     std::mt19937 rng;
     std::uniform_real_distribution<T> dist(-1, 1);
 
@@ -35,16 +32,11 @@ TEST(operator_v2, relu_grad){
     });
     auto result = relu(x);
     result.backprop_v2();
-    std::copy(x.grad_v2().begin<T>(), x.grad_v2().end<T>(), analytical.begin());
+    std::copy(x.grad_v2().begin<T>(), x.grad_v2().end<T>(), analytical.begin<T>());
     auto func = [](mlfe::Tensor& x){
         return relu(x);
     };
     auto numerical = numerical_gradient_v2(func, x, grad_eps);
-    auto diff = calculate_gradient_diff(numerical, analytical);
+    auto diff = calculate_gradient_diff<T>(numerical, analytical);
     EXPECT_NEAR(diff, T(0), pass_eps);
-    for(int n = 0; n < x.size(); ++n){
-        auto diff = std::abs(analytical.data()[n] - numerical.data<T>()[n]);
-        EXPECT_LE(diff, pass_eps);
-        EXPECT_GE(diff, -pass_eps);
-    }
 }

@@ -1,6 +1,5 @@
 #pragma once
 #include "mlfe/core/tuple_iter.h"
-#include "mlfe/core/tensor.h"
 #include <tuple>
 #include <functional>
 #include <string>
@@ -11,13 +10,10 @@ namespace operators_v2{
 template <typename op_type, typename fn_type>
 struct op_kernel_impl
 {
-    template <typename ...arguments>
-    auto operator()(arguments ...args)
-    {
-        return fn(args...);
-    }
-
+    static fn_type get_kernel_fn() { return fn; }
     static fn_type fn;
+    static fn_type fn_cpu;
+    static fn_type fn_cuda;
     static std::string name;
 };
 
@@ -80,7 +76,7 @@ void call(marker::I<I...> inputs, marker::O<O...> outputs, T ...args)
             y.get_node().add_attr("op_name", K::name);
         }
     }
-    std::apply(K::fn,
+    std::apply(K::get_kernel_fn(),
         std::tuple_cat(inputs.list, outputs.list, std::tuple<T...>(args...)));
 }
 

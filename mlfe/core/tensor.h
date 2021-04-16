@@ -137,15 +137,11 @@ public:
 
     Tensor grad_v2() const;
 
-    Tensor & operator-=(const mlfe::Tensor & x){
-        using T = float;
-        const T * in_ptr = x.data<T>();
-        T * out_ptr = mutable_data<T>();
-        for(int n = 0; n < x.size(); ++n){
-            out_ptr[n] -= in_ptr[n];
-        }
-        return *this;
-    }
+    Tensor & operator-=(const Tensor & x);
+
+    Tensor operator*(const float & val) const;
+
+    Tensor operator-(const Tensor & other) const;
 
     template <typename T,
         typename = std::enable_if_t<std::is_same<T, float>::value>
@@ -173,6 +169,8 @@ private:
     struct impl;
     std::shared_ptr<impl> _pimpl;
 };
+
+Tensor operator*(const float & val, const Tensor & x);
 
 template <typename T>
 Tensor::iterator<T> Tensor::begin(){

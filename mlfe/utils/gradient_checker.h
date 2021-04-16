@@ -70,7 +70,7 @@ Tensor numerical_gradient_v2(F func, Tensor theta, const T eps){
 }
 
 template <typename T>
-T l2_norm(const mlfe::Tensor & x)
+T l2_norm(const Tensor & x)
 {
     T square_sum = T(0);
     for(int n = 0; n < x.size(); ++n){
@@ -80,32 +80,11 @@ T l2_norm(const mlfe::Tensor & x)
 }
 
 template <typename T>
-T l2_norm(const std::vector<T> & x)
+T calculate_gradient_diff(const Tensor & numerical_grad, const Tensor & analytical_grad)
 {
-    T square_sum = T(0);
-    for(int n = 0; n < x.size(); ++n){
-        square_sum += x[n] * x[n];
-    }
-    return std::sqrt(square_sum);
-}
-
-template <typename T>
-std::vector<T> operator-(const mlfe::Tensor & a, const std::vector<T> & b)
-{
-    std::vector<T> c(b.size());
-    for(int n = 0; n < b.size(); ++n)
-    {
-        c[n] = a.data<T>()[n] - b[n];
-    }
-    return c;
-}
-
-template <typename T>
-T calculate_gradient_diff(const Tensor & numerical_grad, const std::vector<T> & analytical_grad)
-{
-    auto a_norm = l2_norm(analytical_grad);
+    auto a_norm = l2_norm<T>(analytical_grad);
     auto n_norm = l2_norm<T>(numerical_grad);
-    auto norm = l2_norm(numerical_grad - analytical_grad);
+    auto norm = l2_norm<T>(numerical_grad - analytical_grad);
     return norm / (a_norm + n_norm);
 }
 

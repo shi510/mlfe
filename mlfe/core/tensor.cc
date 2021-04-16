@@ -330,6 +330,41 @@ void *Tensor::_mutable_device_data(){
     return _pimpl->_mem->mutable_device_data<void>();
 }
 
+Tensor & Tensor::operator-=(const Tensor & x){
+    using T = float;
+    const T * in_ptr = x.data<T>();
+    T * out_ptr = mutable_data<T>();
+    for(int n = 0; n < x.size(); ++n){
+        out_ptr[n] -= in_ptr[n];
+    }
+    return *this;
+}
+
+Tensor Tensor::operator*(const float & val) const{
+    using T = float;
+    Tensor y = functional::create_variable(this->shape());
+    const T * x_ptr = this->data<T>();
+    T * y_ptr = y.mutable_data<T>();
+    for(int n = 0; n < this->size(); ++n){
+        y_ptr[n] = val * x_ptr[n];
+    }
+    return y;
+}
+
+Tensor Tensor::operator-(const Tensor & other) const{
+    using T = float;
+    Tensor y = functional::create_variable(this->shape());
+    const T * x_ptr = this->data<T>();
+    const T * other_ptr = other.data<T>();
+    T * y_ptr = y.mutable_data<T>();
+    for(int n = 0; n < this->size(); ++n){
+        y_ptr[n] = x_ptr[n] - other_ptr[n];
+    }
+    return y;
+}
+
+Tensor operator*(const float & val, const Tensor & x){ return x * val; }
+
 namespace functional{
 
 Tensor create_variable(std::vector<int> shape, const bool trainable){
