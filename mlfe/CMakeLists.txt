@@ -11,6 +11,7 @@ add_subdirectory(device_context)
 add_subdirectory(math)
 add_subdirectory(module)
 add_subdirectory(operators)
+add_subdirectory(operators_v2)
 add_subdirectory(optimizers)
 add_subdirectory(utils)
 
