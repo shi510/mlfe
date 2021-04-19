@@ -5,7 +5,7 @@
 
 namespace mlfe{
 namespace operators_v2{
-namespace impl_cpu{
+namespace{
 
 template <typename T>
 void matmul_fwd_impl(Tensor a, Tensor b, Tensor y, bool transpose_a, bool transpose_b){
@@ -24,8 +24,9 @@ void matmul_fwd_impl(Tensor a, Tensor b, Tensor y, bool transpose_a, bool transp
         T(0), y_ptr, y.shape()[1], nullptr);
 }
 
-REGIST_OP_KERNEL(matmul_fwd, matmul_fwd_fn_t, impl_cpu::matmul_fwd_impl<float>);
+} // namespace anonymous
 
-} // namespace impl_cpu
+REGIST_OP_KERNEL(matmul_fwd, matmul_fwd_fn_t, matmul_fwd_impl<float>);
+
 } // namespace algorithm_cpu
 } // namespace mlfe

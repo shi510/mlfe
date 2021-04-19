@@ -4,7 +4,7 @@
 
 namespace mlfe{
 namespace operators_v2{
-namespace impl_cpu{
+namespace {
 
 template <typename T>
 void reduce_mean_fwd_impl(Tensor x, Tensor y){
@@ -17,12 +17,6 @@ void reduce_mean_fwd_impl(Tensor x, Tensor y){
     }
     y_ptr[0] = sum / T(size);
 }
-
-REGIST_OP_KERNEL(
-    reduce_mean_fwd,
-    reduce_mean_fwd_fn_t,
-    impl_cpu::reduce_mean_fwd_impl<float>
-    );
 
 template <typename T>
 void reduce_mean_bwd_impl(Tensor dy, Tensor dx){
@@ -37,12 +31,19 @@ void reduce_mean_bwd_impl(Tensor dy, Tensor dx){
     }
 }
 
+} // namespace anonymous
+
+REGIST_OP_KERNEL(
+    reduce_mean_fwd,
+    reduce_mean_fwd_fn_t,
+    reduce_mean_fwd_impl<float>
+    );
+
 REGIST_OP_KERNEL(
     reduce_mean_bwd,
     reduce_mean_bwd_fn_t,
-    impl_cpu::reduce_mean_bwd_impl<float>
+    reduce_mean_bwd_impl<float>
     );
 
-} // namespace impl_cpu
 } // namespace op_kernels_cpu
 } // namespace mlfe

@@ -7,7 +7,7 @@
 
 namespace mlfe{
 namespace operators_v2{
-namespace impl_cpu{
+namespace {
 
 template <typename T>
 struct softmax_cross_entropy_with_logits
@@ -152,29 +152,29 @@ struct softmax_cross_entropy_with_logits_grad {
     }
 };
 
-
 template <typename T>
 void softmax_xent_fwd_impl(Tensor labels, Tensor logits, Tensor y){
     softmax_cross_entropy_with_logits<T>::run(labels, logits, y);
 }
-
-REGIST_OP_KERNEL(
-    softmax_xent_fwd,
-    softmax_xent_fwd_fn_t,
-    impl_cpu::softmax_xent_fwd_impl<float>
-    );
 
 template <typename T>
 void softmax_xent_bwd_impl(Tensor labels, Tensor logits, Tensor dy, Tensor dx){
     softmax_cross_entropy_with_logits_grad<T>::run(labels, logits, dy, dx);
 }
 
+} // namespace anonymous
+
 REGIST_OP_KERNEL(
     softmax_xent_bwd,
     softmax_xent_bwd_fn_t,
-    impl_cpu::softmax_xent_bwd_impl<float>
+    softmax_xent_bwd_impl<float>
     );
 
-} // namespace impl_cpu
+REGIST_OP_KERNEL(
+    softmax_xent_fwd,
+    softmax_xent_fwd_fn_t,
+    softmax_xent_fwd_impl<float>
+    );
+
 } // namespace op_kernels_cpu
 } // namespace mlfe

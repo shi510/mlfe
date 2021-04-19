@@ -5,7 +5,7 @@
 
 namespace mlfe{
 namespace operators_v2{
-namespace impl_cpu{
+namespace {
 
 template <typename T>
 void relu_fwd_impl(Tensor x, Tensor y){
@@ -13,8 +13,6 @@ void relu_fwd_impl(Tensor x, Tensor y){
     auto y_ptr = y.mutable_device_data<T>();
     math::relu<T, CPUContext>(x.size(), x_ptr, y_ptr);
 }
-
-REGIST_OP_KERNEL(relu_fwd, relu_fwd_fn_t, impl_cpu::relu_fwd_impl<float>);
 
 template <typename T>
 void relu_bwd_impl(Tensor x, Tensor dy, Tensor dx){
@@ -25,8 +23,11 @@ void relu_bwd_impl(Tensor x, Tensor dy, Tensor dx){
     math::relu_gradient<T, CPUContext>(size, x_ptr, dy_ptr, dx_ptr);
 }
 
-REGIST_OP_KERNEL(relu_bwd, relu_bwd_fn_t, impl_cpu::relu_bwd_impl<float>);
+} // namespace anonymous
 
-} // namespace impl_cpu
+REGIST_OP_KERNEL(relu_fwd, relu_fwd_fn_t, relu_fwd_impl<float>);
+
+REGIST_OP_KERNEL(relu_bwd, relu_bwd_fn_t, relu_bwd_impl<float>);
+
 } // namespace op_kernels_cpu
 } // namespace mlfe
