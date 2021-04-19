@@ -39,6 +39,10 @@ attribute::attribute() : __p(std::make_shared<pimpl>()){}
 
 void attribute::add(std::string name, item attr_val)
 {
+    auto iter = __p->attrs.find(name);
+    if(iter != __p->attrs.end()){
+        __p->attrs.erase(iter);
+    }
     __p->attrs[name] = attr_val;
 }
 

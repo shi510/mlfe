@@ -28,7 +28,6 @@ struct Tensor::impl{
     std::shared_ptr<class graph> __g;
     node n;
     node backprop_n;
-    std::shared_ptr<Tensor> __grad_v2;
 };
 
 Tensor::Tensor(const bool trainable)
@@ -175,7 +174,8 @@ void Tensor::set_gradient(Tensor t)
 
 void Tensor::set_gradient_v2()
 {
-    _pimpl->__grad_v2 = std::make_shared<Tensor>();
+    get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor)>>());
+    get_node().add_attr("grad", std::make_shared<Tensor>());
 }
 
 void Tensor::set_node(node n)
@@ -288,8 +288,7 @@ void Tensor::backprop_v2() const
     for(auto n : topo_list)
     {
         T gm_markers = *n.get_attr("grad_marker").data<T>();
-        auto cur_ten = *n.get_attr("tensor").data<Tensor>();
-        dy = cur_ten.grad_v2();
+        dy = *(*n.get_attr("grad").data<std::shared_ptr<Tensor>>());
         for(auto & gm : gm_markers)
         {
             gm(dy);
@@ -301,9 +300,9 @@ void Tensor::backprop_v2() const
     Return its gradients.
     backprop_v2 should be called before calling this function.
 */
-Tensor Tensor::grad_v2() const
+Tensor & Tensor::grad_v2() const
 {
-    return *_pimpl->__grad_v2;
+    return **_pimpl->n.get_attr("grad").data<Tensor *>();
 }
 
 const void *Tensor::_host_data() const {
@@ -372,12 +371,10 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
     OpAlgoContext ctx("Identity");
     ctx.add_output(var);
     var.set_trainable(trainable);
+    var.set_context(ctx);
     var.set_gradient_v2();
     var.resize(shape);
     var.grad_v2().resize(shape);
-    var.set_context(ctx);
-    var.get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor)>>());
-    var.get_node().add_attr("tensor", var);
     return var;
 }
 

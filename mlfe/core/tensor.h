@@ -135,7 +135,7 @@ public:
 
     void backprop_v2() const;
 
-    Tensor grad_v2() const;
+    Tensor & grad_v2() const;
 
     Tensor & operator-=(const Tensor & x);
 
