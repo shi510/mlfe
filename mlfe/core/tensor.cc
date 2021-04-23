@@ -149,7 +149,11 @@ int Tensor::dims() const
 
 int Tensor::dim(int idx) const
 {
-    return _pimpl->__shape[idx];
+    int d = 0;
+    if(_pimpl->__shape.size() > idx){ d = _pimpl->__shape[idx]; }
+    else if(_pimpl->__shape.size() == 0){ d = 0; }
+    else { std::runtime_error("Tensor::shape.size() <= idx"); }
+    return d;
 }
 
 const std::vector<int>& Tensor::shape() const

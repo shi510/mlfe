@@ -148,7 +148,16 @@ public:
     >
     static Tensor from_vector(std::vector<T> vec, std::vector<int> shape){
         Tensor out = functional::create_variable(shape);
-        out.copy_from(vec);
+        std::copy(vec.begin(), vec.end(), out.begin<float>());
+        return out;
+    }
+
+    template <typename T,
+        typename = std::enable_if_t<std::is_fundamental_v<T>>
+    >
+    static Tensor from_scalar(const T val){
+        Tensor out = functional::create_variable({});
+        out.mutable_data<T>()[0] = val;
         return out;
     }
 

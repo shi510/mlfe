@@ -155,28 +155,22 @@ void col2im<double, CPUContext>(double* data_col,
 }
 
 std::vector<int>
-check_broadcasting(std::vector<int>* a, std::vector<int>* b)
+check_broadcasting(const std::vector<int>* a, const std::vector<int>* b)
 {
     std::vector<int> shape;
-    int max = std::max(a->size(), b->size());
-    while (max != a->size()) {
-        a->insert(a->begin(), 1);
-    }
-    while (max != b->size()) {
-        b->insert(b->begin(), 1);
-    }
+    std::vector<int> a_shape(*a);
+    std::vector<int> b_shape(*b);
+    int max = std::max(a_shape.size(), b_shape.size());
+    while (max != a_shape.size()) { a_shape.insert(a_shape.begin(), 1); }
+    while (max != b_shape.size()) { b_shape.insert(b_shape.begin(), 1); }
     shape.resize(max);
     for (int n = max - 1; n >= 1; --n) {
-        int a_at = a->at(n);
-        int b_at = b->at(n);
-        if (a_at != 1 && b_at != 1 && a_at != b_at) {
-            return std::vector<int>();
-        }
-        else {
-            shape[n] = std::max(a_at, b_at);
-        }
+        auto & a_at = a_shape[n];
+        auto & b_at = b_shape[n];
+        if (a_at != 1 && b_at != 1 && a_at != b_at) { return {}; }
+        else { shape[n] = std::max(a_at, b_at); }
     }
-    shape[0] = std::max(a->at(0), b->at(0));
+    shape[0] = std::max(a_shape.at(0), b_shape.at(0));
     return shape;
 }
 

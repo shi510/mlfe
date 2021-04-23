@@ -37,7 +37,7 @@ void MaxPoolGradient(
     const int stride_h, const int stride_w, const int pad_h, const int pad_w,
     float *dx);
 
-std::vector<int> check_broadcasting(std::vector<int>* a, std::vector<int>* b);
+std::vector<int> check_broadcasting(const std::vector<int>* a, const std::vector<int>* b);
 
 template <class T, class D>
 void broadcast(const T *x, T *y,
