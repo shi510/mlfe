@@ -137,11 +137,15 @@ public:
 
     Tensor & grad_v2() const;
 
-    Tensor & operator-=(const Tensor & x);
+    Tensor & operator+=(const Tensor & other);
+    Tensor & operator-=(const Tensor & other);
+    Tensor & operator*=(const Tensor & other);
+    Tensor & operator/=(const Tensor & other);
 
-    Tensor operator*(const float & val) const;
-
+    Tensor operator+(const Tensor & other) const;
     Tensor operator-(const Tensor & other) const;
+    Tensor operator*(const Tensor & other) const;
+    Tensor operator/(const Tensor & other) const;
 
     template <typename T,
         typename = std::enable_if_t<std::is_same<T, float>::value>
@@ -179,6 +183,9 @@ private:
     std::shared_ptr<impl> _pimpl;
 };
 
+Tensor operator+(const float & val, const Tensor & x);
+Tensor operator-(const float & val, const Tensor & x);
+Tensor operator/(const float & val, const Tensor & x);
 Tensor operator*(const float & val, const Tensor & x);
 
 template <typename T>

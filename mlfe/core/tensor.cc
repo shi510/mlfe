@@ -5,6 +5,8 @@
 #include "gradient_helper.h"
 #include "mlfe/operators/initializer.h"
 #include "mlfe/operators/basic_arithmetics.h"
+#include "mlfe/operators_v2/basic_arithmetic.h"
+#include "mlfe/math/basic_functions.h"
 #include "mlfe/utils/assert.h"
 #include <algorithm>
 #include <numeric>
@@ -333,40 +335,50 @@ void *Tensor::_mutable_device_data(){
     return _pimpl->_mem->mutable_device_data<void>();
 }
 
-Tensor & Tensor::operator-=(const Tensor & x){
-    using T = float;
-    const T * in_ptr = x.data<T>();
-    T * out_ptr = mutable_data<T>();
-    for(int n = 0; n < x.size(); ++n){
-        out_ptr[n] -= in_ptr[n];
-    }
+Tensor & Tensor::operator+=(const Tensor & other){
+    Tensor result = operators_v2::add(*this, other);
+    copy(result.get_memory(), _pimpl->_mem);
     return *this;
 }
 
-Tensor Tensor::operator*(const float & val) const{
-    using T = float;
-    Tensor y = functional::create_variable(this->shape());
-    const T * x_ptr = this->data<T>();
-    T * y_ptr = y.mutable_data<T>();
-    for(int n = 0; n < this->size(); ++n){
-        y_ptr[n] = val * x_ptr[n];
-    }
-    return y;
+Tensor & Tensor::operator-=(const Tensor & other){
+    Tensor result = operators_v2::sub(*this, other);
+    copy(result.get_memory(), _pimpl->_mem);
+    return *this;
+}
+
+Tensor & Tensor::operator*=(const Tensor & other){
+    Tensor result = operators_v2::mul(*this, other);
+    copy(result.get_memory(), _pimpl->_mem);
+    return *this;
+}
+
+Tensor & Tensor::operator/=(const Tensor & other){
+    Tensor result = operators_v2::div(*this, other);
+    copy(result.get_memory(), _pimpl->_mem);
+    return *this;
+}
+
+Tensor Tensor::operator+(const Tensor & other) const{
+    return operators_v2::add(*this, other);
 }
 
 Tensor Tensor::operator-(const Tensor & other) const{
-    using T = float;
-    Tensor y = functional::create_variable(this->shape());
-    const T * x_ptr = this->data<T>();
-    const T * other_ptr = other.data<T>();
-    T * y_ptr = y.mutable_data<T>();
-    for(int n = 0; n < this->size(); ++n){
-        y_ptr[n] = x_ptr[n] - other_ptr[n];
-    }
-    return y;
+    return operators_v2::sub(*this, other);
 }
 
-Tensor operator*(const float & val, const Tensor & x){ return x * val; }
+Tensor Tensor::operator*(const Tensor & other) const{
+    return operators_v2::mul(*this, other);
+}
+
+Tensor Tensor::operator/(const Tensor & other) const{
+    return operators_v2::div(*this, other);
+}
+
+Tensor operator+(const float & val, const Tensor & x){ return x + Tensor::from_scalar(val); }
+Tensor operator-(const float & val, const Tensor & x){ return x - Tensor::from_scalar(val); }
+Tensor operator*(const float & val, const Tensor & x){ return x * Tensor::from_scalar(val); }
+Tensor operator/(const float & val, const Tensor & x){ return x / Tensor::from_scalar(val); }
 
 namespace functional{
 
