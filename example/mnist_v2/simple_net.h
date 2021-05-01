@@ -12,16 +12,21 @@ namespace fn = mlfe::functional;
 
 struct mnist_simple_net
 {
+    Tensor weights;
+    Tensor biases;
+
     mnist_simple_net(int input_size, int out_size)
     {
-        this->weights = fn::create_variable({input_size, out_size});
+        weights = fn::create_variable({input_size, out_size});
+        biases = fn::create_variable({out_size});
         std::fill(weights.begin<float>(), weights.end<float>(), 0.f);
+        std::fill(biases.begin<float>(), biases.end<float>(), 0.1f);
     }
 
     Tensor forward(Tensor x)
     {
         auto logits = op::matmul(x, weights);
-        return logits;
+        return logits + biases;
     }
 
     Tensor criterion(Tensor y_true, Tensor y_pred)
@@ -34,14 +39,14 @@ struct mnist_simple_net
     void update_weights(float lr)
     {
         weights -= lr * weights.grad_v2();
+        biases -= 2.f * lr * biases.grad_v2();
     }
 
     void zero_grad()
     {
         weights.grad_v2().zero();
+        biases.grad_v2().zero();
     }
-
-    Tensor weights;
 };
 
 } // end namespace models

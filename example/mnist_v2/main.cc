@@ -64,14 +64,13 @@ void fill_batch(
 
 void train_simplenet(
     dataset::mnist_gen train_set,
-    dataset::mnist_gen valid_set
-    )
+    dataset::mnist_gen valid_set)
 {
-    const int BATCH = 32;
+    const int BATCH = 64;
     const int EPOCH = 1;
     const int INPUT_SIZE = 28 * 28;
     const int OUTPUT_SIZE = 10;
-    const int NUM_ITER = 1000; //train_set.size() / BATCH;
+    const int NUM_ITER = train_set.size() / BATCH;
 
     auto model = models::mnist_simple_net(INPUT_SIZE, OUTPUT_SIZE);
     auto images = std::vector<float>(BATCH*INPUT_SIZE);
