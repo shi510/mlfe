@@ -58,11 +58,5 @@ Tensor sub(Tensor a, Tensor b);
 Tensor mul(Tensor a, Tensor b);
 Tensor div(Tensor a, Tensor b);
 
-
-void add_inplace(Tensor a, Tensor b);
-void sub_inplace(Tensor a, Tensor b);
-void mul_inplace(Tensor a, Tensor b);
-void div_inplace(Tensor a, Tensor b);
-
 } // namespace operators_v2
 } // namespace mlfe

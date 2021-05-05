@@ -23,11 +23,11 @@ Tensor conv2d(
         std::runtime_error("Wrong parameter of conv2d");
     }
     int out_h = utils::calc_conv_output(
-        x.shape()[2], kernel.shape()[2], strides[0], paddings[0]);
+        x.shape()[1], kernel.shape()[0], strides[0], paddings[0]);
     int out_w = utils::calc_conv_output(
-        x.shape()[3], kernel.shape()[3], strides[1], paddings[1]);
+        x.shape()[2], kernel.shape()[1], strides[1], paddings[1]);
     auto y =
-        functional::create_variable({x.shape()[0], kernel.shape()[0], out_h, out_w});
+        functional::create_variable({x.shape()[0], out_h, out_w, kernel.shape()[3]});
     auto gm_x = [=](Tensor dy){
         conv2d_input_bwd_kernel::fn(kernel, dy, x.grad_v2(), strides, paddings);
     };
@@ -49,10 +49,10 @@ Tensor conv2d(
     )
 {
     int ph = utils::calc_conv_same_output_padding_size(
-        x.shape()[2], kernel.shape()[2], strides[0]);
+        x.shape()[1], kernel.shape()[0], strides[0]);
     int pw = utils::calc_conv_same_output_padding_size(
-        x.shape()[3], kernel.shape()[3], strides[1]);
-    return conv2d(x, kernel, {ph, pw});
+        x.shape()[2], kernel.shape()[1], strides[1]);
+    return conv2d(x, kernel, strides, {ph, pw});
 }
 
 } // namespace operators_v2

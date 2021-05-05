@@ -6,7 +6,7 @@
 namespace mlfe{ namespace math{
 
 template <>
-void im2col<float, CPUContext>(const int channel,
+void im2col_nchw<float, CPUContext>(const int channel,
                                const int height,
                                const int width,
                                const int kernel_h,
@@ -43,7 +43,42 @@ void im2col<float, CPUContext>(const int channel,
 }
 
 template <>
-void im2col<double, CPUContext>(const int channel,
+void im2col_nhwc<float, CPUContext>(const int IC,
+                               const int IH,
+                               const int IW,
+                               const int KH,
+                               const int KW,
+                               const int stride,
+                               const int padding,
+                               const float *im_ptr,
+                               float *col_ptr
+                               ){
+    const int COL_SIZE = IC * KW * KH;
+    const int OH = (IH + 2 * padding - KH) / stride + 1;
+    const int OW = (IW + 2 * padding - KW) / stride + 1;
+
+    for (int c = 0; c < COL_SIZE; ++c) {
+        int h_offset = c / IC / KW;
+        int w_offset = (c / IC) % KW;
+        int c_im = c % IC;
+        for (int h = 0; h < OH; ++h) {
+            for (int w = 0; w < OW; ++w) {
+                int im_row = h_offset + h * stride - padding;
+                int im_col = w_offset + w * stride - padding;
+                if(im_row < 0 || im_col < 0 || im_row >= IH || im_col >= IW){
+                    continue;
+                }
+                else{
+                    int col_index = (c * OH + h) * OW + w;
+                    col_ptr[col_index] = im_ptr[c_im + IC * (im_col + IW * im_row)];
+                }
+            }
+        }
+    }
+}
+
+template <>
+void im2col_nchw<double, CPUContext>(const int channel,
                                 const int height,
                                 const int width,
                                 const int kernel_h,
@@ -91,7 +126,7 @@ void col2im_add_pixel(DataType *im, int height, int width, int channels,
 }
 
 template <>
-void col2im<float, CPUContext>(float* data_col,
+void col2im_nchw<float, CPUContext>(float* data_col,
                                int channels,
                                int height,
                                int width,
@@ -123,7 +158,7 @@ void col2im<float, CPUContext>(float* data_col,
 }
 
 template <>
-void col2im<double, CPUContext>(double* data_col,
+void col2im_nchw<double, CPUContext>(double* data_col,
                                 int channels,
                                 int height,
                                 int width,
@@ -149,6 +184,36 @@ void col2im<double, CPUContext>(double* data_col,
                 float val = data_col[col_index];
                 col2im_add_pixel<double>(data_im, height, width, channels,
                                          im_row, im_col, c_im, pad, val);
+            }
+        }
+    }
+}
+
+template <>
+void col2im_nhwc<float, CPUContext>(float* data_col,
+                               int IC,
+                               int IH,
+                               int IW,
+                               int ksize,
+                               int stride,
+                               int pad,
+                               float* data_im
+                               ){
+    const int COL_SIZE = ksize * ksize * IC;
+    const int OH = (IH + 2*pad - ksize) / stride + 1;
+    const int OW = (IW + 2*pad - ksize) / stride + 1;
+
+    for (int c = 0; c < COL_SIZE; ++c) {
+        int h_offset = c / IC / ksize;
+        int w_offset = (c / IC) % ksize;
+        int c_im = c % IC;
+        for (int h = 0; h < OH; ++h) {
+            for (int w = 0; w < OW; ++w) {
+                int im_row = h_offset + h * stride - pad;
+                int im_col = w_offset + w * stride - pad;
+                if (im_row < 0 || im_col < 0 || im_row >= IH || im_col >= IW){ continue; }
+                int col_index = (c * OH + h) * OW + w;
+                data_im[c_im + IC *(im_col + im_row*IW)] += data_col[col_index];
             }
         }
     }

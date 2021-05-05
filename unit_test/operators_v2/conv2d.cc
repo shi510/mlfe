@@ -2,6 +2,7 @@
 #include <mlfe/operators_v2/conv2d.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
+#include <iostream>
 
 using namespace mlfe;
 using namespace mlfe::operators_v2;
@@ -18,22 +19,25 @@ TEST(operator_v2, conv2d_k3_s1_p0){
     constexpr int co = 1;
     constexpr int k1 = 3;
     constexpr int k2 = 3;
-    auto x = fn::create_variable({b, ci, hi, wi});
-    auto w = fn::create_variable({co, ci, k1, k2});
+    auto x = fn::create_variable({b, hi, wi, ci});
+    auto w = fn::create_variable({k1, k2, ci, co});
     // x =
     //    [  1  2  3  4    [  1  5  9 13
     //       5  6  7  8       2  6 10 14
     //       9 10 11 12       3  7 11 15
     //      13 14 15 16 ]     4  8 12 16 ]
-    for(int n = 0; n < hi * wi; ++n){
-        x.mutable_data<T>()[n] = n + 1;
+    for(int r = 0; r < hi; ++r){
+        for(int c = 0; c < wi; ++c){
+            const int idx = r * wi * ci + c * ci;
+            x.mutable_data<T>()[idx] = r * wi + c + 1;
+            
+        }
     }
 
     for(int c = 0; c < wi; ++c){
         for(int r = 0; r < hi; ++r){
-            const int offset = hi * wi;
-            const int idx = offset + r * wi + c;
-            x.mutable_data<T>()[idx] = c * hi + r + 1;
+            const int idx = r * wi * ci + c * ci + 1;
+            x.mutable_data<T>()[idx] = r + c * hi + 1;
         }
     }
 
@@ -41,17 +45,20 @@ TEST(operator_v2, conv2d_k3_s1_p0){
     //    [ 0.1 0.2 0.3    [ 0.1 0.4 0.7
     //      0.4 0.5 0.6      0.2 0.5 0.8
     //      0.7 0.8 0.9 ]    0.3 0.6 0.9 ]
-    for(int n = 0; n < k1 * k2; ++n){
-        w.mutable_data<T>()[n] = (n + 1) * T(1e-1);
+    for(int r = 0; r < k1; ++r){
+        for(int c = 0; c < k2; ++c){
+            const int idx = r * k2 * ci * co + c * ci * co;
+            w.mutable_data<T>()[idx] = (r * k2 + c + 1) * T(1e-1);
+        }
     }
 
     for(int c = 0; c < k2; ++c){
         for(int r = 0; r < k1; ++r){
-            const int offset = k1 * k2;
-            const int idx = offset + r * k2 + c;
-            w.mutable_data<T>()[idx] = (c * k1 + r + 1) * T(1e-1);
+            const int idx = r * k2 * ci * co + c * ci * co + 1 * co;
+            w.mutable_data<T>()[idx] = (r + c * k1 + 1) * T(1e-1);
         }
     }
+
     auto y = conv2d(x, w, {1, 1}, {0, 0});
 
     //y(0, 0) = 1 * 0.1 +  2 * 0.2 +  3 * 0.3 +
@@ -110,22 +117,25 @@ TEST(operator_v2, conv2d_k3_s2_p1){
     constexpr int co = 1;
     constexpr int k1 = 3;
     constexpr int k2 = 3;
-    auto x = fn::create_variable({b, ci, hi, wi});
-    auto w = fn::create_variable({co, ci, k1, k2});
+    auto x = fn::create_variable({b, hi, wi, ci});
+    auto w = fn::create_variable({k1, k2, ci, co});
     // x =
     //    [  1  2  3  4    [  1  5  9 13
     //       5  6  7  8       2  6 10 14
     //       9 10 11 12       3  7 11 15
     //      13 14 15 16 ]     4  8 12 16 ]
-    for(int n = 0; n < hi * wi; ++n){
-        x.mutable_data<T>()[n] = n + 1;
+    for(int r = 0; r < hi; ++r){
+        for(int c = 0; c < wi; ++c){
+            const int idx = r * wi * ci + c * ci;
+            x.mutable_data<T>()[idx] = r * wi + c + 1;
+            
+        }
     }
 
     for(int c = 0; c < wi; ++c){
         for(int r = 0; r < hi; ++r){
-            const int offset = hi * wi;
-            const int idx = offset + r * wi + c;
-            x.mutable_data<T>()[idx] = c * hi + r + 1;
+            const int idx = r * wi * ci + c * ci + 1;
+            x.mutable_data<T>()[idx] = r + c * hi + 1;
         }
     }
 
@@ -133,22 +143,24 @@ TEST(operator_v2, conv2d_k3_s2_p1){
     //    [ 0.1 0.2 0.3    [ 0.1 0.4 0.7
     //      0.4 0.5 0.6      0.2 0.5 0.8
     //      0.7 0.8 0.9 ]    0.3 0.6 0.9 ]
-    for(int n = 0; n < k1 * k2; ++n){
-        w.mutable_data<T>()[n] = (n + 1) * T(1e-1);
+    for(int r = 0; r < k1; ++r){
+        for(int c = 0; c < k2; ++c){
+            const int idx = r * k2 * ci * co + c * ci * co;
+            w.mutable_data<T>()[idx] = (r * k2 + c + 1) * T(1e-1);
+        }
     }
 
     for(int c = 0; c < k2; ++c){
         for(int r = 0; r < k1; ++r){
-            const int offset = k1 * k2;
-            const int idx = offset + r * k2 + c;
-            w.mutable_data<T>()[idx] = (c * k1 + r + 1) * T(1e-1);
+            const int idx = r * k2 * ci * co + c * ci * co + 1 * co;
+            w.mutable_data<T>()[idx] = (r + c * k1 + 1) * T(1e-1);
         }
     }
     auto y = conv2d(x, w, {2, 2}, {1, 1});
     EXPECT_EQ(y.shape()[0], b);
-    EXPECT_EQ(y.shape()[1], co);
+    EXPECT_EQ(y.shape()[1], 2);
     EXPECT_EQ(y.shape()[2], 2);
-    EXPECT_EQ(y.shape()[3], 2);
+    EXPECT_EQ(y.shape()[3], co);
 
     //y(0, 0) = 1 * 0.5 +  2 * 0.6 + 
     //          5 * 0.8 +  6 * 0.9 + 
@@ -200,8 +212,8 @@ TEST(operator_v2, conv2d_k3_s1_p0_grad){
     constexpr int k2 = 3;
     std::mt19937 rng;
     std::uniform_real_distribution<T> dist(-1, 1);
-    auto x = fn::create_variable({b, ci, hi, wi});
-    auto w = fn::create_variable({co, ci, k1, k2});
+    auto x = fn::create_variable({b, hi, wi, ci});
+    auto w = fn::create_variable({k1, k2, ci, co});
     auto analytical_x = fn::create_variable(x.shape());
     auto analytical_w = fn::create_variable(w.shape());
 
@@ -226,6 +238,96 @@ TEST(operator_v2, conv2d_k3_s1_p0_grad){
 
     auto func2 = [x](mlfe::Tensor& w){
         return conv2d(x, w, {1, 1}, {0, 0});
+    };
+    auto numerical_w = numerical_gradient_v2(func2, w, grad_eps);
+    auto w_grad_diff = calculate_gradient_diff<T>(numerical_w, analytical_w);
+    EXPECT_NEAR(w_grad_diff, T(0), pass_eps);
+}
+
+TEST(operator_v2, conv2d_k3_s1_p1_grad){  
+    using T = float;
+    constexpr T grad_eps = 1e-4;
+    constexpr T pass_eps = 1e-3;
+    constexpr int b = 1;
+    constexpr int ci = 1;
+    constexpr int hi = 4;
+    constexpr int wi = 4;
+    constexpr int co = 1;
+    constexpr int k1 = 3;
+    constexpr int k2 = 3;
+    std::mt19937 rng;
+    std::uniform_real_distribution<T> dist(-1, 1);
+    auto x = fn::create_variable({b, hi, wi, ci});
+    auto w = fn::create_variable({k1, k2, ci, co});
+    auto analytical_x = fn::create_variable(x.shape());
+    auto analytical_w = fn::create_variable(w.shape());
+
+    std::generate(x.begin<T>(), x.end<T>(), [&rng, &dist](){
+        return dist(rng);
+    });
+    std::generate(w.begin<T>(), w.end<T>(), [&rng, &dist](){
+        return dist(rng);
+    });
+    auto y = conv2d(x, w, {1, 1}, {1, 1});
+    y.backprop_v2();
+    std::copy(x.grad_v2().cbegin<T>(), x.grad_v2().cend<T>(),
+        analytical_x.begin<T>());
+    std::copy(w.grad_v2().cbegin<T>(), w.grad_v2().cend<T>(),
+        analytical_w.begin<T>());
+    auto func1 = [w](mlfe::Tensor& x){
+        return conv2d(x, w, {1, 1}, {1, 1});
+    };
+    auto numerical_x = numerical_gradient_v2(func1, x, grad_eps);
+    auto x_grad_diff = calculate_gradient_diff<T>(numerical_x, analytical_x);
+    EXPECT_NEAR(x_grad_diff, T(0), pass_eps);
+
+    auto func2 = [x](mlfe::Tensor& w){
+        return conv2d(x, w, {1, 1}, {1, 1});
+    };
+    auto numerical_w = numerical_gradient_v2(func2, w, grad_eps);
+    auto w_grad_diff = calculate_gradient_diff<T>(numerical_w, analytical_w);
+    EXPECT_NEAR(w_grad_diff, T(0), pass_eps);
+}
+
+TEST(operator_v2, conv2d_k3_s2_p1_grad){
+    using T = float;
+    constexpr T grad_eps = 1e-4;
+    constexpr T pass_eps = 1e-3;
+    constexpr int b = 2;
+    constexpr int ci = 3;
+    constexpr int hi = 4;
+    constexpr int wi = 4;
+    constexpr int co = 1;
+    constexpr int k1 = 3;
+    constexpr int k2 = 3;
+    std::mt19937 rng;
+    std::uniform_real_distribution<T> dist(-1, 1);
+    auto x = fn::create_variable({b, hi, wi, ci});
+    auto w = fn::create_variable({k1, k2, ci, co});
+    auto analytical_x = fn::create_variable(x.shape());
+    auto analytical_w = fn::create_variable(w.shape());
+
+    std::generate(x.begin<T>(), x.end<T>(), [&rng, &dist](){
+        return dist(rng);
+    });
+    std::generate(w.begin<T>(), w.end<T>(), [&rng, &dist](){
+        return dist(rng);
+    });
+    auto y = conv2d(x, w, {1, 1}, {1, 1});
+    y.backprop_v2();
+    std::copy(x.grad_v2().cbegin<T>(), x.grad_v2().cend<T>(),
+        analytical_x.begin<T>());
+    std::copy(w.grad_v2().cbegin<T>(), w.grad_v2().cend<T>(),
+        analytical_w.begin<T>());
+    auto func1 = [w](mlfe::Tensor& x){
+        return conv2d(x, w, {1, 1}, {1, 1});
+    };
+    auto numerical_x = numerical_gradient_v2(func1, x, grad_eps);
+    auto x_grad_diff = calculate_gradient_diff<T>(numerical_x, analytical_x);
+    EXPECT_NEAR(x_grad_diff, T(0), pass_eps);
+
+    auto func2 = [x](mlfe::Tensor& w){
+        return conv2d(x, w, {1, 1}, {1, 1});
     };
     auto numerical_w = numerical_gradient_v2(func2, w, grad_eps);
     auto w_grad_diff = calculate_gradient_diff<T>(numerical_w, analytical_w);

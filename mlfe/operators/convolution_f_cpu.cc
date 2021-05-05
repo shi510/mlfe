@@ -174,7 +174,7 @@ public:
                 static_cast<T>(0), col_ptr, n, nullptr
                 );
 
-            math::col2im<T, CPUContext>(
+            math::col2im_nchw<T, CPUContext>(
                 col_ptr,
                 in_c, in_h, in_w,
                 filters_hw[0], strides[0], pads[0],
@@ -258,7 +258,7 @@ public:
             );
 
         for(int i = 0; i < batch; ++i){
-            math::im2col<T, CPUContext>(
+            math::im2col_nchw<T, CPUContext>(
                 in_c, in_h, in_w,
                 filters_hw[0], filters_hw[1],
                 strides[0], pads[0],

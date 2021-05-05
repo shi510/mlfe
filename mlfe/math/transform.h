@@ -6,14 +6,28 @@
 namespace mlfe{ namespace math{
 
 template <class DataType, class DeviceContext>
-void im2col(const int im_c, const int im_h, const int im_w,
+void im2col_nchw(const int im_c, const int im_h, const int im_w,
             const int kernel_h, const int kernel_w,
             const int stride, const int padding,
             const DataType *_im, DataType *_col
             );
 
 template <class DataType, class DeviceContext>
-void col2im(DataType* data_col,
+void im2col_nhwc(const int im_c, const int im_h, const int im_w,
+            const int kernel_h, const int kernel_w,
+            const int stride, const int padding,
+            const DataType *_im, DataType *_col
+            );
+
+template <class DataType, class DeviceContext>
+void col2im_nchw(DataType* data_col,
+            int channels, int height, int width,
+            int ksize, int stride, int pad,
+            DataType* data_im
+            );
+
+template <class DataType, class DeviceContext>
+void col2im_nhwc(DataType* data_col,
             int channels, int height, int width,
             int ksize, int stride, int pad,
             DataType* data_im
