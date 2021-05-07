@@ -1,6 +1,5 @@
 #include "mlfe/operators_v2/conv2d.h"
 #include "mlfe/operators_v2/utils.h"
-#include <iostream>
 
 namespace mlfe{
 namespace operators_v2{
@@ -48,10 +47,14 @@ Tensor conv2d(
     bool same_out
     )
 {
-    int ph = utils::calc_conv_same_output_padding_size(
-        x.shape()[1], kernel.shape()[0], strides[0]);
-    int pw = utils::calc_conv_same_output_padding_size(
-        x.shape()[2], kernel.shape()[1], strides[1]);
+    int ph = 0;
+    int pw = 0;
+    if(same_out){
+        ph = utils::calc_conv_same_output_padding_size(
+            x.shape()[1], kernel.shape()[0], strides[0]);
+        pw = utils::calc_conv_same_output_padding_size(
+            x.shape()[2], kernel.shape()[1], strides[1]);
+    }
     return conv2d(x, kernel, strides, {ph, pw});
 }
 

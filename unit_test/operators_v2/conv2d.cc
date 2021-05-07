@@ -2,7 +2,6 @@
 #include <mlfe/operators_v2/conv2d.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
-#include <iostream>
 
 using namespace mlfe;
 using namespace mlfe::operators_v2;
