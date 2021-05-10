@@ -1,14 +1,11 @@
 #include "mlfe/nn/layers/conv2d.h"
 #include "mlfe/operators_v2/basic_arithmetic.h"
-#include "mlfe/operators_v2/broadcast.h"
 #include "mlfe/operators_v2/conv2d.h"
 #include <algorithm>
 #include <numeric>
 
 namespace mlfe{
 namespace nn{
-
-namespace fn = functional;
 
 conv2d::conv2d(int input_channels,
     int out_channels,

@@ -27,10 +27,110 @@ class Tensor final
 {
 public:
     template <typename T>
-    class iterator;
+    class iterator{
+    public:
+        using this_type = iterator;
+        using value_type = T;
+        using reference = T &;
+        using pointer = T *;
+        using difference_type = int;
+        using iterator_category = std::forward_iterator_tag;
+
+        iterator(pointer ptr) : _ptr(ptr){}
+
+        this_type operator++(){
+            ++_ptr;
+            return *this;
+        }
+
+        this_type operator++(int){
+            this_type prev = *this;
+            ++_ptr;
+            return prev;
+        }
+
+        reference operator*() const{
+            return *_ptr;
+        }
+
+        pointer operator->() const{
+            return _ptr;
+        }
+
+        bool operator==(const this_type& rhs) const{
+            return _ptr == rhs._ptr;
+        }
+
+        bool operator!=(const this_type& rhs) const{
+            return _ptr != rhs._ptr;
+        }
+
+        this_type operator+(int n){
+            _ptr += n;
+            return *this;
+        }
+
+        this_type operator-(int n){
+            _ptr -= n;
+            return *this;
+        }
+
+    private:
+        pointer _ptr;
+    };
 
     template <typename T>
-    class const_iterator;
+    class const_iterator{
+    public:
+        using this_type = const_iterator;
+        using value_type = const T;
+        using reference = const T &;
+        using pointer = const T *;
+        using difference_type = int;
+        using iterator_category = std::forward_iterator_tag;
+
+        const_iterator(pointer ptr) : _ptr(ptr){}
+
+        this_type operator++(){
+            ++_ptr;
+            return *this;
+        }
+
+        this_type operator++(int){
+            this_type prev = *this;
+            ++_ptr;
+            return prev;
+        }
+
+        reference operator*() const{
+            return *_ptr;
+        }
+
+        pointer operator->() const{
+            return _ptr;
+        }
+
+        bool operator==(const this_type& rhs) const{
+            return _ptr == rhs._ptr;
+        }
+
+        bool operator!=(const this_type& rhs) const{
+            return _ptr != rhs._ptr;
+        }
+
+        this_type operator+(int n){
+            _ptr += n;
+            return *this;
+        }
+
+        this_type operator-(int n){
+            _ptr -= n;
+            return *this;
+        }
+
+    private:
+        pointer _ptr;
+    };
 
     Tensor(const bool trainable = false);
 
@@ -127,6 +227,8 @@ public:
     void zero();
 
     void one();
+
+    Tensor view(std::vector<int> shape);
 
     template <typename T>
     void copy_from(std::vector<T> vec);
@@ -227,112 +329,6 @@ template <typename T>
 inline T *Tensor::mutable_device_data(){
     return static_cast<T *>(_mutable_device_data());
 }
-
-template <typename T>
-class Tensor::iterator{
-public:
-    using this_type = iterator;
-    using value_type = T;
-    using reference = T &;
-    using pointer = T *;
-    using difference_type = int;
-    using iterator_category = std::forward_iterator_tag;
-
-    iterator(pointer ptr) : _ptr(ptr){}
-
-    this_type operator++(){
-        ++_ptr;
-        return *this;
-    }
-
-    this_type operator++(int){
-        this_type prev = *this;
-        ++_ptr;
-        return prev;
-    }
-
-    reference operator*() const{
-        return *_ptr;
-    }
-
-    pointer operator->() const{
-        return _ptr;
-    }
-
-    bool operator==(const this_type& rhs) const{
-        return _ptr == rhs._ptr;
-    }
-
-    bool operator!=(const this_type& rhs) const{
-        return _ptr != rhs._ptr;
-    }
-
-    this_type operator+(int n){
-        _ptr += n;
-        return *this;
-    }
-
-    this_type operator-(int n){
-        _ptr -= n;
-        return *this;
-    }
-
-private:
-    pointer _ptr;
-};
-
-template <typename T>
-class Tensor::const_iterator{
-public:
-    using this_type = const_iterator;
-    using value_type = const T;
-    using reference = const T &;
-    using pointer = const T *;
-    using difference_type = int;
-    using iterator_category = std::forward_iterator_tag;
-
-    const_iterator(pointer ptr) : _ptr(ptr){}
-
-    this_type operator++(){
-        ++_ptr;
-        return *this;
-    }
-
-    this_type operator++(int){
-        this_type prev = *this;
-        ++_ptr;
-        return prev;
-    }
-
-    reference operator*() const{
-        return *_ptr;
-    }
-
-    pointer operator->() const{
-        return _ptr;
-    }
-
-    bool operator==(const this_type& rhs) const{
-        return _ptr == rhs._ptr;
-    }
-
-    bool operator!=(const this_type& rhs) const{
-        return _ptr != rhs._ptr;
-    }
-
-    this_type operator+(int n){
-        _ptr += n;
-        return *this;
-    }
-
-    this_type operator-(int n){
-        _ptr -= n;
-        return *this;
-    }
-
-private:
-    pointer _ptr;
-};
 
 } // end namespace mlfe
 

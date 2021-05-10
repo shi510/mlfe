@@ -253,6 +253,12 @@ Tensor Tensor::grad(){
     return *_pimpl->_gradient;
 }
 
+Tensor Tensor::view(std::vector<int> shape){
+    Tensor y = *this;
+    y.reshape(shape);
+    return y;
+}
+
 template <>
 void Tensor::copy_from(std::vector<float> vec){
     std::copy(vec.begin(), vec.end(), begin<float>());
@@ -293,6 +299,7 @@ void Tensor::backprop_v2() const
     dy.one();
     for(auto n : topo_list)
     {
+        // if(!n.has_attr("grad")){ continue; }
         T gm_markers = *n.get_attr("grad_marker").data<T>();
         dy = *(*n.get_attr("grad").data<std::shared_ptr<Tensor>>());
         for(auto & gm : gm_markers)

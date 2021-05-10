@@ -1,5 +1,7 @@
 #include "mlfe/operators_v2/conv2d.h"
 #include "mlfe/operators_v2/utils.h"
+#include <stdexcept>
+#include <sstream>
 
 namespace mlfe{
 namespace operators_v2{
@@ -12,14 +14,18 @@ Tensor conv2d(
     )
 {
     if(x.dims() != 4){
-        std::cout<<"conv2d: input dimension should be 4. ";
-        std::cout<<"but "<<x.dims()<<std::endl;
-        std::runtime_error("Wrong parameter of conv2d");
+        std::stringstream ss;
+        ss<<"[Wrong parameter of conv2d] ";
+        ss<<"input dimension should be 4, ";
+        ss<<"but "<<x.dims();
+        std::runtime_error(ss.str());
     }
     if(kernel.dims() != 4){
-        std::cout<<"conv2d: kernel dimension should be 4. ";
-        std::cout<<"but "<<kernel.dims()<<std::endl;
-        std::runtime_error("Wrong parameter of conv2d");
+        std::stringstream ss;
+        ss<<"[Wrong parameter of conv2d] ";
+        ss<<"kernel dimension should be 4, ";
+        ss<<"but "<<kernel.dims();
+        std::runtime_error(ss.str());
     }
     int out_h = utils::calc_conv_output(
         x.shape()[1], kernel.shape()[0], strides[0], paddings[0]);

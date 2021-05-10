@@ -153,9 +153,9 @@ void train_simplenet(
             auto loss = model.criterion(y_true, y_pred);
             loss.backprop_v2();
             model.update_weights(1e-1);
-            mean += loss.data<float>()[0] / NUM_ITER;
+            mean += loss.data<float>()[0];
         }
-        std::cout<<"EPOCH "<<e + 1<<" : "<<mean<<std::endl;
+        std::cout<<"EPOCH "<<e + 1<<" : "<<mean / NUM_ITER<<std::endl;
     }
 }
 ```
@@ -163,18 +163,20 @@ After 1000 iterations are finished, the variables will close to the optimal solu
 This model performs about 90% acccuracy on MNIST 10K test images.  
 The following figure shows visualization of the w variable, the Red colour represents negative value, the Blue colour represents positive value.  
 
-<!-- ![visualization weights](http://artoa.hanbat.ac.kr/simple_mnist_weights.jpg) -->
 ![visualization weights](https://raw.githubusercontent.com/shi510/mlfe/master/figures/fig_mnist_weights.jpg)
 
-## Convolutional Model
+## Convolutional neural network
 
 1. Inherit the nn::module.  
 2. Create layers in your class.  
-3. Notify trainable variables to nn::module by enclosing a layer by calling `trainable`.  
+3. Notify trainable variables to nn::module by enclosing a layer with `trainable` function.  
 
-The `trainable` function finds trainables and collects it.  
+The `trainable` function finds trainables in a layer and collects it.  
 
 ```c++
+using namespace mlfe;
+namespace op = mlfe::operators_v2;
+
 struct mnist_conv_net : nn::module{
     nn::conv2d conv1;
     nn::conv2d conv2;
@@ -184,38 +186,35 @@ struct mnist_conv_net : nn::module{
     mnist_conv_net(){
         conv1 = trainable(nn::conv2d(
                                      /*input channel=*/1,
-                                     /*output channel=*/8,
+                                     /*output channel=*/12,
                                      /*kernel size=*/{3, 3},
                                      /*stride size=*/{1, 1},
                                      /*output size same with inputs=*/true));
-        conv2 = trainable(nn::conv2d(8, 16, {3, 3}, {1, 1}, true));
+        conv2 = trainable(nn::conv2d(12, 24, {3, 3}, {1, 1}, true));
         fc1 = trainable(nn::linear(
-                                   /*input channel=*/7*7*32,
-                                   /*output channel=*/128));
-        fc2 = trainable(nn::linear(128, 10));
+                                   /*input channel=*/7*7*24,
+                                   /*output channel=*/64));
+        fc2 = trainable(nn::linear(64, 10));
     }
 
     tensor forward(tensor x){
         x = conv1(x);
-        x = relu(x);
-        x = dropout1(x);
-        x = maxpool2d(x, /*pool size=*/{2, 2}, /*stride size=*/{2, 2});
+        x = op::relu(x);
+        x = op::maxpool2d(x, /*pool size=*/{2, 2}, /*stride size=*/{2, 2});
         x = conv2(x);
-        x = relu(x);
-        x = dropout2(x);
-        x = maxpool2d(x, {2, 2}, {2, 2});
-        x = x.view({x.shape()[0], 7*7*16});
+        x = op::relu(x);
+        x = op::maxpool2d(x, {2, 2}, {2, 2});
+        x = x.view({x.shape()[0], 7*7*24});
         x = fc1(x);
-        x = relu(x);
+        x = op::relu(x);
         x = fc2(x);
         return x;
     }
 };
 ```
-You have your custom module and you can access the functions below.  
+You can access the trainable variables of your module.  
 ```c++
 mnist_conv_module model;
 model.trainable_variables(); // returns std::vector<tensor>
-model.zero_grad(); // make zero the trainable variables.
 ```
 

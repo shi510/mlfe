@@ -45,5 +45,5 @@ REGIST_OP_KERNEL(
     reduce_mean_bwd_impl<float>
     );
 
-} // namespace op_kernels_cpu
+} // namespace operators
 } // namespace mlfe

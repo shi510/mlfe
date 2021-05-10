@@ -29,5 +29,5 @@ REGIST_OP_KERNEL(relu_fwd, relu_fwd_fn_t, relu_fwd_impl<float>);
 
 REGIST_OP_KERNEL(relu_bwd, relu_bwd_fn_t, relu_bwd_impl<float>);
 
-} // namespace op_kernels_cpu
+} // namespace operators
 } // namespace mlfe

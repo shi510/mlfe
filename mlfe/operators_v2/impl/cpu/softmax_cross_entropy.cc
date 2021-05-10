@@ -176,5 +176,5 @@ REGIST_OP_KERNEL(
     softmax_xent_fwd_impl<float>
     );
 
-} // namespace op_kernels_cpu
+} // namespace operators
 } // namespace mlfe

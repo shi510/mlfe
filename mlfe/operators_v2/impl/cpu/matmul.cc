@@ -28,5 +28,5 @@ void matmul_fwd_impl(Tensor a, Tensor b, Tensor y, bool transpose_a, bool transp
 
 REGIST_OP_KERNEL(matmul_fwd, matmul_fwd_fn_t, matmul_fwd_impl<float>);
 
-} // namespace algorithm_cpu
+} // namespace operators
 } // namespace mlfe

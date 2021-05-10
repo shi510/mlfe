@@ -230,5 +230,5 @@ REGIST_OP_KERNEL(
     maxpool2d_nhwc_grad_op<float>::run
     );
 
-} // namespace op_kernels_cpu
+} // namespace operators
 } // namespace mlfe
