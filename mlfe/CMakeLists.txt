@@ -14,6 +14,7 @@ add_subdirectory(nn)
 add_subdirectory(operators)
 add_subdirectory(operators_v2)
 add_subdirectory(optimizers)
+add_subdirectory(optimizers_v2)
 add_subdirectory(utils)
 
 list(APPEND mlfe_header_files core.h)
