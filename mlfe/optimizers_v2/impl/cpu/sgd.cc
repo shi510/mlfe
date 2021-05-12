@@ -23,8 +23,8 @@ void sgd_impl(Tensor x, Tensor dx, Tensor mm_hist, T lr, T mm, T decay){
 }
 
 } // namespace anonymous
+} // namespace optimizers
 
 REGIST_OP_KERNEL(sgd, sgd_fn_t, optimizers::sgd_impl<float>);
 
-} // namespace optimizers
 } // namespace mlfe

@@ -80,5 +80,12 @@ void call(marker::I<I...> inputs, marker::O<O...> outputs, T ...args)
         std::tuple_cat(inputs.list, outputs.list, std::tuple<T...>(args...)));
 }
 
+template <typename K, typename ...I, typename ...T>
+void call(marker::I<I...> inputs, T ...args)
+{
+    std::apply(K::get_kernel_fn(),
+        std::tuple_cat(inputs.list, std::tuple<T...>(args...)));
+}
+
 } // namespace operators_v2
 } // namespace mlfe

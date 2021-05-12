@@ -1,6 +1,8 @@
 #include <iostream>
+#include "mlfe/optimizers_v2/sgd.h"
 #include "dataset/mnist.h"
 #include "simple_net.h"
+#include "conv_net.h"
 
 using namespace mlfe;
 using namespace mlfe::module;
@@ -8,6 +10,10 @@ using namespace mlfe::module;
 float categorical_accuracy(Tensor y_true, Tensor y_pred);
 
 void train_simplenet(
+    dataset::mnist_gen train_set,
+    dataset::mnist_gen valid_set);
+
+void train_convnet(
     dataset::mnist_gen train_set,
     dataset::mnist_gen valid_set);
 
@@ -30,10 +36,14 @@ int main(int argc, char *argv[])
         train_x, train_y,
         valid_x, valid_y);
 
+    dataset::mnist_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
     if(std::string(argv[1]) == "simple")
     {
-        dataset::mnist_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
         train_simplenet(train_set, valid_set);
+    }
+    else if(std::string(argv[1]) == "conv")
+    {
+        train_convnet(train_set, valid_set);
     }
     else
     {
@@ -98,6 +108,58 @@ void train_simplenet(
         {
             fill_batch(valid_set, images, labels, BATCH, i);
             auto x = Tensor::from_vector(images, {BATCH, INPUT_SIZE});
+            auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
+            auto y_pred = model.forward(x);
+            valid_acc += categorical_accuracy(y_true, y_pred);
+        }
+        valid_acc /= VALID_ITER;
+        std::cout<<"[EPOCH "<<e + 1<<"] ";
+        std::cout<<"train loss: "<<train_loss;
+        std::cout<<", valid accuracy: "<<valid_acc<<std::endl;
+    }
+}
+
+void train_convnet(
+    dataset::mnist_gen train_set,
+    dataset::mnist_gen valid_set)
+{
+    const int BATCH = 64;
+    const int EPOCH = 2;
+    const int INPUT_SIZE = 28 * 28 * 1;
+    const int OUTPUT_SIZE = 10;
+    const int NUM_ITER = train_set.size() / BATCH;
+
+    auto model = models::mnist_conv_net();
+    auto images = std::vector<float>(BATCH*INPUT_SIZE);
+    auto labels = std::vector<float>(BATCH*OUTPUT_SIZE);
+    optimizers::SGD opt(1e-3, 0.9);
+    opt.set_variables(model.trainable_variables());
+    for(int e = 0; e < EPOCH; ++e)
+    {
+        float train_loss = 0.f;
+        float valid_acc = 0.f;
+        for(int i = 0; i < NUM_ITER; ++i)
+        {
+            fill_batch(train_set, images, labels, BATCH, i);
+            model.zero_grad();
+            auto x = Tensor::from_vector(images, {BATCH, 28, 28, 1});
+            auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
+            auto y_pred = model.forward(x);
+            auto loss = model.criterion(y_true, y_pred);
+            loss.backprop_v2();
+            opt.update();
+            train_loss += loss.data<float>()[0];
+            if((i+1) % 10 == 0){
+                std::cout<<(i + 1)<<": "<<train_loss / (i + 1)<<std::endl;
+            }
+        }
+        train_loss /= NUM_ITER;
+        const int VALID_ITER = valid_set.size() / BATCH;
+
+        for(int i = 0; i < VALID_ITER; ++i)
+        {
+            fill_batch(valid_set, images, labels, BATCH, i);
+            auto x = Tensor::from_vector(images, {BATCH, 28, 28, 1});
             auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
             auto y_pred = model.forward(x);
             valid_acc += categorical_accuracy(y_true, y_pred);
