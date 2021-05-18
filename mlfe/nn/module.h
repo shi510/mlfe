@@ -1,5 +1,4 @@
 #pragma once
-#include "mlfe/nn/sequences/sequence.h"
 #include "mlfe/nn/layers/layer.h"
 #include <type_traits>
 #include <vector>
