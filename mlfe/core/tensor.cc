@@ -33,14 +33,14 @@ struct Tensor::impl{
 };
 
 Tensor::Tensor(const bool trainable)
-    : _pimpl(std::make_shared<impl>())
+    : _pimpl({.s = std::make_shared<impl>()})
 {
     set_trainable(trainable);
     _pimpl->__g = get_default_graph();
 }
 
 Tensor::Tensor(std::string name, const bool trainable)
-    : _pimpl(std::make_shared<impl>())
+    : _pimpl({.s = std::make_shared<impl>()})
 {
     set_trainable(trainable);
     set_name(name);
@@ -48,7 +48,7 @@ Tensor::Tensor(std::string name, const bool trainable)
 }
 
 Tensor::Tensor(std::vector<int> shape, const std::string name, const bool trainable)
-    : _pimpl(std::make_shared<impl>())
+    : _pimpl({.s = std::make_shared<impl>()})
 {
     resize(shape);
     set_trainable(trainable);
@@ -58,6 +58,12 @@ Tensor::Tensor(std::vector<int> shape, const std::string name, const bool traina
 
 bool Tensor::operator==(const Tensor &v) const{
     return _pimpl.get() == v._pimpl.get();
+}
+
+Tensor Tensor::weak_copy(){
+    Tensor weak;
+    weak._pimpl = {.w = this->_pimpl.s};
+    return weak;
 }
 
 void Tensor::set_context(OpAlgoContext ctx)
@@ -180,7 +186,7 @@ void Tensor::set_gradient(Tensor t)
 
 void Tensor::set_gradient_v2()
 {
-    get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor)>>());
+    get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor&)>>());
     get_node().add_attr("grad", std::make_shared<Tensor>());
 }
 
@@ -276,9 +282,9 @@ void Tensor::one(){
         begin<T>(), [](const T & x){ return T(1);});
 }
 
-void Tensor::add_grad_marker(std::function<void (Tensor)> marker)
+void Tensor::add_grad_marker(std::function<void (Tensor &)> marker)
 {
-    using T = std::vector<std::function<void (Tensor)>>;
+    using T = std::vector<std::function<void (Tensor &)>>;
     (*_pimpl->n.get_attr("grad_marker").data<T>()).push_back(marker);
 }
 
@@ -290,16 +296,15 @@ void Tensor::add_grad_marker(std::function<void (Tensor)> marker)
 */
 void Tensor::backprop_v2() const
 {
-    using T = std::vector<std::function<void (Tensor)>>;
+    using T = std::vector<std::function<void (Tensor &)>>;
     auto topo_list = topological_sort_v2(get_node(), true);
-    auto dy = grad_v2();
+    auto & dy = grad_v2();
     //
     // self gradient is 1.
     //
     dy.one();
     for(auto n : topo_list)
     {
-        // if(!n.has_attr("grad")){ continue; }
         T gm_markers = *n.get_attr("grad_marker").data<T>();
         dy = *(*n.get_attr("grad").data<std::shared_ptr<Tensor>>());
         for(auto & gm : gm_markers)
@@ -391,10 +396,10 @@ namespace functional{
 
 Tensor create_variable(std::vector<int> shape, const bool trainable){
     Tensor var;
-    OpAlgoContext ctx("Identity");
-    ctx.add_output(var);
+    // OpAlgoContext ctx("Identity");
+    // ctx.add_output(var);
     var.set_trainable(trainable);
-    var.set_context(ctx);
+    // var.set_context(ctx);
     var.set_gradient_v2();
     var.resize(shape);
     var.grad_v2().resize(shape);
@@ -410,8 +415,6 @@ Tensor create_variable(std::vector<int> shape, type::TypeInfo ti, const bool tra
     var.resize(shape, ti);
     var.grad_v2().resize(shape);
     var.set_context(ctx);
-    var.get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor)>>());
-    var.get_node().add_attr("tensor", var);
     return var;
 }
 
@@ -442,7 +445,7 @@ Tensor reshape(Tensor x, std::vector<int> shape){
 namespace std{
 
 size_t hash<mlfe::Tensor>::operator()(const mlfe::Tensor &v) const{
-    return hash<shared_ptr<mlfe::Tensor::impl>>{}(v._pimpl);
+    return hash<shared_ptr<mlfe::Tensor::impl>>{}(v._pimpl.shared());
 }
 
 } // end namespace std

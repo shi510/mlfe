@@ -150,6 +150,8 @@ public:
         return *this;
     }
 
+    Tensor weak_copy();
+
     void set_context(OpAlgoContext ctx);
 
     OpAlgoContext& get_context() const;
@@ -233,7 +235,7 @@ public:
     template <typename T>
     void copy_from(std::vector<T> vec);
 
-    void add_grad_marker(std::function<void (Tensor)> marker);
+    void add_grad_marker(std::function<void (Tensor &)> marker);
 
     void backprop_v2() const;
 
@@ -281,8 +283,24 @@ private:
     friend Tensor functional::create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable);
     friend Tensor functional::reshape(Tensor x, std::vector<int> shape);
     friend struct std::hash<Tensor>;
+
+    template <typename T>
+    struct weak_or_shared{
+        std::weak_ptr<T> w;
+        std::shared_ptr<T> s;
+        T * operator->() const {
+            if(s){ return s.get(); }
+            return w.lock().get();
+        }
+        T * get() const {
+            if(s){ return s.get(); }
+            return w.lock().get();
+        }
+        std::shared_ptr<T> shared() const { return s; }
+        bool is_weak() const { return s ? false : true; }
+    };
     struct impl;
-    std::shared_ptr<impl> _pimpl;
+    weak_or_shared<impl> _pimpl;
 };
 
 Tensor operator+(const float & val, const Tensor & x);

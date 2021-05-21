@@ -9,7 +9,7 @@ Tensor matmul(Tensor a, Tensor b, bool transpose_a, bool transpose_b)
     int32_t n = transpose_b ? b.shape()[0] : b.shape()[1];
     int32_t k = transpose_a ? a.shape()[0] : a.shape()[1];
     auto output = functional::create_variable({m, n});
-    auto gm_a = [=](Tensor dy){
+    auto gm_a = [=](Tensor &dy){
         if (!transpose_a && !transpose_b) {
             matmul_fwd_kernel::fn(dy, b, a.grad_v2(), false, true);
         }
@@ -23,7 +23,7 @@ Tensor matmul(Tensor a, Tensor b, bool transpose_a, bool transpose_b)
             matmul_fwd_kernel::fn(b, dy, a.grad_v2(), true, true);
         }
     };
-    auto gm_b = [=](Tensor dy){
+    auto gm_b = [=](Tensor &dy){
         if (!transpose_a && !transpose_b) {
             matmul_fwd_kernel::fn(a, dy, b.grad_v2(), true, false);
         }

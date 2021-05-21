@@ -60,6 +60,7 @@ struct maxpool2d_nchw_grad_op
 {
     static void run(
                     Tensor x,
+                    Tensor y,
                     Tensor dy,
                     Tensor dx,
                     std::vector<int32_t> psize,
@@ -164,6 +165,7 @@ struct maxpool2d_nhwc_grad_op
 {
     static void run(
                     Tensor x,
+                    Tensor y,
                     Tensor dy,
                     Tensor dx,
                     std::vector<int32_t> psize,
