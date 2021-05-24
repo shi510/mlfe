@@ -38,7 +38,7 @@ __global__ void im2col_kernel(const int n, const DataType* data_im,
 }
 
 template <>
-void im2col<float, CUDAContext>(const int channel,
+void im2col_nchw<float, CUDAContext>(const int channel,
     const int height,
     const int width,
     const int kernel_h,
@@ -102,7 +102,7 @@ __global__ void col2im_kernel(const int n, const DataType* data_col,
 }
 
 template <>
-void col2im<float, CUDAContext>(float* data_col,
+void col2im_nchw<float, CUDAContext>(float* data_col,
     int channels,
     int height,
     int width,

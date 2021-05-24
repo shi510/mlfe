@@ -70,8 +70,8 @@ void call(marker::I<I...> inputs, marker::O<O...> outputs, T ...args)
 {
     auto xs = to_array(inputs.list);
     auto ys = to_array(outputs.list);
-    for(auto y : ys){
-        for(auto x : xs){
+    for(auto & y : ys){
+        for(auto & x : xs){
             y.get_node().add_input_v2(x.get_node());
             y.get_node().add_attr("op_name", K::name);
         }

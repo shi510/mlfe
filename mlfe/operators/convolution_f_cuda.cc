@@ -57,7 +57,7 @@ public:
             /*
             * image to column in range on kernel size.
             */
-            math::im2col<T, CUDAContext>(
+            math::im2col_nchw<T, CUDAContext>(
                 in_c, in_h, in_w,
                 filters_hw[0], filters_hw[1],
                 strides[0], pads[0],
@@ -164,7 +164,7 @@ public:
                 static_cast<T>(0), col_ptr, n, &cuda
                 );
 
-            math::col2im<T, CUDAContext>(
+            math::col2im_nchw<T, CUDAContext>(
                 col_ptr,
                 in_c, in_h, in_w,
                 filters_hw[0], strides[0], pads[0],
@@ -249,7 +249,7 @@ public:
             );
 
         for(int i = 0; i < batch; ++i){
-            math::im2col<T, CUDAContext>(
+            math::im2col_nchw<T, CUDAContext>(
                 in_c, in_h, in_w,
                 filters_hw[0], filters_hw[1],
                 strides[0], pads[0],
