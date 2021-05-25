@@ -8,7 +8,14 @@ namespace operators_v2{
 namespace{
 
 template <typename T>
-void matmul_fwd_impl(Tensor a, Tensor b, Tensor y, bool transpose_a, bool transpose_b){
+void matmul_fwd_impl(
+    Tensor a,
+    Tensor b,
+    Tensor y,
+    bool transpose_a,
+    bool transpose_b
+    )
+{
     int32_t m = transpose_a ? a.shape()[1] : a.shape()[0];
     int32_t n = transpose_b ? b.shape()[0] : b.shape()[1];
     int32_t k = transpose_a ? a.shape()[0] : a.shape()[1];

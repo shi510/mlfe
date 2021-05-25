@@ -27,6 +27,7 @@ CUDAContext::~CUDAContext() {
         if (cublasDestroy(handler) != cudaSuccess) {
             throw std::string("CUDAContext::~CUDAContext() : cuda free handler failed.");
         }
+        handler = nullptr;
         curandDestroyGenerator(rng);
     }
 }
