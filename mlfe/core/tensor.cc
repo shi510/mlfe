@@ -270,17 +270,9 @@ void Tensor::copy_from(std::vector<float> vec){
     std::copy(vec.begin(), vec.end(), begin<float>());
 }
 
-void Tensor::zero(){
-    using T = float;
-    std::transform(cbegin<T>(), cend<T>(),
-        begin<T>(), [](const T & x){ return T(0);});
-}
+void Tensor::zero(){ operators_v2::set_zeros(*this); }
 
-void Tensor::one(){
-    using T = float;
-    std::transform(cbegin<T>(), cend<T>(),
-        begin<T>(), [](const T & x){ return T(1);});
-}
+void Tensor::one(){ operators_v2::set_ones(*this); }
 
 void Tensor::add_grad_marker(std::function<void (Tensor &)> marker)
 {

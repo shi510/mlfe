@@ -254,6 +254,24 @@ REGIST_OP_KERNEL(scalar_div_fwd, arithmetic_fwd_fn_t, scalar_div_fwd_impl<float>
 REGIST_OP_KERNEL(scalar_div_left_bwd, div_left_bwd_fn_t, scalar_div_left_bwd_impl<float>);
 REGIST_OP_KERNEL(scalar_div_right_bwd, div_right_bwd_fn_t, scalar_div_right_bwd_impl<float>);
 
+namespace{
+
+template <typename T>
+void set_zeros_fwd_impl(Tensor x){
+    auto x_ptr = x.mutable_device_data<T>();
+    for(int i = 0; i < x.size(); ++i){ x_ptr[i] = T(0); }
+}
+
+template <typename T>
+void set_ones_fwd_impl(Tensor x){
+    auto x_ptr = x.mutable_device_data<T>();
+    for(int i = 0; i < x.size(); ++i){ x_ptr[i] = T(1); }
+}
+
+} // namespace anonymous
+
+REGIST_OP_KERNEL(set_zeros_fwd, set_x_fwd_fn_t, set_zeros_fwd_impl<float>);
+REGIST_OP_KERNEL(set_ones_fwd, set_x_fwd_fn_t, set_ones_fwd_impl<float>);
 
 } // namespace operators
 } // namespace mlfe

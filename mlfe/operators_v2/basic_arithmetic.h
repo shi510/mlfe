@@ -58,5 +58,12 @@ Tensor sub(Tensor a, Tensor b);
 Tensor mul(Tensor a, Tensor b);
 Tensor div(Tensor a, Tensor b);
 
+using set_x_fwd_fn_t = std::function<void (Tensor)>;
+DECLARE_OP_KERNEL(set_zeros_fwd, set_x_fwd_fn_t);
+DECLARE_OP_KERNEL(set_ones_fwd, set_x_fwd_fn_t);
+
+void set_zeros(Tensor x);
+void set_ones(Tensor x);
+
 } // namespace operators_v2
 } // namespace mlfe

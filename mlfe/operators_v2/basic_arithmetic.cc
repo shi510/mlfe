@@ -166,5 +166,8 @@ DEFINE_ARITHMETIC_OP(sub)
 DEFINE_ARITHMETIC_OP(mul)
 DEFINE_ARITHMETIC_OP(div)
 
+void set_zeros(Tensor x){ call<set_zeros_fwd_kernel>(marker::I(x)); }
+void set_ones(Tensor x){ call<set_ones_fwd_kernel>(marker::I(x)); }
+
 } // namespace operators_v2
 } // namespace mlfe

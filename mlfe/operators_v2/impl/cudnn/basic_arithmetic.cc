@@ -224,5 +224,22 @@ REGIST_OP_KERNEL(scalar_div_left_bwd, div_left_bwd_fn_t, scalar_div_left_bwd_imp
 REGIST_OP_KERNEL(scalar_div_right_bwd, div_right_bwd_fn_t, scalar_div_right_bwd_impl<float>);
 
 
+namespace{
+
+template <typename T>
+void set_zeros_fwd_impl(Tensor x){
+    math::set<T, CUDAContext>(x.size(), T(0), x.mutable_device_data<T>());
+}
+
+template <typename T>
+void set_ones_fwd_impl(Tensor x){
+    math::set<T, CUDAContext>(x.size(), T(1), x.mutable_device_data<T>());
+}
+
+} // namespace anonymous
+
+REGIST_OP_KERNEL(set_zeros_fwd, set_x_fwd_fn_t, set_zeros_fwd_impl<float>);
+REGIST_OP_KERNEL(set_ones_fwd, set_x_fwd_fn_t, set_ones_fwd_impl<float>);
+
 } // namespace operators
 } // namespace mlfe
