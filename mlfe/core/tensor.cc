@@ -294,7 +294,7 @@ void Tensor::add_grad_marker(std::function<void (Tensor &)> marker)
     TODO: this function should only be enabled on root node.
         1. Check if this node is root.
 */
-void Tensor::backprop_v2() const
+void Tensor::backprop_v2()
 {
     using T = std::vector<std::function<void (Tensor &)>>;
     auto topo_list = topological_sort_v2(get_node(), true);
@@ -391,6 +391,11 @@ Tensor operator+(const float & val, const Tensor & x){ return x + Tensor::from_s
 Tensor operator-(const float & val, const Tensor & x){ return x - Tensor::from_scalar(val); }
 Tensor operator*(const float & val, const Tensor & x){ return x * Tensor::from_scalar(val); }
 Tensor operator/(const float & val, const Tensor & x){ return x / Tensor::from_scalar(val); }
+
+Tensor operator+(const Tensor & x, const float & val){ return x + Tensor::from_scalar(val); }
+Tensor operator-(const Tensor & x, const float & val){ return x - Tensor::from_scalar(val); }
+Tensor operator*(const Tensor & x, const float & val){ return x * Tensor::from_scalar(val); }
+Tensor operator/(const Tensor & x, const float & val){ return x / Tensor::from_scalar(val); }
 
 namespace functional{
 

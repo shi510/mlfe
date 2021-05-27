@@ -27,8 +27,7 @@ class Tensor final
 {
 public:
     template <typename T>
-    class iterator{
-    public:
+    struct iterator{
         using this_type = iterator;
         using value_type = T;
         using reference = T &;
@@ -38,50 +37,28 @@ public:
 
         iterator(pointer ptr) : _ptr(ptr){}
 
-        this_type operator++(){
-            ++_ptr;
-            return *this;
-        }
+        this_type operator++(){ ++_ptr; return *this; }
 
-        this_type operator++(int){
-            this_type prev = *this;
-            ++_ptr;
-            return prev;
-        }
+        this_type operator++(int){ this_type prev = *this; ++_ptr; return prev; }
 
-        reference operator*() const{
-            return *_ptr;
-        }
+        reference operator*() const{ return *_ptr; }
 
-        pointer operator->() const{
-            return _ptr;
-        }
+        pointer operator->() const{ return _ptr; }
 
-        bool operator==(const this_type& rhs) const{
-            return _ptr == rhs._ptr;
-        }
+        bool operator==(const this_type& rhs) const{ return _ptr == rhs._ptr; }
 
-        bool operator!=(const this_type& rhs) const{
-            return _ptr != rhs._ptr;
-        }
+        bool operator!=(const this_type& rhs) const{ return _ptr != rhs._ptr; }
 
-        this_type operator+(int n){
-            _ptr += n;
-            return *this;
-        }
+        this_type operator+(int n){ _ptr += n; return *this; }
 
-        this_type operator-(int n){
-            _ptr -= n;
-            return *this;
-        }
+        this_type operator-(int n){ _ptr -= n; return *this; }
 
     private:
         pointer _ptr;
     };
 
     template <typename T>
-    class const_iterator{
-    public:
+    struct const_iterator{
         using this_type = const_iterator;
         using value_type = const T;
         using reference = const T &;
@@ -91,42 +68,21 @@ public:
 
         const_iterator(pointer ptr) : _ptr(ptr){}
 
-        this_type operator++(){
-            ++_ptr;
-            return *this;
-        }
+        this_type operator++(){ ++_ptr; return *this; }
 
-        this_type operator++(int){
-            this_type prev = *this;
-            ++_ptr;
-            return prev;
-        }
+        this_type operator++(int){ this_type prev = *this; ++_ptr; return prev; }
 
-        reference operator*() const{
-            return *_ptr;
-        }
+        reference operator*() const{ return *_ptr; }
 
-        pointer operator->() const{
-            return _ptr;
-        }
+        pointer operator->() const{ return _ptr; }
 
-        bool operator==(const this_type& rhs) const{
-            return _ptr == rhs._ptr;
-        }
+        bool operator==(const this_type& rhs) const{ return _ptr == rhs._ptr; }
 
-        bool operator!=(const this_type& rhs) const{
-            return _ptr != rhs._ptr;
-        }
+        bool operator!=(const this_type& rhs) const{ return _ptr != rhs._ptr; }
 
-        this_type operator+(int n){
-            _ptr += n;
-            return *this;
-        }
+        this_type operator+(int n){ _ptr += n; return *this; }
 
-        this_type operator-(int n){
-            _ptr -= n;
-            return *this;
-        }
+        this_type operator-(int n){ _ptr -= n; return *this; }
 
     private:
         pointer _ptr;
@@ -237,7 +193,7 @@ public:
 
     void add_grad_marker(std::function<void (Tensor &)> marker);
 
-    void backprop_v2() const;
+    void backprop_v2();
 
     Tensor & grad_v2() const;
 
@@ -308,45 +264,34 @@ Tensor operator-(const float & val, const Tensor & x);
 Tensor operator/(const float & val, const Tensor & x);
 Tensor operator*(const float & val, const Tensor & x);
 
-template <typename T>
-Tensor::iterator<T> Tensor::begin(){
-    return iterator<T>(mutable_data<T>());
-}
+Tensor operator+(const Tensor & x, const float & val);
+Tensor operator-(const Tensor & x, const float & val);
+Tensor operator/(const Tensor & x, const float & val);
+Tensor operator*(const Tensor & x, const float & val);
 
 template <typename T>
-Tensor::const_iterator<T> Tensor::cbegin(){
-    return const_iterator<T>(data<T>());
-}
+Tensor::iterator<T> Tensor::begin(){ return iterator<T>(mutable_data<T>()); }
 
 template <typename T>
-Tensor::iterator<T> Tensor::end(){
-    return iterator<T>(mutable_data<T>() + size());
-}
+Tensor::const_iterator<T> Tensor::cbegin(){ return const_iterator<T>(data<T>()); }
 
 template <typename T>
-Tensor::const_iterator<T> Tensor::cend(){
-    return const_iterator<T>(data<T>() + size());
-}
+Tensor::iterator<T> Tensor::end(){ return iterator<T>(mutable_data<T>() + size()); }
 
 template <typename T>
-inline const T *Tensor::data() const {
-    return static_cast<const T *>(_host_data());
-}
+Tensor::const_iterator<T> Tensor::cend(){ return const_iterator<T>(data<T>() + size()); }
 
 template <typename T>
-inline T *Tensor::mutable_data(){
-    return static_cast<T *>(_mutable_host_data());
-}
+inline const T *Tensor::data() const { return static_cast<const T *>(_host_data()); }
 
 template <typename T>
-inline const T *Tensor::device_data() const {
-    return static_cast<const T *>(_device_data());
-}
+inline T *Tensor::mutable_data(){ return static_cast<T *>(_mutable_host_data()); }
 
 template <typename T>
-inline T *Tensor::mutable_device_data(){
-    return static_cast<T *>(_mutable_device_data());
-}
+inline const T *Tensor::device_data() const { return static_cast<const T *>(_device_data()); }
+
+template <typename T>
+inline T *Tensor::mutable_device_data(){ return static_cast<T *>(_mutable_device_data()); }
 
 } // end namespace mlfe
 
