@@ -93,6 +93,10 @@ void node::add_output(node& n)
 void node::add_input_v2(node& n)
 {
     __pimpl->inputs_v2[n] = n;
+    if(n.__pimpl->order >= __pimpl->order)
+    {
+        __pimpl->order = n.__pimpl->order + 1;
+    }
 }
 
 void node::add_output_v2(node& n)
@@ -296,6 +300,7 @@ std::vector<node> topological_sort_v2(const node& r, bool reverse)
 {
     std::queue<node> will_visit;
     std::vector<node> visit_list;
+    std::unordered_map<node, int> visited;
 
     will_visit.push(r);
     while(!will_visit.empty()){
@@ -303,9 +308,18 @@ std::vector<node> topological_sort_v2(const node& r, bool reverse)
         for(auto &c : v.get_inputs_v2()){
             will_visit.push(c);
         }
-        visit_list.push_back(v);
+        auto it = visited.find(v);
+        if(it == visited.end()){
+            visit_list.push_back(v);
+            visited[v] = 0; // integer zero is dummpy data.
+        }
         will_visit.pop();
     }
+
+    // sort by execution order.
+    std::sort(visit_list.begin(), visit_list.end(), [](node a, node b) {
+        return a.get_order() > b.get_order();
+    });
 
     if(!reverse){
         std::reverse(visit_list.begin(), visit_list.end());

@@ -92,7 +92,7 @@ void eltwise_mul_right_bwd_impl(Tensor a, Tensor dy, Tensor db){
     auto dy_ptr = dy.device_data<T>();
     auto db_ptr = db.mutable_device_data<T>();
     int size = dy.size();
-    cuda_kernel::eltwise_mul_left_bwd(size, a_ptr, dy_ptr, db_ptr);
+    cuda_kernel::eltwise_mul_right_bwd(size, a_ptr, dy_ptr, db_ptr);
 }
 
 template <typename T>

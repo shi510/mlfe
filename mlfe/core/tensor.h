@@ -217,11 +217,12 @@ public:
     }
 
     template <typename T,
+        typename U = T,
         typename = std::enable_if_t<std::is_fundamental_v<T>>
     >
-    static Tensor from_scalar(const T val){
-        Tensor out = functional::create_variable({});
-        out.mutable_data<T>()[0] = val;
+    static Tensor from_scalar(const U val, std::vector<int> shape = {}){
+        Tensor out = functional::create_variable(shape);
+        std::generate(out.begin<T>(), out.end<T>(), [val](){return val;});
         return out;
     }
 
@@ -259,15 +260,23 @@ private:
     weak_or_shared<impl> _pimpl;
 };
 
-Tensor operator+(const float & val, const Tensor & x);
-Tensor operator-(const float & val, const Tensor & x);
-Tensor operator/(const float & val, const Tensor & x);
-Tensor operator*(const float & val, const Tensor & x);
+template <typename T>
+Tensor operator+(const T & val, const Tensor & x){ return x + Tensor::from_scalar<T>(val); }
+template <typename T>
+Tensor operator-(const T & val, const Tensor & x){ return x - Tensor::from_scalar<T>(val); }
+template <typename T>
+Tensor operator*(const T & val, const Tensor & x){ return x * Tensor::from_scalar<T>(val); }
+template <typename T>
+Tensor operator/(const T & val, const Tensor & x){ return x / Tensor::from_scalar<T>(val); }
 
-Tensor operator+(const Tensor & x, const float & val);
-Tensor operator-(const Tensor & x, const float & val);
-Tensor operator/(const Tensor & x, const float & val);
-Tensor operator*(const Tensor & x, const float & val);
+template <typename T>
+Tensor operator+(const Tensor & x, const T & val){ return x + Tensor::from_scalar<T>(val); }
+template <typename T>
+Tensor operator-(const Tensor & x, const T & val){ return x - Tensor::from_scalar<T>(val); }
+template <typename T>
+Tensor operator*(const Tensor & x, const T & val){ return x * Tensor::from_scalar<T>(val); }
+template <typename T>
+Tensor operator/(const Tensor & x, const T & val){ return x / Tensor::from_scalar<T>(val); }
 
 template <typename T>
 Tensor::iterator<T> Tensor::begin(){ return iterator<T>(mutable_data<T>()); }

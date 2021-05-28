@@ -379,16 +379,6 @@ Tensor Tensor::operator/(const Tensor & other) const{
     return operators_v2::div(*this, other);
 }
 
-Tensor operator+(const float & val, const Tensor & x){ return x + Tensor::from_scalar(val); }
-Tensor operator-(const float & val, const Tensor & x){ return x - Tensor::from_scalar(val); }
-Tensor operator*(const float & val, const Tensor & x){ return x * Tensor::from_scalar(val); }
-Tensor operator/(const float & val, const Tensor & x){ return x / Tensor::from_scalar(val); }
-
-Tensor operator+(const Tensor & x, const float & val){ return x + Tensor::from_scalar(val); }
-Tensor operator-(const Tensor & x, const float & val){ return x - Tensor::from_scalar(val); }
-Tensor operator*(const Tensor & x, const float & val){ return x * Tensor::from_scalar(val); }
-Tensor operator/(const Tensor & x, const float & val){ return x / Tensor::from_scalar(val); }
-
 namespace functional{
 
 Tensor create_variable(std::vector<int> shape, const bool trainable){
