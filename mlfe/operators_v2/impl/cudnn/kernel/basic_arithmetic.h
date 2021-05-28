@@ -25,13 +25,49 @@ void scalar_div_fwd(const size_t size, const T *a, const T *b, T *c);
 // bwd
 
 template <typename T>
-void eltwise_div_right_bwd(const size_t N, const T *dy, const T *b, const T *y, T *db);
+void eltwise_add_left_bwd(const size_t N, const T *dy, T *da);
+
+template <typename T>
+void eltwise_add_right_bwd(const size_t N, const T *dy, T *db);
+
+template <typename T>
+void eltwise_sub_left_bwd(const size_t N, const T *dy, T *da);
+
+template <typename T>
+void eltwise_sub_right_bwd(const size_t N, const T *dy, T *db);
+
+template <typename T>
+void eltwise_mul_left_bwd(const size_t N, const T *b, const T *dy, T *da);
+
+template <typename T>
+void eltwise_mul_right_bwd(const size_t N, const T *a, const T *dy, T *db);
+
+template <typename T>
+void eltwise_div_left_bwd(const size_t N, const T *b, const T *dy, T *da);
+
+template <typename T>
+void eltwise_div_right_bwd(const size_t N, const T *b, const T *y, const T *dy, T *db);
+
+template <typename T>
+void scalar_add_left_bwd(const size_t N, const T *dy, T *da);
+
+template <typename T>
+void scalar_add_right_bwd(const size_t N, const T *dy, T *db);
+
+template <typename T>
+void scalar_sub_left_bwd(const size_t N, const T *dy, T *da);
 
 template <typename T>
 void scalar_sub_right_bwd(const size_t N, const T *dy, T *db);
 
 template <typename T>
+void scalar_mul_left_bwd(const size_t N, const T *b, const T *dy, T *da);
+
+template <typename T>
 void scalar_mul_right_bwd(const size_t N, const T *a, const T *dy, T *db);
+
+template <typename T>
+void scalar_div_left_bwd(const size_t N, const T *b, const T *dy, T *da);
 
 template <typename T>
 void scalar_div_right_bwd(const size_t N, const T *b, const T *y, const T *dy, T *db);

@@ -288,17 +288,17 @@ void Tensor::add_grad_marker(std::function<void (Tensor &)> marker)
 */
 void Tensor::backprop_v2()
 {
-    using T = std::vector<std::function<void (Tensor &)>>;
+    using gm_func_t = std::vector<std::function<void (Tensor &)>>;
     auto topo_list = topological_sort_v2(get_node(), true);
-    auto & dy = grad_v2();
+    auto dy = grad_v2();
     //
     // self gradient is 1.
     //
     dy.one();
-    for(auto n : topo_list)
+    for(auto & n : topo_list)
     {
-        T gm_markers = *n.get_attr("grad_marker").data<T>();
-        dy = *(*n.get_attr("grad").data<std::shared_ptr<Tensor>>());
+        auto gm_markers = *n.get_attr("grad_marker").data<gm_func_t>();
+        dy = **n.get_attr("grad").data<std::shared_ptr<Tensor>>();
         for(auto & gm : gm_markers)
         {
             gm(dy);
@@ -310,9 +310,9 @@ void Tensor::backprop_v2()
     Return its gradients.
     backprop_v2 should be called before calling this function.
 */
-Tensor & Tensor::grad_v2() const
+Tensor Tensor::grad_v2() const
 {
-    return **_pimpl->n.get_attr("grad").data<Tensor *>();
+    return **_pimpl->n.get_attr("grad").data<std::shared_ptr<Tensor>>();
 }
 
 const void *Tensor::_host_data() const {
@@ -339,25 +339,25 @@ void *Tensor::_mutable_device_data(){
     return _pimpl->_mem->mutable_device_data<void>();
 }
 
-Tensor & Tensor::operator+=(const Tensor & other){
+Tensor Tensor::operator+=(const Tensor & other){
     Tensor result = operators_v2::add(*this, other);
     copy(result.get_memory(), _pimpl->_mem);
     return *this;
 }
 
-Tensor & Tensor::operator-=(const Tensor & other){
+Tensor Tensor::operator-=(const Tensor & other){
     Tensor result = operators_v2::sub(*this, other);
     copy(result.get_memory(), _pimpl->_mem);
     return *this;
 }
 
-Tensor & Tensor::operator*=(const Tensor & other){
+Tensor Tensor::operator*=(const Tensor & other){
     Tensor result = operators_v2::mul(*this, other);
     copy(result.get_memory(), _pimpl->_mem);
     return *this;
 }
 
-Tensor & Tensor::operator/=(const Tensor & other){
+Tensor Tensor::operator/=(const Tensor & other){
     Tensor result = operators_v2::div(*this, other);
     copy(result.get_memory(), _pimpl->_mem);
     return *this;
@@ -400,6 +400,7 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
     var.set_gradient_v2();
     var.resize(shape);
     var.grad_v2().resize(shape);
+    var.grad_v2().zero();
     return var;
 }
 

@@ -195,12 +195,12 @@ public:
 
     void backprop_v2();
 
-    Tensor & grad_v2() const;
+    Tensor grad_v2() const;
 
-    Tensor & operator+=(const Tensor & other);
-    Tensor & operator-=(const Tensor & other);
-    Tensor & operator*=(const Tensor & other);
-    Tensor & operator/=(const Tensor & other);
+    Tensor operator+=(const Tensor & other);
+    Tensor operator-=(const Tensor & other);
+    Tensor operator*=(const Tensor & other);
+    Tensor operator/=(const Tensor & other);
 
     Tensor operator+(const Tensor & other) const;
     Tensor operator-(const Tensor & other) const;
@@ -212,7 +212,7 @@ public:
     >
     static Tensor from_vector(std::vector<T> vec, std::vector<int> shape){
         Tensor out = functional::create_variable(shape);
-        std::copy(vec.begin(), vec.end(), out.begin<float>());
+        std::copy(vec.begin(), vec.end(), out.begin<T>());
         return out;
     }
 

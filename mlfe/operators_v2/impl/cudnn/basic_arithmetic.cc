@@ -47,40 +47,61 @@ void eltwise_div_fwd_impl(Tensor a, Tensor b, Tensor y){
 
 template <typename T>
 void eltwise_add_left_bwd_impl(Tensor dy, Tensor da){
-    mlfe::copy(dy.get_memory(), da.get_memory());
+    auto dy_ptr = dy.device_data<T>();
+    auto da_ptr = da.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::eltwise_add_left_bwd(size, dy_ptr, da_ptr);
 }
 
 template <typename T>
 void eltwise_add_right_bwd_impl(Tensor dy, Tensor db){
-    mlfe::copy(dy.get_memory(), db.get_memory());
+    auto dy_ptr = dy.device_data<T>();
+    auto db_ptr = db.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::eltwise_add_right_bwd(size, dy_ptr, db_ptr);
 }
 
 template <typename T>
 void eltwise_sub_left_bwd_impl(Tensor dy, Tensor da){
-    mlfe::copy(dy.get_memory(), da.get_memory());
+    auto dy_ptr = dy.device_data<T>();
+    auto da_ptr = da.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::eltwise_sub_left_bwd(size, dy_ptr, da_ptr);
 }
 
 template <typename T>
 void eltwise_sub_right_bwd_impl(Tensor dy, Tensor db){
     auto dy_ptr = dy.device_data<T>();
     auto db_ptr = db.mutable_device_data<T>();
-    auto size = dy.size();
-    math::scal<T, CUDAContext>(size, T(-1), dy_ptr, db_ptr);
+    int size = dy.size();
+    cuda_kernel::eltwise_sub_right_bwd(size, dy_ptr, db_ptr);
 }
 
 template <typename T>
 void eltwise_mul_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
-    eltwise_mul_fwd_impl<T>(b, dy, da);
+    auto b_ptr = b.device_data<T>();
+    auto dy_ptr = dy.device_data<T>();
+    auto da_ptr = da.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::eltwise_mul_left_bwd(size, b_ptr, dy_ptr, da_ptr);
 }
 
 template <typename T>
 void eltwise_mul_right_bwd_impl(Tensor a, Tensor dy, Tensor db){
-    eltwise_mul_fwd_impl<T>(a, dy, db);
+    auto a_ptr = a.device_data<T>();
+    auto dy_ptr = dy.device_data<T>();
+    auto db_ptr = db.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::eltwise_mul_left_bwd(size, a_ptr, dy_ptr, db_ptr);
 }
 
 template <typename T>
 void eltwise_div_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
-    eltwise_div_fwd_impl<T>(dy, b, da);
+    auto b_ptr = b.device_data<T>();
+    auto dy_ptr = dy.device_data<T>();
+    auto da_ptr = da.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::eltwise_div_left_bwd<T>(size, b_ptr, dy_ptr, da_ptr);
 }
 
 template <typename T>
@@ -90,7 +111,7 @@ void eltwise_div_right_bwd_impl(Tensor b, Tensor y, Tensor dy, Tensor db){
     auto dy_ptr = dy.device_data<T>();
     auto db_ptr = db.mutable_device_data<T>();
     auto size = dy.size();
-    cuda_kernel::eltwise_div_right_bwd(size, dy_ptr, b_ptr, y_ptr, db_ptr);
+    cuda_kernel::eltwise_div_right_bwd(size, b_ptr, y_ptr, dy_ptr, db_ptr);
 }
 
 template <typename T>
@@ -131,20 +152,26 @@ void scalar_div_fwd_impl(Tensor a, Tensor b, Tensor y){
 
 template <typename T>
 void scalar_add_left_bwd_impl(Tensor dy, Tensor da){
-    mlfe::copy(dy.get_memory(), da.get_memory());
+    auto dy_ptr = dy.device_data<T>();
+    auto da_ptr = da.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::scalar_add_left_bwd(size, dy_ptr, da_ptr);
 }
 
 template <typename T>
 void scalar_add_right_bwd_impl(Tensor dy, Tensor db){
-    math::sum<T, CUDAContext>(
-        dy.size(),
-        dy.device_data<T>(),
-        db.mutable_device_data<T>());
+    auto dy_ptr = dy.device_data<T>();
+    auto db_ptr = db.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::scalar_add_right_bwd(size, dy_ptr, db_ptr);
 }
 
 template <typename T>
 void scalar_sub_left_bwd_impl(Tensor dy, Tensor da){
-    mlfe::copy(dy.get_memory(), da.get_memory());
+    auto dy_ptr = dy.device_data<T>();
+    auto da_ptr = da.mutable_device_data<T>();
+    int size = dy.size();
+    cuda_kernel::scalar_sub_left_bwd(size, dy_ptr, da_ptr);
 }
 
 template <typename T>
@@ -157,11 +184,11 @@ void scalar_sub_right_bwd_impl(Tensor dy, Tensor db){
 
 template <typename T>
 void scalar_mul_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
-    auto scalar_b = b.data<T>()[0];
+    auto b_ptr = b.device_data<T>();
     auto dy_ptr = dy.device_data<T>();
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
-    math::scal<T, CUDAContext>(size, scalar_b, dy_ptr, da_ptr);
+    cuda_kernel::scalar_mul_left_bwd(size, b_ptr, dy_ptr, da_ptr);
 }
 
 template <typename T>
@@ -175,7 +202,11 @@ void scalar_mul_right_bwd_impl(Tensor a, Tensor dy, Tensor db){
 
 template <typename T>
 void scalar_div_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
-    eltwise_mul_fwd_impl<T>(b, dy, da);
+    auto b_ptr = b.device_data<T>();
+    auto dy_ptr = dy.device_data<T>();
+    auto da_ptr = da.mutable_device_data<T>();
+    auto size = dy.size();
+    cuda_kernel::scalar_div_left_bwd<T>(size, b_ptr, dy_ptr, da_ptr);
 }
 
 template <typename T>

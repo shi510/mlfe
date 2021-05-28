@@ -30,7 +30,7 @@ void eltwise_add_left_bwd_impl(Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = dy_ptr[n];
+        da_ptr[n] += dy_ptr[n];
     }
 }
 
@@ -40,7 +40,7 @@ void eltwise_add_right_bwd_impl(Tensor dy, Tensor db){
     auto db_ptr = db.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        db_ptr[n] = dy_ptr[n];
+        db_ptr[n] += dy_ptr[n];
     }
 }
 
@@ -50,7 +50,7 @@ void eltwise_sub_left_bwd_impl(Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = dy_ptr[n];
+        da_ptr[n] += dy_ptr[n];
     }
 }
 
@@ -60,7 +60,7 @@ void eltwise_sub_right_bwd_impl(Tensor dy, Tensor db){
     auto db_ptr = db.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        db_ptr[n] = -dy_ptr[n];
+        db_ptr[n] += -dy_ptr[n];
     }
 }
 
@@ -71,7 +71,7 @@ void eltwise_mul_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = b_ptr[n] * dy_ptr[n];
+        da_ptr[n] += b_ptr[n] * dy_ptr[n];
     }
 }
 
@@ -82,7 +82,7 @@ void eltwise_mul_right_bwd_impl(Tensor a, Tensor dy, Tensor db){
     auto db_ptr = db.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        db_ptr[n] = a_ptr[n] * dy_ptr[n];
+        db_ptr[n] += a_ptr[n] * dy_ptr[n];
     }
 }
 
@@ -93,7 +93,7 @@ void eltwise_div_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = dy_ptr[n] / b_ptr[n];
+        da_ptr[n] += dy_ptr[n] / b_ptr[n];
     }
 }
 
@@ -105,7 +105,7 @@ void eltwise_div_right_bwd_impl(Tensor b, Tensor y, Tensor dy, Tensor db){
     auto db_ptr = db.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        db_ptr[n] = -dy_ptr[n] * y_ptr[n] / b_ptr[n];
+        db_ptr[n] += -dy_ptr[n] * y_ptr[n] / b_ptr[n];
     }
 }
 
@@ -132,7 +132,7 @@ void scalar_add_left_bwd_impl(Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = dy_ptr[n];
+        da_ptr[n] += dy_ptr[n];
     }
 }
 
@@ -145,7 +145,7 @@ void scalar_add_right_bwd_impl(Tensor dy, Tensor db){
     for(int n = 0; n < size; ++n){
         sum += dy_ptr[n];
     }
-    db_ptr[0] = sum;
+    db_ptr[0] += sum;
 }
 
 template <typename T>
@@ -154,7 +154,7 @@ void scalar_sub_left_bwd_impl(Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = dy_ptr[n];
+        da_ptr[n] += dy_ptr[n];
     }
 }
 
@@ -167,7 +167,7 @@ void scalar_sub_right_bwd_impl(Tensor dy, Tensor db){
     for(int n = 0; n < size; ++n){
         sum += -dy_ptr[n];
     }
-    db_ptr[0] = sum;
+    db_ptr[0] += sum;
 }
 
 template <typename T>
@@ -177,7 +177,7 @@ void scalar_mul_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = scalar_b * dy_ptr[n];
+        da_ptr[n] += scalar_b * dy_ptr[n];
     }
 }
 
@@ -191,7 +191,7 @@ void scalar_mul_right_bwd_impl(Tensor a, Tensor dy, Tensor db){
     for(int n = 0; n < size; ++n){
         sum += a_ptr[n] * dy_ptr[n];
     }
-    db_ptr[0] = sum;
+    db_ptr[0] += sum;
 }
 
 template <typename T>
@@ -201,7 +201,7 @@ void scalar_div_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] = b_ptr[n] * dy_ptr[n];
+        da_ptr[n] += b_ptr[n] * dy_ptr[n];
     }
 }
 
@@ -216,7 +216,7 @@ void scalar_div_right_bwd_impl(Tensor b, Tensor y, Tensor dy, Tensor db){
     for(int n = 0; n < size; ++n){
         sum += -dy_ptr[n] * y_ptr[n] / scalar_b;
     }
-    db_ptr[0] = sum;
+    db_ptr[0] += sum;
 }
 
 } // namespace anonymous
