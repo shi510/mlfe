@@ -1,0 +1,26 @@
+#include "mlfe/operators_v2/squared_difference.h"
+#include "mlfe/math/transform.h"
+#include <algorithm>
+#include <stdexcept>
+#include <sstream>
+
+namespace mlfe{
+namespace operators_v2{
+
+Tensor squared_difference(Tensor a, Tensor b)
+{
+    auto y = functional::create_variable(a.shape());
+    auto gm_a = [a, b](Tensor &dy){
+        squared_diff_left_bwd_kernel::fn(a, b, dy, a.grad_v2());
+    };
+    auto gm_b = [a, b](Tensor &dy){
+        squared_diff_right_bwd_kernel::fn(a, b, dy, b.grad_v2());
+    };
+    call<squared_diff_fwd_kernel>(
+        marker::I(a, b),
+        marker::O(y)(gm_a, gm_b));
+    return y;
+}
+
+} // namespace operators_v2
+} // namespace mlfe
