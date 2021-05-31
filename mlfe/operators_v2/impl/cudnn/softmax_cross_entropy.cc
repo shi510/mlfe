@@ -174,15 +174,15 @@ void softmax_xent_bwd_impl(Tensor labels, Tensor logits, Tensor dy, Tensor dx){
 } // namespace anonymous
 
 REGIST_OP_KERNEL(
-    softmax_xent_bwd,
-    softmax_xent_bwd_fn_t,
-    softmax_xent_bwd_impl<float>
-    );
-
-REGIST_OP_KERNEL(
     softmax_xent_fwd,
     softmax_xent_fwd_fn_t,
     softmax_xent_fwd_impl<float>
+    );
+
+REGIST_OP_KERNEL(
+    softmax_xent_bwd,
+    softmax_xent_bwd_fn_t,
+    softmax_xent_bwd_impl<float>
     );
 
 } // namespace operators
