@@ -30,6 +30,82 @@ auto get_cudnn_type() {
     return CUDNN_DATA_FLOAT;
 };
 
+struct cudnn_conv2d_arguments{
+    void *ws_fwd;
+    size_t ws_fwd_size;
+    cudnnHandle_t handle;
+    cudnnTensorDescriptor_t x_desc;
+    cudnnFilterDescriptor_t w_desc;
+    cudnnTensorDescriptor_t y_desc;
+    cudnnConvolutionFwdAlgo_t conv_algo;
+    cudnnConvolutionDescriptor_t conv_desc;
+};
+
+template <typename T>
+void create_cudnn_args(
+    cudnn_conv2d_arguments * args,
+    Tensor &x,
+    Tensor &y,
+    Tensor &kernel,
+    std::vector<int32_t> &strides,
+    std::vector<int32_t> &paddings
+    )
+{
+    cudnnCreate(&args->handle);
+    cudnnCreateTensorDescriptor(&args->x_desc);
+    cudnnCreateFilterDescriptor(&args->w_desc);
+    cudnnCreateTensorDescriptor(&args->y_desc);
+    cudnnCreateConvolutionDescriptor(&args->conv_desc);
+
+    cudnnSetTensor4dDescriptor(
+        args->x_desc,
+        CUDNN_TENSOR_NHWC,
+        get_cudnn_type<T>(),
+        x.shape()[0], x.shape()[3], x.shape()[1], x.shape()[2]);
+
+    cudnnSetFilter4dDescriptor(
+        args->w_desc,
+        get_cudnn_type<T>(),
+        CUDNN_TENSOR_NHWC,
+        kernel.shape()[3], kernel.shape()[2], kernel.shape()[1], kernel.shape()[0]);
+
+    cudnnSetTensor4dDescriptor(
+        args->y_desc,
+        CUDNN_TENSOR_NHWC,
+        get_cudnn_type<T>(),
+        y.shape()[0], y.shape()[3], y.shape()[1], y.shape()[2]);
+
+    ASSERT_SUCCESS(cudnnSetConvolution2dDescriptor(
+        args->conv_desc,
+        paddings[0], paddings[1],
+        strides[0], strides[1], 1, 1,
+        CUDNN_CROSS_CORRELATION,
+        get_cudnn_type<T>()
+    ));
+
+    ASSERT_SUCCESS(cudnnGetConvolutionForwardAlgorithm(
+        args->handle,
+        args->x_desc,
+        args->w_desc,
+        args->conv_desc,
+        args->y_desc,
+        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST,
+        0,
+        &args->conv_algo
+    ));
+
+    ASSERT_SUCCESS(cudnnGetConvolutionForwardWorkspaceSize(
+        args->handle,
+        args->x_desc,
+        args->w_desc,
+        args->conv_desc,
+        args->y_desc,
+        args->conv_algo,
+        &args->ws_fwd_size
+    ));
+    cudaMalloc(&args->ws_fwd, args->ws_fwd_size);
+}
+
 template <typename T>
 struct conv2d_nhwc_op
 {
@@ -41,6 +117,16 @@ struct conv2d_nhwc_op
         std::vector<int32_t> paddings
         )
     {
+        // int64_t key =
+        //     kernel.size() + strides[0] + strides[1] + paddings[0] + paddings[1];
+        // auto args_ptr = get_object_pool().search<cudnn_conv2d_arguments>(key);
+        // if(!args_ptr){
+        //     auto new_args = std::make_shared<cudnn_conv2d_arguments>();
+        //     get_object_pool().regist<cudnn_conv2d_arguments>(new_args);
+        //     create_cudnn_args(new_args.get(), x, kernel, y, strides, paddings);
+        //     args_ptr = new_args;
+        // }
+
         void *_ws_fwd;
         size_t _ws_fwd_size;
         cudnnHandle_t _handle;

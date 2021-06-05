@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/impl/cudnn/kernel/basic_arithmetic.h"
+#include "mlfe/operators_v2/impl/cuda/kernel/basic_arithmetic.h"
 #include "mlfe/device_context/cuda_context.h"
 #include <third_party/cub/cub/block/block_reduce.cuh>
 
