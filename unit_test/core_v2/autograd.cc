@@ -25,7 +25,7 @@ struct case0{
         x2 = Tensor::from_vector<T>({3, 3, 3, 3}, {2, 2});
         x3 = x1 + 2.f;
         x4 = x3 * x3 * x2;
-        y = operators_v2::reduce_mean(x4);
+        y = op::reduce_mean(x4);
     }
 
     void backprop(){
