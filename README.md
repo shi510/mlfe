@@ -3,23 +3,21 @@
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/shi510/mlfe.svg?branch=master)](https://travis-ci.org/shi510/mlfe)  
 
-## Redesigning the architecture for dynamic execution is in progress now.
- - The core architecture will be changed massively.  
- - A large neural network architectures for basic example will be added for large dataset.  
- - A state of art loss functions will be added.  
- - ONNX import/export features will get strong.  
- - The updated commits are merged first to developer_preview branch.  
-
----
-
 MLFE is a framework for machine learning written by modern C++.  
 Initially this project was for studying on backpropagation algorithm of deep learning, but we decided to develop deeper for mobile platform.  
 So, our goal is to optimize a neural network on mobile platform by quantizing or compressing a neural network.  
 It supports only C++ lang now, but we are working to support Rust lang and Go lang.  
 
-# API Proposals For New Architecture
+## API Proposals For New Architecture
 The API described below is candidates for new architecture.  
 It is almost finalized and the released version may have tiny changes.  
+
+## Index
+1. [Basic Example](#Basic-Example)
+2. [Simple Neural Network for MNIST Dataset](#Simple-Neural-Network-for-MNIST-Dataset.)
+3. [Convolutional neural network](#Convolutional-neural-network)
+4. [The easiest way to build a model](#The-easiest-way-to-build-a-model)
+5. [Supported operators](Supported-operators)
 
 ## Basic Example
 You can create a variable using create_variable function.  
@@ -33,8 +31,8 @@ The device means GPU device, but if you compiled with CPU, it does not synchroni
 using namespace mlfe;
 namespace fn = functional;
 
-auto x = create_variable({2, 2});
-auto two = fn::constant(2, {2, 2});
+auto x = fn::create_variable({2, 2});
+auto two = Tensor::from_vector<float>({2, 2, 2, 2}, {2, 2});
 std::fill(x.begin<float>(), x.end<float>(), 1);
 // same result with std::fill, accessing address pointer directly.
 for(int n = 0; n < x.size(); ++n){
@@ -56,7 +54,7 @@ result.backprop();
 x.grad(); // its gradients are {{4.5, 4.5}, {4.5, 4.5}}
 ```
 
-## Simple Neural Network for MNIST Dataset.
+## Simple neural network for MNIST dataset
 
 To train mnist data, we build a simple neural network.  
 This code is in [example/mnist_v2](example/mnist_v2).  
@@ -184,17 +182,16 @@ struct mnist_conv_net : nn::module{
     nn::linear fc2;
 
     mnist_conv_net(){
-        conv1 = trainable(nn::conv2d(
-                                     /*input channel=*/1,
-                                     /*output channel=*/12,
+        conv1 = trainable(nn::conv2d(/*input channel=*/1,
+                                     /*output channel=*/16,
                                      /*kernel size=*/{3, 3},
                                      /*stride size=*/{1, 1},
                                      /*output size same with inputs=*/true));
-        conv2 = trainable(nn::conv2d(12, 24, {3, 3}, {1, 1}, true));
+        conv2 = trainable(nn::conv2d(16, 32, {3, 3}, {1, 1}, true));
         fc1 = trainable(nn::linear(
-                                   /*input channel=*/7*7*24,
-                                   /*output channel=*/64));
-        fc2 = trainable(nn::linear(64, 10));
+                                   /*input channel=*/7*7*32,
+                                   /*output channel=*/512));
+        fc2 = trainable(nn::linear(512, 10));
     }
 
     tensor forward(tensor x){
@@ -204,7 +201,7 @@ struct mnist_conv_net : nn::module{
         x = conv2(x);
         x = op::relu(x);
         x = op::maxpool2d(x, {2, 2}, {2, 2});
-        x = x.view({x.shape()[0], 7*7*24});
+        x = x.view({x.shape()[0], 7*7*32});
         x = fc1(x);
         x = op::relu(x);
         x = fc2(x);
@@ -218,3 +215,74 @@ mnist_conv_module model;
 model.trainable_variables(); // returns std::vector<tensor>
 ```
 
+## The easiest way to build a model
+**`In Progress Now.`**  
+Just push layers using `operator<<()` to a nn::module, then call it.  
+You don't have to specify the input size of a layer, such as nn::linear(`784`, 300).  
+
+```c++
+struct vgg16 : nn::module{
+
+    template <int C>
+    auto conv_block(){
+        return nn::module()
+            << seq::conv2d<C, size<3, 3>, size<1, 1>, true>()
+            << seq::batch_norm<>() << seq::relu<>();
+    }
+
+    vgg16(){
+        net_block
+            << conv_block<32>() << conv_block<32>()
+            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
+
+            << conv_block<64>() << conv_block<64>()
+            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
+
+            << conv_block<128>() << conv_block<128>()
+            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
+
+            << conv_block<256>() << conv_block<256>()
+            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
+
+            << conv_block<512>() << conv_block<512>() << conv_block<512>()
+            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
+
+            << conv_block<512>() << conv_block<512>() << conv_block<512>()
+            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
+
+            << seq::linear<4096>() << seq::relu<>()
+            << seq::linear<4096>() << seq::relu<>()
+            << seq::linear<1000>();
+        net_block.build({224, 224, 3});
+        trainable(net_block);
+    }
+
+    tensor forward(tensor x){
+        x = net_block(x)
+        return x;
+    }
+
+    nn::module net_block;
+};
+```
+
+## Supported operators
+All operators that didn't marked with `'o'` (not implemented yet) will be supported as soon as possible.  
+
+|                       | ARMv8 | CUDA(CUDNN) | x86_64 |
+|:---------------------:|:-----:|:-----------:|:------:|
+|         AveragePool2D |       |             |        |
+|           BatchNorm2D |       |      o      |        |
+|                Conv2D |   o   |      o      |    o   |
+|                 Dense |   o   |      o      |    o   |
+|               Dropout |       |             |        |
+|             MaxPool2D |   o   |      o      |    o   |
+|                Resize |       |             |        |
+|                  ReLU |   o   |      o      |    o   |
+|               Sigmoid |   o   |      o      |    o   |
+| Softmax Cross Entropy |   o   |      o      |    o   |
+| Sigmoid Cross Entropy |   o   |      o      |    o   |
+|    Squared Difference |   o   |      o      |    o   |
+|             Transpose |       |             |        |
+|         SGD Optimizer |   o   |      o      |    o   |
+|       Adam Optimizaer |   o   |      o      |    o   |
