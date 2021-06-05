@@ -196,12 +196,12 @@ void scalar_mul_right_bwd_impl(Tensor a, Tensor dy, Tensor db){
 
 template <typename T>
 void scalar_div_left_bwd_impl(Tensor b, Tensor dy, Tensor da){
-    auto b_ptr = b.device_data<T>();
+    auto scalar = T(1) / b.device_data<T>()[0];
     auto dy_ptr = dy.device_data<T>();
     auto da_ptr = da.mutable_device_data<T>();
     auto size = dy.size();
     for(int n = 0; n < size; ++n){
-        da_ptr[n] += b_ptr[n] * dy_ptr[n];
+        da_ptr[n] += scalar * dy_ptr[n];
     }
 }
 
