@@ -14,7 +14,7 @@ It is almost finalized and the released version may have tiny changes.
 
 ## Index
 1. [Basic Example](#Basic-Example)
-2. [Simple Neural Network for MNIST Dataset](#Simple-neural-network-for-MNIST-dataset.)
+2. [Simple Neural Network for MNIST Dataset](#Simple-neural-network-for-MNIST-dataset)
 3. [Convolutional neural network](#Convolutional-neural-network)
 4. [The easiest way to build a model](#The-easiest-way-to-build-a-model)
 5. [Supported operators](#Supported-operators)

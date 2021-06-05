@@ -3,6 +3,8 @@ file(GLOB_RECURSE hdrs "*.h")
 
 if(USE_XNNPACK)
     file(GLOB target_src "impl/xnnpack/*.cc")
+elseif(USE_INTEL_MKLDNN)
+    file(GLOB target_src "impl/mkldnn/*.cc")
 elseif(USE_CUDA AND NOT USE_CUDNN)
     file(GLOB target_src "impl/cuda/*.cc")
     file(GLOB cuda_srcs "impl/cuda/kernel/*.cu")
