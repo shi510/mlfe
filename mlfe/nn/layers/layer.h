@@ -14,7 +14,7 @@ struct layer
 
     std::string get_name();
 
-    std::vector<Tensor> & traiable_variables();
+    std::vector<Tensor> & trainable_variables();
 
 protected:
     Tensor add_variable(

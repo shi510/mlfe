@@ -11,17 +11,16 @@ namespace nn{
 
 struct module
 {
-    template <typename T>
+    template <typename T,
+        typename = std::enable_if_t<
+            std::is_base_of_v<nn::layer, T> || std::is_base_of_v<module, T>
+        >
+    >
     T trainable(T l){
-        auto & list = l.traiable_variables();
+        auto & list = l.trainable_variables();
         for_each(list.begin(), list.end(),
             [this](Tensor & t){ __trainable_vars.push_back(t); });
         return l;
-    }
-
-    module & trainable(module & m){
-        __trainable_vars = m.__trainable_vars;
-        return m;
     }
 
     std::vector<Tensor> & trainable_variables() {

@@ -14,7 +14,7 @@ std::string layer::get_name()
     return _layer_name;
 }
 
-std::vector<Tensor> & layer::traiable_variables()
+std::vector<Tensor> & layer::trainable_variables()
 {
     return __variables;
 }
