@@ -2,6 +2,7 @@
 #include "mlfe/optimizers_v2/sgd.h"
 #include "dataset/mnist.h"
 #include "simple_net.h"
+#include "auto_encoder.h"
 #include "conv_net.h"
 
 using namespace mlfe;
@@ -10,6 +11,10 @@ using namespace mlfe::module;
 float categorical_accuracy(Tensor y_true, Tensor y_pred);
 
 void train_simplenet(
+    dataset::mnist_gen train_set,
+    dataset::mnist_gen valid_set);
+
+void train_autoencoder(
     dataset::mnist_gen train_set,
     dataset::mnist_gen valid_set);
 
@@ -40,6 +45,10 @@ int main(int argc, char *argv[])
     if(std::string(argv[1]) == "simple")
     {
         train_simplenet(train_set, valid_set);
+    }
+    else if(std::string(argv[1]) == "autoencoder")
+    {
+        train_autoencoder(train_set, valid_set);
     }
     else if(std::string(argv[1]) == "conv")
     {
@@ -119,6 +128,57 @@ void train_simplenet(
     }
 }
 
+void train_autoencoder(
+    dataset::mnist_gen train_set,
+    dataset::mnist_gen valid_set)
+{
+    const int BATCH = 64;
+    const int EPOCH = 2;
+    const int INPUT_SIZE = 28 * 28;
+    const int OUTPUT_SIZE = 10;
+    const int NUM_ITER = train_set.size() / BATCH;
+
+    auto model = models::autoencoder();
+    auto images = std::vector<float>(BATCH*INPUT_SIZE);
+    auto labels = std::vector<float>(BATCH*OUTPUT_SIZE);
+    optimizers::SGD opt(1e-2, 0.9);
+    opt.set_variables(model.trainable_variables());
+    for(int e = 0; e < EPOCH; ++e)
+    {
+        float train_loss = 0.f;
+        float valid_loss = 0.f;
+        for(int i = 0; i < NUM_ITER; ++i)
+        {
+            fill_batch(train_set, images, labels, BATCH, i);
+            model.zero_grad();
+            auto x = Tensor::from_vector(images, {BATCH, INPUT_SIZE});
+            auto y_pred = model.forward(x);
+            auto loss = model.criterion(x, y_pred);
+            loss.backprop_v2();
+            opt.update();
+            train_loss += loss.data<float>()[0];
+            if((i+1) % 10 == 0){
+                std::cout<<(i + 1)<<": "<<train_loss / (i + 1)<<std::endl;
+            }
+        }
+        train_loss /= NUM_ITER;
+        const int VALID_ITER = valid_set.size() / BATCH;
+        
+        for(int i = 0; i < VALID_ITER; ++i)
+        {
+            fill_batch(valid_set, images, labels, BATCH, i);
+            auto x = Tensor::from_vector(images, {BATCH, INPUT_SIZE});
+            auto y_pred = model.forward(x);
+            auto loss = model.criterion(x, y_pred);
+            valid_loss += loss.data<float>()[0];
+        }
+        valid_loss /= VALID_ITER;
+        std::cout<<"[EPOCH "<<e + 1<<"] ";
+        std::cout<<"train loss: "<<train_loss;
+        std::cout<<", valid loss: "<<valid_loss<<std::endl;
+    }
+}
+
 void train_convnet(
     dataset::mnist_gen train_set,
     dataset::mnist_gen valid_set)
@@ -132,7 +192,7 @@ void train_convnet(
     auto model = models::mnist_conv_net();
     auto images = std::vector<float>(BATCH*INPUT_SIZE);
     auto labels = std::vector<float>(BATCH*OUTPUT_SIZE);
-    optimizers::SGD opt(1e-3, 0.9);
+    optimizers::SGD opt(1e-2, 0.9);
     opt.set_variables(model.trainable_variables());
     for(int e = 0; e < EPOCH; ++e)
     {

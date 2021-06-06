@@ -15,15 +15,14 @@ namespace op = mlfe::operators_v2;
 struct mnist_conv_net : nn::module{
     nn::conv2d conv1;
     nn::conv2d conv2;
-    nn::conv2d conv3;
     nn::linear fc1;
     nn::linear fc2;
 
     mnist_conv_net(){
-        conv1 = trainable(nn::conv2d(1, 12, {3, 3}, {1, 1}, true));
-        conv2 = trainable(nn::conv2d(12, 24, {3, 3}, {1, 1}, true));
-        fc1 = trainable(nn::linear(7*7*24, 64));
-        fc2 = trainable(nn::linear(64, 10));
+        conv1 = trainable(nn::conv2d(1, 16, {3, 3}, {1, 1}, true));
+        conv2 = trainable(nn::conv2d(16, 32, {3, 3}, {1, 1}, true));
+        fc1 = trainable(nn::linear(7*7*32, 512));
+        fc2 = trainable(nn::linear(512, 10));
     }
 
     Tensor forward(Tensor x){
@@ -33,7 +32,7 @@ struct mnist_conv_net : nn::module{
         x = conv2(x);
         x = op::maxpool2d(x, {2, 2}, {2, 2});
         x = op::relu(x);
-        x = x.view({x.shape()[0], 7 * 7 * 24});
+        x = x.view({x.shape()[0], 7 * 7 * 32});
         x = fc1(x);
         x = op::relu(x);
         x = fc2(x);
