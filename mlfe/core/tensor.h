@@ -260,22 +260,22 @@ private:
     weak_or_shared<impl> _pimpl;
 };
 
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator+(const T & val, const Tensor & x){ return x + Tensor::from_scalar<T>(val); }
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator-(const T & val, const Tensor & x){ return x - Tensor::from_scalar<T>(val); }
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator*(const T & val, const Tensor & x){ return x * Tensor::from_scalar<T>(val); }
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator/(const T & val, const Tensor & x){ return x / Tensor::from_scalar<T>(val); }
 
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator+(const Tensor & x, const T & val){ return x + Tensor::from_scalar<T>(val); }
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator-(const Tensor & x, const T & val){ return x - Tensor::from_scalar<T>(val); }
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator*(const Tensor & x, const T & val){ return x * Tensor::from_scalar<T>(val); }
-template <typename T>
+template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator/(const Tensor & x, const T & val){ return x / Tensor::from_scalar<T>(val); }
 
 template <typename T>

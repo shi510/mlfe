@@ -340,26 +340,22 @@ void *Tensor::_mutable_device_data(){
 }
 
 Tensor Tensor::operator+=(const Tensor & other){
-    Tensor result = operators_v2::add(*this, other);
-    copy(result.get_memory(), _pimpl->_mem);
+    *this = operators_v2::add(*this, other);
     return *this;
 }
 
 Tensor Tensor::operator-=(const Tensor & other){
-    Tensor result = operators_v2::sub(*this, other);
-    copy(result.get_memory(), _pimpl->_mem);
+    *this = operators_v2::sub(*this, other);
     return *this;
 }
 
 Tensor Tensor::operator*=(const Tensor & other){
-    Tensor result = operators_v2::mul(*this, other);
-    copy(result.get_memory(), _pimpl->_mem);
+    *this = operators_v2::mul(*this, other);
     return *this;
 }
 
 Tensor Tensor::operator/=(const Tensor & other){
-    Tensor result = operators_v2::div(*this, other);
-    copy(result.get_memory(), _pimpl->_mem);
+    *this = operators_v2::div(*this, other);
     return *this;
 }
 
@@ -391,6 +387,7 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
     var.resize(shape);
     var.grad_v2().resize(shape);
     var.grad_v2().zero();
+    var.get_node().add_attr("tensor", var.weak_copy());
     return var;
 }
 
