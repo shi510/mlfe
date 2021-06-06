@@ -14,10 +14,12 @@ It is almost finalized and the released version may have tiny changes.
 
 ## Index
 1. [Basic Example](#Basic-Example)
-2. [Simple Neural Network for MNIST Dataset](#Simple-neural-network-for-MNIST-dataset)
-3. [Convolutional neural network](#Convolutional-neural-network)
-4. [The easiest way to build a model](#The-easiest-way-to-build-a-model)
-5. [Supported operators](#Supported-operators)
+2. [Simple neural network for MNIST dataset](#Simple-neural-network-for-MNIST-dataset)
+3. [Auto Encoder](#Auto-Encoder)
+4. [Convolutional neural network](#Convolutional-neural-network)
+5. [The easiest way to build a model](#The-easiest-way-to-build-a-model)
+6. [Supported operators](#Supported-operators)
+7. [How to compile](#How-to-compile)
 
 ## Basic Example
 You can create a variable using create_variable function.  
@@ -163,6 +165,94 @@ The following figure shows visualization of the w variable, the Red colour repre
 
 ![visualization weights](https://raw.githubusercontent.com/shi510/mlfe/master/figures/fig_mnist_weights.jpg)
 
+## Auto Encoder
+```c++
+#include <mlfe/core/tensor.h>
+#include <mlfe/operators_v2/reduce_mean.h>
+#include <mlfe/operators_v2/squared_difference.h>
+#include <mlfe/operators_v2/sigmoid.h>
+#include <mlfe/nn/layers/linear.h>
+#include <mlfe/nn/module.h>
+using namespace mlfe;
+namespace op = mlfe::operators_v2;
+
+struct encoder : nn::module{
+    nn::linear fc1;
+    nn::linear fc2;
+    nn::linear fc3;
+    nn::linear fc4;
+
+    encoder(){
+        fc1 = trainable(nn::linear(28*28, 300));
+        fc2 = trainable(nn::linear(300, 150));
+        fc3 = trainable(nn::linear(150, 50));
+        fc4 = trainable(nn::linear(50, 10));
+    }
+
+    Tensor forward(Tensor x){
+        x = fc1(x);
+        x = op::sigmoid(x);
+        x = fc2(x);
+        x = op::sigmoid(x);
+        x = fc3(x);
+        x = op::sigmoid(x);
+        x = fc4(x);
+        x = op::sigmoid(x);
+        return x;
+    }
+};
+
+struct decoder : nn::module{
+    nn::linear fc1;
+    nn::linear fc2;
+    nn::linear fc3;
+    nn::linear fc4;
+
+    decoder(){
+        fc1 = trainable(nn::linear(10, 50));
+        fc2 = trainable(nn::linear(50, 150));
+        fc3 = trainable(nn::linear(150, 300));
+        fc4 = trainable(nn::linear(300, 28*28));
+    }
+
+    Tensor forward(Tensor x){
+        x = fc1(x);
+        x = op::sigmoid(x);
+        x = fc2(x);
+        x = op::sigmoid(x);
+        x = fc3(x);
+        x = op::sigmoid(x);
+        x = fc4(x);
+        x = op::sigmoid(x);
+        return x;
+    }
+};
+
+struct autoencoder : nn::module{
+    encoder encode;
+    decoder decode;
+
+    autoencoder()
+    {
+        encode = trainable(encoder());
+        decode = trainable(decoder());
+    }
+
+    Tensor forward(Tensor x)
+    {
+        x = encode.forward(x);
+        x = decode.forward(x);
+        return x;
+    }
+
+    Tensor criterion(Tensor y_true, Tensor y_pred)
+    {
+        auto loss = op::squared_difference(y_true, y_pred);
+        return op::reduce_mean(loss);
+    }
+};
+```
+
 ## Convolutional neural network
 
 1. Inherit the nn::module.  
@@ -271,11 +361,15 @@ All operators that didn't marked with `'o'` (not implemented yet) will be suppor
 
 |                       | ARMv8 | CUDA(CUDNN) | x86_64 |
 |:---------------------:|:-----:|:-----------:|:------:|
+|  Add (with broadcast) |   o   |      o      |    o   |
+|  Sub (with broadcast) |   o   |      o      |    o   |
+|  Mul (with broadcast) |   o   |      o      |    o   |
+|  Div (with broadcast) |   o   |      o      |    o   |
 |         AveragePool2D |       |             |        |
 |           BatchNorm2D |       |      o      |        |
 |                Conv2D |   o   |      o      |    o   |
 |                 Dense |   o   |      o      |    o   |
-|               Dropout |       |             |        |
+|               Dropout |   o   |      o      |    o   |
 |             MaxPool2D |   o   |      o      |    o   |
 |                Resize |       |             |        |
 |                  ReLU |   o   |      o      |    o   |
@@ -286,3 +380,44 @@ All operators that didn't marked with `'o'` (not implemented yet) will be suppor
 |             Transpose |       |             |        |
 |         SGD Optimizer |   o   |      o      |    o   |
 |       Adam Optimizaer |   o   |      o      |    o   |
+
+## How to compile
+
+```
+git clone https://github.com/shi510/mlfe
+mkdir build
+cd build
+```
+(1) Build on a CPU without any accelerator
+```
+cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D CMAKE_BUILD_TYPE=Release ..
+make -j
+./unit_test/unit_test
+```
+(2) Build on a CPU with XNNPACK
+
+```
+cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_XNNPACK=ON -D CMAKE_BUILD_TYPE=Release ..
+make -j
+./unit_test/unit_test
+```
+(3) Build on a CPU with MKLDNN
+
+```
+cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_INTEL_MKLDNN=ON -D CMAKE_BUILD_TYPE=Release ..
+make -j
+./unit_test/unit_test
+```
+(4) Build on an Nvidia GPU with CUDA
+
+```
+cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_CUDA=ON -D CMAKE_BUILD_TYPE=Release ..
+make -j
+./unit_test/unit_test
+```
+(5) Build on an Nvidia GPU with CUDNN
+```
+cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_CUDNN=ON -D CMAKE_BUILD_TYPE=Release ..
+make -j
+./unit_test/unit_test
+```
