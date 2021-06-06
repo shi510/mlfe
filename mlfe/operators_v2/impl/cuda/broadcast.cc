@@ -1,7 +1,6 @@
 #include "mlfe/operators_v2/broadcast.h"
+#include "mlfe/operators_v2/impl/cuda/kernel/broadcast.h"
 #include "mlfe/core/op_kernel.h"
-#include "mlfe/math/transform.h"
-#include "mlfe/math/basic_functions.h"
 #include "mlfe/device_context/cuda_context.h"
 
 namespace mlfe{
@@ -20,7 +19,7 @@ void broadcast_fwd_impl(Tensor x, Tensor y)
     std::copy(x.shape().rbegin(), x.shape().rend(), x_shape.rbegin());
     std::copy(y.shape().rbegin(), y.shape().rend(), y_shape.rbegin());
     // broadcast
-    math::broadcast<T, CUDAContext>(x_ptr, y_ptr,
+    cuda_kernel::broadcast<T>(x_ptr, y_ptr,
         x_shape[0], x_shape[1], x_shape[2], x_shape[3],
         y_shape[0], y_shape[1], y_shape[2], y_shape[3]);
 }
@@ -36,9 +35,7 @@ void broadcast_bwd_impl(Tensor dy, Tensor dx)
     std::fill(dx_shape.begin(), dx_shape.end(), 1);
     std::copy(dy.shape().rbegin(), dy.shape().rend(), dy_shape.rbegin());
     std::copy(dx.shape().rbegin(), dx.shape().rend(), dx_shape.rbegin());
-    // zero
-    math::set<T, CUDAContext>(dx.size(), T(0), dx_ptr);
-    math::broadcast_gradient<T, CUDAContext>(dy_ptr, dx_ptr,
+    cuda_kernel::broadcast_gradient<T>(dy_ptr, dx_ptr,
         dy_shape[0], dy_shape[1], dy_shape[2], dy_shape[3],
         dx_shape[0], dx_shape[1], dx_shape[2], dx_shape[3]);
 }
