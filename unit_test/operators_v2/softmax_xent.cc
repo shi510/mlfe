@@ -1,19 +1,19 @@
 #include <gtest/gtest.h>
+#include <mlfe/core/tensor.h>
 #include <mlfe/operators_v2/softmax_cross_entropy.h>
 #include <mlfe/operators_v2/reduce_mean.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
 
+using namespace mlfe;
 namespace fn = mlfe::functional;
 using namespace mlfe::operators_v2;
 
 TEST(operator_v2, softmax_xent_logits){
     using T = float;
     constexpr T pass_eps = 1e-3;
-    auto logits = fn::create_variable({2, 3});
-    logits = std::vector<float>{ 4.f, 2.f, 1.f, 0.f, 5.f, 1.f };
-    auto labels = fn::create_variable({2, 3});
-    labels = std::vector<float>{ 1.f, 0.f, 0.f, 0.f, 0.8f, 0.2f };
+    auto logits = Tensor::from_vector<T>({ 4.f, 2.f, 1.f, 0.f, 5.f, 1.f }, {2, 3});
+    auto labels = Tensor::from_vector<T>({ 1.f, 0.f, 0.f, 0.f, 0.8f, 0.2f }, {2, 3});
     auto result = softmax_cross_entropy(labels, logits);
     EXPECT_NEAR(result.data<T>()[0], 0.16984f, pass_eps);
     EXPECT_NEAR(result.data<T>()[1], 0.82474f, pass_eps);
@@ -22,10 +22,8 @@ TEST(operator_v2, softmax_xent_logits){
 TEST(operator_v2, softmax_xent_logits_grad_manual){
     using T = float;
     constexpr T pass_eps = 1e-3;
-    auto logits = fn::create_variable({2, 3});
-    logits = std::vector<float>{ 4.f, 2.f, 1.f, 0.f, 5.f, 1.f };
-    auto labels = fn::create_variable({2, 3});
-    labels = std::vector<float>{ 1.f, 0.f, 0.f, 0.f, 0.8f, 0.2f };
+    auto logits = Tensor::from_vector<T>({ 4.f, 2.f, 1.f, 0.f, 5.f, 1.f }, {2, 3});
+    auto labels = Tensor::from_vector<T>({ 1.f, 0.f, 0.f, 0.f, 0.8f, 0.2f }, {2, 3});
     auto result = softmax_cross_entropy(labels, logits);
     result = reduce_mean(result);
     result.backprop_v2();

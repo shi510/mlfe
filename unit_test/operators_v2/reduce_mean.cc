@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <mlfe/core/tensor.h>
 #include <mlfe/operators_v2/reduce_mean.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
@@ -10,8 +11,7 @@ namespace fn = mlfe::functional;
 TEST(operator_v2, reduce_mean){
     using T = float;
     constexpr T pass_eps = 1e-3;
-    auto input = fn::create_variable({2, 2});
-    input = std::vector<float>{-1.35f, 357.5f, -3.5f, 3.15f};
+    auto input = Tensor::from_vector<T>({-1.35f, 357.5f, -3.5f, 3.15f}, {2, 2});
     auto result = reduce_mean(input);
     EXPECT_EQ(result.size(), 1);
     EXPECT_NEAR(result.data<T>()[0], 88.95f, pass_eps);

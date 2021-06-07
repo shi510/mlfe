@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <mlfe/core/tensor.h>
 #include <mlfe/operators_v2/matmul.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
@@ -8,12 +9,11 @@ using namespace mlfe::operators_v2;
 namespace fn = mlfe::functional;
 
 TEST(operator_v2, matmul){
+    using T = float;
     // [2, 2] = [2, 3] x [3, 2]
     {
-        auto a = fn::create_variable({2, 3});
-        auto b = fn::create_variable({3, 2});
-        a = std::vector<float>{1, 2, 3, 4, 5, 6};
-        b = std::vector<float>{10, 20, 30, 40, 50, 60};
+        auto a = Tensor::from_vector<T>({1, 2, 3, 4, 5, 6}, {2, 3});
+        auto b = Tensor::from_vector<T>({10, 20, 30, 40, 50, 60}, {3, 2});
         auto c = matmul(a, b);
         EXPECT_EQ(c.size(), 4);
         EXPECT_EQ(c.shape()[0], 2);
@@ -28,12 +28,8 @@ TEST(operator_v2, matmul){
 
     // [2, 2] = [2, 3] x [2, 3]^T
     {
-        auto a = fn::create_variable({2, 3});
-        auto b = fn::create_variable({2, 3});
-
-        a = std::vector<float>{1, 2, 3, 4, 5, 6};
-        b = std::vector<float>{10, 20, 30, 40, 50, 60};
-
+        auto a = Tensor::from_vector<T>({1, 2, 3, 4, 5, 6}, {2, 3});
+        auto b = Tensor::from_vector<T>({10, 20, 30, 40, 50, 60}, {2, 3});
         auto c = matmul(a, b, false, true);
 
         EXPECT_EQ(c.size(), 4);
@@ -49,12 +45,8 @@ TEST(operator_v2, matmul){
 
     // [3, 3] = [2, 3]^T x [2, 3]
     {
-        auto a = fn::create_variable({2, 3});
-        auto b = fn::create_variable({2, 3});
-
-        a = std::vector<float>{1, 2, 3, 4, 5, 6};
-        b = std::vector<float>{10, 20, 30, 40, 50, 60};
-
+        auto a = Tensor::from_vector<T>({1, 2, 3, 4, 5, 6}, {2, 3});
+        auto b = Tensor::from_vector<T>({10, 20, 30, 40, 50, 60}, {2, 3});
         auto c = matmul(a, b, true);
         EXPECT_EQ(c.size(), 9);
         EXPECT_EQ(c.shape()[0], 3);
@@ -75,12 +67,8 @@ TEST(operator_v2, matmul){
 
     // [2, 2] = [3, 2]^T x [2, 3]^T
     {
-        auto a = fn::create_variable({3, 2});
-        auto b = fn::create_variable({2, 3});
-
-        a = std::vector<float>{1, 2, 3, 4, 5, 6};
-        b = std::vector<float>{10, 20, 30, 40, 50, 60};
-
+        auto a = Tensor::from_vector<T>({1, 2, 3, 4, 5, 6}, {3, 2});
+        auto b = Tensor::from_vector<T>({10, 20, 30, 40, 50, 60}, {2, 3});
         auto c = matmul(a, b, true, true);
         EXPECT_EQ(c.size(), 4);
         EXPECT_EQ(c.shape()[0], 2);
