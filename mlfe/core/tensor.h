@@ -100,11 +100,11 @@ public:
 
     bool operator==(const Tensor &v) const;
 
-    template <typename T>
-    Tensor & operator=(const std::vector<T> vals){
-        this->copy_from(vals);
-        return *this;
-    }
+    // template <typename T>
+    // Tensor & operator=(const std::vector<T> vals){
+    //     this->copy_from(vals);
+    //     return *this;
+    // }
 
     Tensor weak_copy();
 
@@ -197,11 +197,6 @@ public:
 
     Tensor grad_v2() const;
 
-    Tensor operator+=(const Tensor & other);
-    Tensor operator-=(const Tensor & other);
-    Tensor operator*=(const Tensor & other);
-    Tensor operator/=(const Tensor & other);
-
     Tensor operator+(const Tensor & other) const;
     Tensor operator-(const Tensor & other) const;
     Tensor operator*(const Tensor & other) const;
@@ -277,6 +272,11 @@ template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator*(const Tensor & x, const T & val){ return x * Tensor::from_scalar<T>(val); }
 template <typename T, typename = std::enable_if_t<std::is_fundamental_v<T>>>
 Tensor operator/(const Tensor & x, const T & val){ return x / Tensor::from_scalar<T>(val); }
+
+Tensor & operator+=(Tensor & a, const Tensor & b);
+Tensor & operator-=(Tensor & a, const Tensor & b);
+Tensor & operator*=(Tensor & a, const Tensor & b);
+Tensor & operator/=(Tensor & a, const Tensor & b);
 
 template <typename T>
 Tensor::iterator<T> Tensor::begin(){ return iterator<T>(mutable_data<T>()); }

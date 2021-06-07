@@ -339,26 +339,6 @@ void *Tensor::_mutable_device_data(){
     return _pimpl->_mem->mutable_device_data<void>();
 }
 
-Tensor Tensor::operator+=(const Tensor & other){
-    *this = operators_v2::add(*this, other);
-    return *this;
-}
-
-Tensor Tensor::operator-=(const Tensor & other){
-    *this = operators_v2::sub(*this, other);
-    return *this;
-}
-
-Tensor Tensor::operator*=(const Tensor & other){
-    *this = operators_v2::mul(*this, other);
-    return *this;
-}
-
-Tensor Tensor::operator/=(const Tensor & other){
-    *this = operators_v2::div(*this, other);
-    return *this;
-}
-
 Tensor Tensor::operator+(const Tensor & other) const{
     return operators_v2::add(*this, other);
 }
@@ -375,6 +355,35 @@ Tensor Tensor::operator/(const Tensor & other) const{
     return operators_v2::div(*this, other);
 }
 
+/*
+ * TODO: Fix computaional graph in +=, -=, *=, /= operators.
+ *       Do not use copy, find alternatives.
+ *
+ */
+Tensor & operator+=(Tensor & a, const Tensor & b){
+    auto c = operators_v2::add(a, b);
+    copy(c.get_memory(), a.get_memory());
+    return a;
+}
+
+Tensor & operator-=(Tensor & a, const Tensor & b){
+    auto c = operators_v2::sub(a, b);
+    copy(c.get_memory(), a.get_memory());
+    return a;
+}
+
+Tensor & operator*=(Tensor & a, const Tensor & b){
+    auto c = operators_v2::mul(a, b);
+    copy(c.get_memory(), a.get_memory());
+    return a;
+}
+
+Tensor & operator/=(Tensor & a, const Tensor & b){
+    auto c = operators_v2::div(a, b);
+    copy(c.get_memory(), a.get_memory());
+    return a;
+}
+
 namespace functional{
 
 Tensor create_variable(std::vector<int> shape, const bool trainable){
@@ -388,6 +397,7 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
     var.grad_v2().resize(shape);
     var.grad_v2().zero();
     var.get_node().add_attr("tensor", var.weak_copy());
+    var.get_node().add_attr("op_name", "variable");
     return var;
 }
 
