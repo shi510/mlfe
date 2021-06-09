@@ -17,14 +17,19 @@ struct module
         >
     >
     T trainable(T l){
-        auto & list = l.trainable_variables();
-        for_each(list.begin(), list.end(),
-            [this](Tensor & t){ __trainable_vars.push_back(t); });
+        auto & list = l.variables();
+        for_each(list.begin(), list.end(), [this](Tensor & t){
+            if(t.trainable()) __trainable_vars.push_back(t);
+            __vars.push_back(t);});
         return l;
     }
 
     std::vector<Tensor> & trainable_variables() {
         return __trainable_vars;
+    }
+    
+    std::vector<Tensor> & variables() {
+        return __vars;
     }
 
     void zero_grad(){
@@ -40,6 +45,7 @@ struct module
 private:
     std::vector<std::unique_ptr<layer>> __seq_vec;
     std::vector<Tensor> __trainable_vars;
+    std::vector<Tensor> __vars;
 };
 
 template <typename T>

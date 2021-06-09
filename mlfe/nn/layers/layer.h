@@ -16,6 +16,8 @@ struct layer
 
     std::vector<Tensor> & trainable_variables();
 
+    std::vector<Tensor> & variables();
+
 protected:
     Tensor add_variable(
         std::string name,
@@ -27,6 +29,7 @@ protected:
 
 private:
     std::string _layer_name;
+    std::vector<Tensor> __trainables;
     std::vector<Tensor> __variables;
 };
 

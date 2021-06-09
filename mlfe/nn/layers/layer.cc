@@ -16,6 +16,11 @@ std::string layer::get_name()
 
 std::vector<Tensor> & layer::trainable_variables()
 {
+    return __trainables;
+}
+
+std::vector<Tensor> & layer::variables()
+{
     return __variables;
 }
 
@@ -30,6 +35,7 @@ Tensor layer::add_variable(
     Tensor var = create_variable(shape, trainable);
     var.set_name(var_name);
     __variables.push_back(var);
+    if(trainable) __trainables.push_back(var);
     return var;
 }
 
