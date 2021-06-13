@@ -148,13 +148,13 @@ struct batch_norm2d_nhwc_grad_op
 } // namespace anonymous
 
 REGIST_OP_KERNEL(
-    batch_norm_fwd,
+    batch_norm2d_fwd,
     batch_norm_fwd_fn_t,
     batch_norm2d_nhwc_op<float>::run
     );
 
 REGIST_OP_KERNEL(
-    batch_norm_bwd,
+    batch_norm2d_bwd,
     batch_norm_bwd_fn_t,
     batch_norm2d_nhwc_grad_op<float>::run
     );
