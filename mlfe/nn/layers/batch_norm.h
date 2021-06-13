@@ -20,5 +20,21 @@ private:
     Tensor __rvar;
 };
 
+class batch_norm1d final : public layer_impl<batch_norm1d>
+{
+public:
+    batch_norm1d();
+
+    batch_norm1d(int32_t num_features, std::string name = "batch_norm1d");
+
+    Tensor call(Tensor input, bool trace_running_status=true);
+
+private:
+    Tensor __scales;
+    Tensor __biases;
+    Tensor __rmean;
+    Tensor __rvar;
+};
+
 } // end namespace nn
 } // end namespace mlfe
