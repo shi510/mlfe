@@ -40,11 +40,10 @@ struct maxpool2d_nhwc_op
         std::vector<int32_t> strides
         )
     {
-        cudnnHandle_t _handle;
+        cudnnHandle_t _handle = cuda_context_v2::create()->get_cudnn_handle();
         cudnnTensorDescriptor_t _x_desc;
         cudnnTensorDescriptor_t _y_desc;
         cudnnPoolingDescriptor_t _pooling_desc;
-        cudnnCreate(&_handle);
         cudnnCreateTensorDescriptor(&_x_desc);
         cudnnCreateTensorDescriptor(&_y_desc);
         cudnnCreatePoolingDescriptor(&_pooling_desc);
@@ -83,7 +82,6 @@ struct maxpool2d_nhwc_op
         cudnnDestroyTensorDescriptor(_x_desc);
         cudnnDestroyTensorDescriptor(_y_desc);
         cudnnDestroyPoolingDescriptor(_pooling_desc);
-        cudnnDestroy(_handle);
     }
 };
 
@@ -99,11 +97,10 @@ struct maxpool2d_nhwc_grad_op
         std::vector<int32_t> strides
         )
     {
-        cudnnHandle_t _handle;
+        cudnnHandle_t _handle = cuda_context_v2::create()->get_cudnn_handle();
         cudnnTensorDescriptor_t _dx_desc;
         cudnnTensorDescriptor_t _dy_desc;
         cudnnPoolingDescriptor_t _pooling_desc;
-        cudnnCreate(&_handle);
         cudnnCreateTensorDescriptor(&_dx_desc);
         cudnnCreateTensorDescriptor(&_dy_desc);
         cudnnCreatePoolingDescriptor(&_pooling_desc);
@@ -144,7 +141,6 @@ struct maxpool2d_nhwc_grad_op
         cudnnDestroyTensorDescriptor(_dx_desc);
         cudnnDestroyTensorDescriptor(_dy_desc);
         cudnnDestroyPoolingDescriptor(_pooling_desc);
-        cudnnDestroy(_handle);
     }
 };
 

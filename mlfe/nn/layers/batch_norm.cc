@@ -1,6 +1,6 @@
 #include "mlfe/nn/layers/batch_norm.h"
 #include "mlfe/operators_v2/basic_arithmetic.h"
-#include "mlfe/operators_v2/batch_norm.h"
+#include "mlfe/operators_v2/batch_norm2d.h"
 #include <algorithm>
 #include <numeric>
 

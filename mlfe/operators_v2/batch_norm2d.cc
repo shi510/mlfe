@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/batch_norm.h"
+#include "mlfe/operators_v2/batch_norm2d.h"
 #include "mlfe/math/transform.h"
 #include <algorithm>
 #include <stdexcept>

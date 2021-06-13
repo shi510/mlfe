@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/batch_norm.h"
+#include "mlfe/operators_v2/batch_norm2d.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
 #include <cfloat>
