@@ -365,7 +365,7 @@ All operators that didn't marked with `'o'` (not implemented yet) will be suppor
 |  Sub (with broadcast) |   o   |      o      |    o   |
 |  Mul (with broadcast) |   o   |      o      |    o   |
 |  Div (with broadcast) |   o   |      o      |    o   |
-|         AveragePool2D |       |             |        |
+|   GlobalAveragePool2D |       |      o      |        |
 |           BatchNorm2D |       |      o      |        |
 |                Conv2D |   o   |      o      |    o   |
 |                 Dense |   o   |      o      |    o   |
