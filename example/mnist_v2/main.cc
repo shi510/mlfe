@@ -6,7 +6,6 @@
 #include "conv_net.h"
 
 using namespace mlfe;
-using namespace mlfe::module;
 
 float categorical_accuracy(Tensor y_true, Tensor y_pred);
 

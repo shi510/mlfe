@@ -388,36 +388,17 @@ git clone https://github.com/shi510/mlfe
 mkdir build
 cd build
 ```
-(1) Build on a CPU without any accelerator
-```
-cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D CMAKE_BUILD_TYPE=Release ..
-make -j
-./unit_test/unit_test
-```
-(2) Build on a CPU with XNNPACK
-
-```
-cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_XNNPACK=ON -D CMAKE_BUILD_TYPE=Release ..
-make -j
-./unit_test/unit_test
-```
-(3) Build on a CPU with MKLDNN
-
-```
-cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_INTEL_MKLDNN=ON -D CMAKE_BUILD_TYPE=Release ..
-make -j
-./unit_test/unit_test
-```
-(4) Build on an Nvidia GPU with CUDA
-
-```
-cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_CUDA=ON -D CMAKE_BUILD_TYPE=Release ..
-make -j
-./unit_test/unit_test
-```
-(5) Build on an Nvidia GPU with CUDNN
+We recomannd to use CUDNN.  
 ```
 cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_CUDNN=ON -D CMAKE_BUILD_TYPE=Release ..
 make -j
 ./unit_test/unit_test
+```
+Other possible options.  
+It is compiled with host reference codes, if it has no option.  
+See [Reference Ops](mlfe/operators_v2/impl/cpu).  
+```python
+-D USE_CUDA=ON # only use cuda kernel, not cudnn
+-D USE_XNNPACK=ON
+-D USE_INTEL_MKLDNN=ON
 ```

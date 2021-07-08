@@ -2,12 +2,9 @@
 #include <vector>
 #include <string>
 #include <tuple>
-#include <mlfe/module/data_gen.h>
 
 namespace dataset
 {
-
-using namespace mlfe::module;
 
 void read_mnist_dataset(std::string folder_path,
     std::vector<uint8_t>& train_x,
@@ -15,7 +12,7 @@ void read_mnist_dataset(std::string folder_path,
     std::vector<uint8_t>& valid_x,
     std::vector<uint8_t>& valid_y);
 
-struct mnist_gen : public generator<mnist_gen>
+struct mnist_gen
 {
     mnist_gen(std::vector<uint8_t> x, std::vector<uint8_t> y, bool y_is_x = false)
     {
@@ -30,7 +27,7 @@ struct mnist_gen : public generator<mnist_gen>
         return __data_size;
     }
 
-    std::tuple<std::vector<float>, std::vector<float>> call(int idx)
+    std::tuple<std::vector<float>, std::vector<float>> operator()(int idx)
     {
         std::vector<float> x, y;
         constexpr int classes = 10;

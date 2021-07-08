@@ -1,17 +1,16 @@
-#ifndef __OPERATORS_H__
-#define __OPERATORS_H__
-#include "operators/activations.h"
-#include "operators/batch_norm.h"
-#include "operators/convolution.h"
-#include "operators/cross_entropy.h"
-#include "operators/initializer.h"
-#include "operators/math.h"
-#include "operators/pool.h"
-#include "operators/reshape.h"
-#include "operators/dropout.h"
-#include "operators/basic_arithmetics.h"
-#include "operators/matmul.h"
-#include "operators/broadcasting.h"
-#include "operators/transpose.h"
+#pragma once
 
-#endif // end #ifndef __OPERATORS_H__
+#include "mlfe/operators_v2/basic_arithmetic.h"
+#include "mlfe/operators_v2/batch_norm1d.h"
+#include "mlfe/operators_v2/batch_norm2d.h"
+#include "mlfe/operators_v2/broadcast.h"
+#include "mlfe/operators_v2/conv2d.h"
+#include "mlfe/operators_v2/global_avg_pool2d.h"
+#include "mlfe/operators_v2/matmul.h"
+#include "mlfe/operators_v2/maxpool2d.h"
+#include "mlfe/operators_v2/relu.h"
+#include "mlfe/operators_v2/reduce_mean.h"
+#include "mlfe/operators_v2/sigmoid.h"
+#include "mlfe/operators_v2/sigmoid_cross_entropy.h"
+#include "mlfe/operators_v2/softmax_cross_entropy.h"
+#include "mlfe/operators_v2/squared_difference.h"

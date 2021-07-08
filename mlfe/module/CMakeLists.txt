@@ -1,6 +1,0 @@
-file(GLOB_RECURSE module_srcs "*.cc")
-file(GLOB_RECURSE module_hdrs "*.h")
-list(APPEND mlfe_source_files ${module_srcs})
-list(APPEND mlfe_header_files ${module_hdrs})
-set(mlfe_source_files ${mlfe_source_files} PARENT_SCOPE)
-set(mlfe_header_files ${mlfe_header_files} PARENT_SCOPE)

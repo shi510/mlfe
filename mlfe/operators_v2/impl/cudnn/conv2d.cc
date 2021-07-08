@@ -1,7 +1,6 @@
 #include "mlfe/operators_v2/conv2d.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
-#include "mlfe/operators/convolution_utils.h"
 #include <cudnn.h>
 #include <iostream>
 #include <unordered_map>

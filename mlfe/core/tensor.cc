@@ -3,8 +3,6 @@
 #include "op_algo.h"
 #include "attribute.h"
 #include "gradient_helper.h"
-#include "mlfe/operators/initializer.h"
-#include "mlfe/operators/basic_arithmetics.h"
 #include "mlfe/operators_v2/basic_arithmetic.h"
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/utils/assert.h"
@@ -64,29 +62,6 @@ Tensor Tensor::weak_copy(){
     Tensor weak;
     weak._pimpl = {.w = this->_pimpl.s};
     return weak;
-}
-
-void Tensor::set_context(OpAlgoContext ctx)
-{
-    _pimpl->_ctx = ctx;
-    auto op = find_op(ctx);
-    this->get_node().set_task(make_task([](decltype(op) op, node n) {
-        op_algo_runtime_context rc;
-        rc.set_training(n.get_graph()->training());
-        op->Compute(rc);
-        }, op, this->get_node()));
-    this->get_backprop_node().set_task(make_task([]() {}));
-    for(int n = 0; n < ctx.num_inputs(); ++n)
-    {
-        this->get_node().add_input(ctx.get_input(n).get_node());
-    }
-    this->get_node().add_attr("op_name", ctx.get_op_name());
-    this->get_node().add_attr("op", op);
-    this->get_node().add_attr("tensor", *this);
-}
-
-OpAlgoContext & Tensor::get_context() const{
-    return _pimpl->_ctx;
 }
 
 memory_ptr Tensor::get_memory() const{
@@ -208,55 +183,6 @@ void Tensor::set_backprop_node(node n)
 node& Tensor::get_backprop_node() const
 {
     return _pimpl->backprop_n;
-}
-
-void Tensor::eval()
-{
-    _pimpl->n.run_only_mutated();
-}
-
-void Tensor::backprop()
-{
-    using TensorUmap = std::unordered_map<Tensor, std::vector<Tensor>>;
-    TensorUmap dy_collector;
-    auto grad_helper = GradientHelperRegistry::Get();
-    auto topo_list = topological_sort(_pimpl->n);
-    std::sort(topo_list.begin(), topo_list.end(), [](node a, node b) {
-        return a.get_name() > b.get_name();
-        });
-    topo_list.erase(std::unique(topo_list.begin(), topo_list.end()), topo_list.end());
-    std::sort(topo_list.begin(), topo_list.end(), [](node a, node b) {
-        return a.get_order() > b.get_order();
-        });
-    auto root_grad = functional::constant(1, this->shape());
-    this->set_backprop_node(root_grad.get_node());
-    this->set_gradient(root_grad);
-    dy_collector[*this].push_back(root_grad);
-    for(auto& n : topo_list)
-    {
-        auto op_name = *n.get_attr("op_name").data<std::string>();
-        if (op_name != "None")
-        {
-            auto op_grad = grad_helper->GetHelper(op_name);
-            auto y = *n.get_attr("tensor").data<Tensor>();
-            auto dy = functional::add_n(dy_collector[y]);
-            if (dy_collector[y].size() > 1)
-            {
-                y.set_backprop_node(dy.get_node());
-                y.set_gradient(dy);
-            }
-            op_grad->compute_gradient(y, dy);
-            for(auto& in : y.get_node().get_inputs())
-            {
-                auto x = *in.get_attr("tensor").data<Tensor>();
-                dy_collector[x].push_back(x.grad());
-            }
-        }
-    }
-}
-
-Tensor Tensor::grad(){
-    return *_pimpl->_gradient;
 }
 
 Tensor Tensor::view(std::vector<int> shape){
@@ -388,10 +314,7 @@ namespace functional{
 
 Tensor create_variable(std::vector<int> shape, const bool trainable){
     Tensor var;
-    // OpAlgoContext ctx("Identity");
-    // ctx.add_output(var);
     var.set_trainable(trainable);
-    // var.set_context(ctx);
     var.set_gradient_v2();
     var.resize(shape);
     var.grad_v2().resize(shape);
@@ -403,35 +326,11 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
 
 Tensor create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable){
     Tensor var;
-    OpAlgoContext ctx("Identity");
-    ctx.add_output(var);
     var.set_trainable(trainable);
     var.set_gradient_v2();
     var.resize(shape, ti);
     var.grad_v2().resize(shape);
-    var.set_context(ctx);
     return var;
-}
-
-Tensor reshape(Tensor x, std::vector<int> shape){
-    OpAlgoContext ctx("Reshape");
-    Tensor shape_t = create_variable({ (int)shape.size() }, type::int64());
-    Tensor y;
-    for(int n = 0; n < shape.size(); ++n){
-        shape_t.mutable_data<int64_t>()[n] = shape[n];
-    }
-    y._pimpl->_gradient = nullptr;
-    y._pimpl->_mem = x._pimpl->_mem;
-    y._pimpl->__size = x.size();
-    y._pimpl->__shape = shape;
-    ctx.add_input(x);
-    ctx.add_input(shape_t);
-    ctx.add_output(y);
-    y.set_context(ctx);
-    y.get_node().set_task(make_task([]() {}));
-    y.get_backprop_node().set_task(make_task([]() {}));
-    y.get_node().add_attr("tensor", y);
-    return y;
 }
 
 } // end namespace functional

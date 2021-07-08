@@ -1,6 +1,6 @@
 #ifndef __TENSOR_HPP__
 #define __TENSOR_HPP__
-#include "device.h"
+#include "mlfe/core/device.h"
 #include "mlfe/utils/types.h"
 #include "mlfe/core/graph.h"
 #include <string>
@@ -11,15 +11,12 @@
 namespace mlfe{
 //forward declaration.
 class Tensor;
-class OpAlgoContext;
 
 namespace functional{
 
 Tensor create_variable(std::vector<int> shape, const bool trainable = false);
 
 Tensor create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable = false);
-
-Tensor reshape(Tensor x, std::vector<int> shape);
 
 } // end namespace functional
 
@@ -108,10 +105,6 @@ public:
 
     Tensor weak_copy();
 
-    void set_context(OpAlgoContext ctx);
-
-    OpAlgoContext& get_context() const;
-
     memory_ptr get_memory() const;
 
     std::string name() const;
@@ -176,10 +169,6 @@ public:
     template <typename T>
     inline T *mutable_device_data();
 
-    void eval();
-
-    void backprop();
-
     Tensor grad();
 
     void zero();
@@ -233,7 +222,6 @@ protected:
 private:
     friend Tensor functional::create_variable(std::vector<int>, const bool trainable);
     friend Tensor functional::create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable);
-    friend Tensor functional::reshape(Tensor x, std::vector<int> shape);
     friend struct std::hash<Tensor>;
 
     template <typename T>
