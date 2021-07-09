@@ -23,43 +23,48 @@ void train_convnet(
 
 int main(int argc, char *argv[])
 {
-    std::vector<uint8_t> train_x;
-    std::vector<uint8_t> train_y;
-    std::vector<uint8_t> valid_x;
-    std::vector<uint8_t> valid_y;
+    try{
+        std::vector<uint8_t> train_x;
+        std::vector<uint8_t> train_y;
+        std::vector<uint8_t> valid_x;
+        std::vector<uint8_t> valid_y;
 
-    if(argc < 3)
-    {
-        std::cout<<argv[0];
-        std::cout<<" [simple | conv | autoencoder]";
-        std::cout<<" [mnist dataset folder]"<<std::endl;
-        return 1;
-    }
-    // read all data from original mnist binary file.
-    dataset::read_mnist_dataset(argv[2],
-        train_x, train_y,
-        valid_x, valid_y);
+        if(argc < 3)
+        {
+            std::cout<<argv[0];
+            std::cout<<" [simple | conv | autoencoder]";
+            std::cout<<" [mnist dataset folder]"<<std::endl;
+            return 1;
+        }
+        // read all data from original mnist binary file.
+        dataset::read_mnist_dataset(argv[2],
+            train_x, train_y,
+            valid_x, valid_y);
 
-    dataset::mnist_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
-    if(std::string(argv[1]) == "simple")
-    {
-        train_simplenet(train_set, valid_set);
+        dataset::mnist_gen train_set(train_x, train_y), valid_set(valid_x, valid_y);
+        if(std::string(argv[1]) == "simple")
+        {
+            train_simplenet(train_set, valid_set);
+        }
+        else if(std::string(argv[1]) == "autoencoder")
+        {
+            train_autoencoder(train_set, valid_set);
+        }
+        else if(std::string(argv[1]) == "conv")
+        {
+            train_convnet(train_set, valid_set);
+        }
+        else
+        {
+            std::cout<<"Wrong command, ";
+            std::cout<<"select one of the commands below."<<std::endl;
+            std::cout<<" - simple"<<std::endl;
+            std::cout<<" - conv"<<std::endl;
+            std::cout<<" - autoencoder"<<std::endl;
+        }
     }
-    else if(std::string(argv[1]) == "autoencoder")
-    {
-        train_autoencoder(train_set, valid_set);
-    }
-    else if(std::string(argv[1]) == "conv")
-    {
-        train_convnet(train_set, valid_set);
-    }
-    else
-    {
-        std::cout<<"Wrong command, ";
-        std::cout<<"select one of the commands below."<<std::endl;
-        std::cout<<" - simple"<<std::endl;
-        std::cout<<" - conv"<<std::endl;
-        std::cout<<" - autoencoder"<<std::endl;
+    catch(std::exception &e){
+        std::cout<<e.what()<<std::endl;
     }
 
     return 0;
@@ -74,7 +79,7 @@ void fill_batch(
 {
     for (int n = 0; n < batch_size; ++n)
     {
-        auto [imgs, labels] = dataset(batch_idx * n);
+        auto [imgs, labels] = dataset(batch_size*batch_idx + n);
         std::copy(imgs.begin(), imgs.end(), x.begin() + n * imgs.size());
         std::copy(labels.begin(), labels.end(), y.begin() + n * labels.size());
     }

@@ -56,5 +56,5 @@ struct mnist_gen
     std::vector<uint8_t> __y;
     bool __y_is_x;
 };
-    
+
 } // end namespace dataset

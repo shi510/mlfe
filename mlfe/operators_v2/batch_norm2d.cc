@@ -15,6 +15,9 @@ Tensor batch_norm2d(
     Tensor rvar,
     bool trace_running_status)
 {
+    if(x.shape().size() != 4){
+        throw std::runtime_error("batch_norm2d: input shape must be 4d.");
+    }
     auto y = functional::create_variable(x.shape());
     auto gm_x = [=](Tensor &dy){
         batch_norm2d_bwd_kernel::fn(
