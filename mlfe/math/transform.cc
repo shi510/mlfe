@@ -1,7 +1,7 @@
 #include "transform.h"
 #include "mlfe/device_context/cpu_context.h"
 #include <algorithm>
-#include <hptt.h>
+// #include <hptt.h>
 
 namespace mlfe{ namespace math{
 
@@ -287,22 +287,22 @@ void broadcast_gradient<float, CPUContext>(const float* dy, float* dx,
     }
 }
 
-template <>
-void transpose<float, CPUContext>(
-    const float* x_ptr,
-    const std::vector<int> x_shape,
-    const std::vector<int> perm,
-    float* y_ptr,
-    const bool row_major)
-{
-    const auto dims = x_shape.size();
+// template <>
+// void transpose<float, CPUContext>(
+//     const float* x_ptr,
+//     const std::vector<int> x_shape,
+//     const std::vector<int> perm,
+//     float* y_ptr,
+//     const bool row_major)
+// {
+//     const auto dims = x_shape.size();
 
-    auto plan = hptt::create_plan(perm.data(), dims,
-        1.f, x_ptr, x_shape.data(), NULL,
-        0.f, y_ptr, NULL,
-        hptt::ESTIMATE, 1, nullptr, row_major);
-    plan->execute();
-}
+//     auto plan = hptt::create_plan(perm.data(), dims,
+//         1.f, x_ptr, x_shape.data(), NULL,
+//         0.f, y_ptr, NULL,
+//         hptt::ESTIMATE, 1, nullptr, row_major);
+//     plan->execute();
+// }
 
 } /* math */
 } /* mlfe */

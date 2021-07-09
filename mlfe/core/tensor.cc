@@ -1,8 +1,6 @@
 #include "tensor.h"
 #include "device.h"
-#include "op_algo.h"
 #include "attribute.h"
-#include "gradient_helper.h"
 #include "mlfe/operators_v2/basic_arithmetic.h"
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/utils/assert.h"
@@ -15,10 +13,9 @@ namespace mlfe{
 
 //TODO : use thread for _children_modified
 struct Tensor::impl{
-    impl() : _ctx("unknown"), __ti(type::float32()), __stop_grad(false){}
+    impl() : __ti(type::float32()), __stop_grad(false){}
     memory_ptr _mem;
-    OpAlgoContext _ctx;
-    std::shared_ptr<Tensor> _gradient;
+    // std::shared_ptr<Tensor> _gradient;
     std::string __name;
     bool __trainable;
     bool __stop_grad;
@@ -27,7 +24,7 @@ struct Tensor::impl{
     int __size;
     std::shared_ptr<class graph> __g;
     node n;
-    node backprop_n;
+    // node backprop_n;
 };
 
 Tensor::Tensor(const bool trainable)
@@ -154,11 +151,6 @@ std::shared_ptr<graph> Tensor::get_graph() const
     return _pimpl->__g;
 }
 
-void Tensor::set_gradient(Tensor t)
-{
-    _pimpl->_gradient = std::make_shared<Tensor>(t);
-}
-
 void Tensor::set_gradient_v2()
 {
     get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor&)>>());
@@ -173,16 +165,6 @@ void Tensor::set_node(node n)
 node& Tensor::get_node() const
 {
     return _pimpl->n;
-}
-
-void Tensor::set_backprop_node(node n)
-{
-    _pimpl->backprop_n = n;
-}
-
-node& Tensor::get_backprop_node() const
-{
-    return _pimpl->backprop_n;
 }
 
 Tensor Tensor::view(std::vector<int> shape){

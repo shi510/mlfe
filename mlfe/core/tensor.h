@@ -133,17 +133,11 @@ public:
 
     std::shared_ptr<graph> get_graph() const;
 
-    void set_gradient(Tensor t);
-
     void set_gradient_v2();
 
     void set_node(node n);
 
     node& get_node() const;
-
-    void set_backprop_node(node n);
-
-    node& get_backprop_node() const;
 
     template <typename T>
     iterator<T> begin();
