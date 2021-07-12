@@ -45,11 +45,14 @@ struct cuda_context_v2 final : public Context {
 
     cudnnHandle_t get_cudnn_handle() const;
 
+    curandGenerator_t get_curand_generator() const;
+
 private:
     cuda_context_v2();
     static int static_shared_counter;
     static cublasHandle_t cublas_handle;
     static cudnnHandle_t cudnn_handle;
+    static curandGenerator_t curand_rng;
 }; // struct cuda_context_v2
 
 } // namespace mlfe

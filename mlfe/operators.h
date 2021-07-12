@@ -5,6 +5,7 @@
 #include "mlfe/operators_v2/batch_norm2d.h"
 #include "mlfe/operators_v2/broadcast.h"
 #include "mlfe/operators_v2/conv2d.h"
+#include "mlfe/operators_v2/dropout.h"
 #include "mlfe/operators_v2/global_avg_pool2d.h"
 #include "mlfe/operators_v2/matmul.h"
 #include "mlfe/operators_v2/maxpool2d.h"

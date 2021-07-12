@@ -38,6 +38,7 @@ cublasHandle_t CUDAContext::GetHandler() const{
 
 cublasHandle_t cuda_context_v2::cublas_handle = nullptr;
 cudnnHandle_t cuda_context_v2::cudnn_handle = nullptr;
+curandGenerator_t cuda_context_v2::curand_rng = nullptr;
 int cuda_context_v2::static_shared_counter = 0;
 
 cuda_context_v2::cuda_context_v2(){
@@ -50,6 +51,10 @@ cuda_context_v2::cuda_context_v2(){
         if (cudnnCreate(&cudnn_handle) != CUDNN_STATUS_SUCCESS) {
             throw std::string("cuda_context_v2::cuda_context_v2() : can not create cudnn handle.");
         }
+    }
+    if (curand_rng == nullptr) {
+        curandCreateGenerator(&curand_rng, CURAND_RNG_PSEUDO_MT19937);
+        curandSetPseudoRandomGeneratorSeed(curand_rng, 1357);
     }
     ++static_shared_counter;
 }
@@ -64,8 +69,10 @@ cuda_context_v2::~cuda_context_v2() {
         if (cudnnDestroy(cudnn_handle) != CUDNN_STATUS_SUCCESS) {
             throw std::string("cuda_context_v2::~cuda_context_v2() : cuda free cudnn handle failed.");
         }
+        curandDestroyGenerator(curand_rng);
         cublas_handle = nullptr;
         cudnn_handle = nullptr;
+        curand_rng = nullptr;
     }
 }
 
@@ -75,6 +82,10 @@ cublasHandle_t cuda_context_v2::get_cublas_handle() const {
 
 cudnnHandle_t cuda_context_v2::get_cudnn_handle() const {
     return cudnn_handle;
+}
+
+curandGenerator_t cuda_context_v2::get_curand_generator() const {
+    return curand_rng;
 }
 
 std::shared_ptr<cuda_context_v2> cuda_context_v2::create()

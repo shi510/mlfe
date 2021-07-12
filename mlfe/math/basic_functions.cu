@@ -1,6 +1,6 @@
 #include "basic_functions.h"
 #include <third_party/cub/cub/block/block_reduce.cuh>
-#include "blas.h"
+#include "mlfe/math/blas.h"
 #include "mlfe/device_context/cuda_context.h"
 
 namespace mlfe{
@@ -386,7 +386,7 @@ void bernoulli_distribution<float, CUDAContext>(const int size,
                                                 float *bernoulli
                                                )
 {
-    curandGenerateUniform(CUDAContext::rng, bernoulli, size);
+    curandGenerateUniform(cuda_context_v2::create()->get_curand_generator(), bernoulli, size);
     bernoulli_dist_kernel<float><<<CUDA_CONTEXT_GET_BLOCKS(size),
         CUDA_CONTEXT_NUM_THREADS>>>(size, prob, bernoulli);
 }
