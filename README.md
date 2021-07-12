@@ -17,9 +17,10 @@ It is almost finalized and the released version may have tiny changes.
 2. [Simple neural network for MNIST dataset](#Simple-neural-network-for-MNIST-dataset)
 3. [Auto Encoder](#Auto-Encoder)
 4. [Convolutional neural network](#Convolutional-neural-network)
-5. [The easiest way to build a model](#The-easiest-way-to-build-a-model)
-6. [Supported operators](#Supported-operators)
-7. [How to compile](#How-to-compile)
+5. [Deep CNN for CIFAR10](#Deep-CNN-for-CIFAR10)
+6. [The easiest way to build a model](#The-easiest-way-to-build-a-model)
+7. [Supported operators](#Supported-operators)
+8. [How to compile](#How-to-compile)
 
 ## Basic Example
 You can create a variable using create_variable function.  
@@ -303,6 +304,85 @@ You can access the trainable variables of your module.
 ```c++
 mnist_conv_module model;
 model.trainable_variables(); // returns std::vector<tensor>
+```
+
+## Deep CNN for CIFAR10
+
+We build a conv block module:  
+input -> conv_bn_relu -> dropout -> conv_bn_relu -> dropout -> maxpool.  
+Then use it to build deep conv net.  
+input -> conv_block -> conv_block -> conv_block -> global avg pool -> fc1 -> fc2.  
+See [cifar10 example](example/cifar_v2)
+
+```c++
+struct conv_block : nn::module{
+    nn::conv2d conv1;
+    nn::batch_norm2d bn1;
+    nn::conv2d conv2;
+    nn::batch_norm2d bn2;
+
+    conv_block(){}
+
+    conv_block(int32_t in_chann, int32_t out_chann){
+        conv1 = trainable(nn::conv2d(in_chann, out_chann,
+            /*kernel_size=*/{3, 3}, /*strides=*/{1, 1},
+            /*same_out=*/true, /*use_bias=*/false));
+        bn1 = trainable(nn::batch_norm2d(out_chann));
+        conv2 = trainable(nn::conv2d(out_chann, out_chann,{3, 3}, {1, 1}, true, false));
+        bn2 = trainable(nn::batch_norm2d(out_chann));
+    }
+
+    Tensor operator()(Tensor x, float drop_rate, bool is_training=true){
+        x = conv1(x);
+        x = bn1(x, is_training);
+        x = op::relu(x);
+        x = op::dropout(x, drop_rate, is_training);
+        x = conv2(x);
+        x = bn2(x, is_training);
+        x = op::relu(x);
+        x = op::dropout(x, drop_rate, is_training);
+        x = op::maxpool2d(x, {2, 2}, {2, 2});
+        return x;
+    }
+};
+
+struct cifar10_convnet : nn::module{
+    conv_block block1;
+    conv_block block2;
+    conv_block block3;
+    nn::linear fc1;
+    nn::batch_norm1d bn1;
+    nn::linear fc2;
+
+    cifar10_convnet(){
+        block1 = trainable(conv_block(3, 64));
+        block2 = trainable(conv_block(64, 128));
+        block3 = trainable(conv_block(128, 256));
+        fc1 = trainable(nn::linear(256, 1024, /*use_bias=*/false));
+        bn1 = trainable(nn::batch_norm1d(1024));
+        fc2 = trainable(nn::linear(1024, 10));
+    }
+
+    Tensor forward(Tensor x, bool is_training=true){
+        x = block1(x, 0.1, is_training);
+        x = block2(x, 0.2, is_training);
+        x = block3(x, 0.3, is_training);
+        x = op::global_average_pool2d(x);
+        x = fc1(x);
+        x = bn1(x, is_training);
+        x = op::relu(x);
+        x = op::dropout(x, 0.3, is_training);
+        x = fc2(x);
+        return x;
+    }
+
+    Tensor criterion(Tensor y_true, Tensor y_pred)
+    {
+        auto loss = op::softmax_cross_entropy(y_true, y_pred);
+        loss = op::reduce_mean(loss);
+        return loss;
+    }
+};
 ```
 
 ## The easiest way to build a model
