@@ -4,7 +4,7 @@ project(mlfe VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include(cmake/Utils.cmake)
+include(cmake/utils.cmake)
 
 if(UNIX)
   option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
@@ -33,7 +33,7 @@ set(mlfe_include_dirs ${PROJECT_SOURCE_DIR})
 set(mlfe_library_dependencies)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-include(cmake/Dependencies.cmake)
+include(cmake/dependencies.cmake)
 
 add_subdirectory(mlfe)
 add_subdirectory(example)
