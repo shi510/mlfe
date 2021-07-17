@@ -6,7 +6,6 @@
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/math/transform.h"
 #include "mlfe/device_context/cpu_context.h"
-#include "mlfe/operators/convolution_utils.h"
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace mlfe{

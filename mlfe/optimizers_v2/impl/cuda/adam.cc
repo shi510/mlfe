@@ -1,7 +1,7 @@
 #include "mlfe/optimizers_v2/adam.h"
 #include "mlfe/core/op_kernel.h"
-#include "mlfe/math/optimizers.h"
 #include "mlfe/device_context/cuda_context.h"
+#include "mlfe/optimizers_v2/impl/cuda/kernel/adam.h"
 
 namespace mlfe{
 namespace optimizers{
@@ -11,7 +11,7 @@ namespace {
 
 template <typename T>
 void adam_impl(Tensor x, Tensor dx, Tensor m_hist, Tensor v_hist, T lr, T beta1, T beta2, T eps){
-    math::adam<T, CUDAContext>(
+    cuda_kernel::adam<T>(
         x.size(),
         x.mutable_device_data<T>(),
         dx.device_data<T>(),

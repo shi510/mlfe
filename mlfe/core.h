@@ -1,6 +1,3 @@
-#ifndef __CORE_H__
-#define __CORE_H__
-#include "core/tensor.h"
-#include "core/device.h"
-
-#endif // end #ifndef __CORE_H__
+#pragma once
+#include "mlfe/core/tensor.h"
+#include "mlfe/core/device.h"

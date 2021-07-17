@@ -10,8 +10,24 @@ using namespace operators_v2;
 namespace {
 
 template <typename T>
+void gradient_descent_momentum_kernel(const int size,
+                               T *w,
+                               const T *dw,
+                               T *w_momentum,
+                               const T lr,
+                               const T momentum,
+                               const T decay)
+{
+    for(int n = 0; n < size; ++n){
+        w_momentum[n] = momentum * w_momentum[n];
+        w_momentum[n] += lr * (dw[n] + decay * w[n]);
+        w[n] -= w_momentum[n];
+    }
+}
+
+template <typename T>
 void sgd_impl(Tensor x, Tensor dx, Tensor mm_hist, T lr, T mm, T decay){
-    math::gradient_descent_momentum<T, CPUContext>(
+    gradient_descent_momentum_kernel<T>(
         x.size(),
         x.mutable_device_data<T>(),
         dx.device_data<T>(),

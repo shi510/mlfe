@@ -1,8 +1,11 @@
 file(GLOB srcs "*.cc")
-file(GLOB hdrs "*.h")
+file(GLOB_RECURSE hdrs "*.h")
 
 if(USE_CUDA OR USE_CUDNN)
     file(GLOB target_src "impl/cuda/*.cc")
+    file(GLOB cuda_srcs "impl/cuda/kernel/*.cu")
+    list(APPEND mlfe_cuda_source_files ${cuda_srcs})
+    set(mlfe_cuda_source_files ${mlfe_cuda_source_files} PARENT_SCOPE)
 else()
     file(GLOB target_src "impl/cpu/*.cc")
 endif()

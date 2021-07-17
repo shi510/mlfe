@@ -1,7 +1,3 @@
-#ifndef __OPTIMIZERS_H__
-#define __OPTIMIZERS_H__
-#include "optimizers/gradient_descent.h"
-#include "optimizers/adadelta.h"
-#include "optimizers/adam.h"
-
-#endif // end #ifndef __OPTIMIZERS_H__
+#pragma once
+#include "mlfe/optimizers_v2/sgd.h"
+#include "mlfe/optimizers_v2/adam.h"

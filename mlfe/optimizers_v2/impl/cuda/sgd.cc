@@ -1,7 +1,7 @@
 #include "mlfe/optimizers_v2/sgd.h"
 #include "mlfe/core/op_kernel.h"
-#include "mlfe/math/optimizers.h"
 #include "mlfe/device_context/cuda_context.h"
+#include "mlfe/optimizers_v2/impl/cuda/kernel/sgd.h"
 
 namespace mlfe{
 namespace optimizers{
@@ -11,7 +11,7 @@ namespace {
 
 template <typename T>
 void sgd_impl(Tensor x, Tensor dx, Tensor mm_hist, T lr, T mm, T decay){
-    math::gradient_descent_momentum<T, CUDAContext>(
+    cuda_kernel::gradient_descent_momentum<T>(
         x.size(),
         x.mutable_device_data<T>(),
         dx.device_data<T>(),
