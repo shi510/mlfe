@@ -1,5 +1,4 @@
 #include "mlfe/optimizers_v2/adam.h"
-#include "mlfe/math/optimizers.h"
 #include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{
