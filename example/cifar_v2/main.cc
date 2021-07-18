@@ -93,7 +93,7 @@ void train_convnet(
             model.zero_grad();
             auto x = Tensor::from_vector(images, {BATCH, 32, 32, 3});
             auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
-            auto y_pred = model.forward(x);
+            auto y_pred = model.forward(x, true);
             auto loss = model.criterion(y_true, y_pred);
             loss.backprop_v2();
             opt.update();
@@ -110,7 +110,7 @@ void train_convnet(
             fill_batch(valid_set, images, labels, BATCH, i);
             auto x = Tensor::from_vector(images, {BATCH, 32, 32, 3});
             auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
-            auto y_pred = model.forward(x, false);
+            auto y_pred = model.forward(x);
             valid_acc += categorical_accuracy(y_true, y_pred);
         }
         valid_acc /= VALID_ITER;

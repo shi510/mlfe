@@ -6,6 +6,7 @@
 #include <mlfe/operators_v2/relu.h>
 #include <mlfe/nn/layers/linear.h>
 #include <mlfe/nn/layers/conv2d.h>
+#include <mlfe/operators_v2/dropout.h>
 #include <mlfe/nn/module.h>
 
 namespace models{
@@ -21,17 +22,18 @@ struct mnist_conv_net : nn::module{
     mnist_conv_net(){
         conv1 = trainable(nn::conv2d(1, 16, {3, 3}, {1, 1}, true));
         conv2 = trainable(nn::conv2d(16, 32, {3, 3}, {1, 1}, true));
-        fc1 = trainable(nn::linear(7*7*32, 512));
-        fc2 = trainable(nn::linear(512, 10));
+        fc1 = trainable(nn::linear(7*7*32, 256));
+        fc2 = trainable(nn::linear(256, 10));
     }
 
-    Tensor forward(Tensor x){
+    Tensor forward(Tensor x, bool is_training=false){
         x = conv1(x);
         x = op::maxpool2d(x, {2, 2}, {2, 2});
         x = op::relu(x);
         x = conv2(x);
         x = op::maxpool2d(x, {2, 2}, {2, 2});
         x = op::relu(x);
+        x = op::dropout(x, 0.5, is_training);
         x = x.view({x.shape()[0], 7 * 7 * 32});
         x = fc1(x);
         x = op::relu(x);

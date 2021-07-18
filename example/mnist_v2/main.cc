@@ -208,7 +208,7 @@ void train_convnet(
             model.zero_grad();
             auto x = Tensor::from_vector(images, {BATCH, 28, 28, 1});
             auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
-            auto y_pred = model.forward(x);
+            auto y_pred = model.forward(x, true);
             auto loss = model.criterion(y_true, y_pred);
             loss.backprop_v2();
             opt.update();

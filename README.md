@@ -261,6 +261,8 @@ struct autoencoder : nn::module{
 3. Notify trainable variables to nn::module by enclosing a layer with `trainable` function.  
 
 The `trainable` function finds trainables in a layer and collects it.  
+See [mnist example](example/mnist_v2).  
+**The accuracy of this model on mnist dataset is about 98% at 2 epoch.**  
 
 ```c++
 using namespace mlfe;
@@ -281,18 +283,19 @@ struct mnist_conv_net : nn::module{
         conv2 = trainable(nn::conv2d(16, 32, {3, 3}, {1, 1}, true));
         fc1 = trainable(nn::linear(
                                    /*input channel=*/7*7*32,
-                                   /*output channel=*/512));
-        fc2 = trainable(nn::linear(512, 10));
+                                   /*output channel=*/256));
+        fc2 = trainable(nn::linear(256, 10));
     }
 
-    tensor forward(tensor x){
+    tensor forward(tensor x, bool is_training=false){
         x = conv1(x);
-        x = op::relu(x);
         x = op::maxpool2d(x, /*pool size=*/{2, 2}, /*stride size=*/{2, 2});
-        x = conv2(x);
         x = op::relu(x);
+        x = conv2(x);
         x = op::maxpool2d(x, {2, 2}, {2, 2});
-        x = x.view({x.shape()[0], 7*7*32});
+        x = op::relu(x);
+        x = op::dropout(x, 0.5, is_training);
+        x = x.view({x.shape()[0], 7 * 7 * 32});
         x = fc1(x);
         x = op::relu(x);
         x = fc2(x);
@@ -312,7 +315,8 @@ We build a conv block module:
 input -> conv_bn_relu -> dropout -> conv_bn_relu -> dropout -> maxpool.  
 Then use it to build deep conv net.  
 input -> conv_block -> conv_block -> conv_block -> global avg pool -> fc1 -> fc2.  
-See [cifar10 example](example/cifar_v2)
+See [cifar10 example](example/cifar_v2).  
+**The accuracy of this model on cifar10 dataset is about 86% at 30 epoch.**  
 
 ```c++
 struct conv_block : nn::module{
@@ -332,16 +336,15 @@ struct conv_block : nn::module{
         bn2 = trainable(nn::batch_norm2d(out_chann));
     }
 
-    Tensor operator()(Tensor x, float drop_rate, bool is_training=true){
+    Tensor operator()(Tensor x, float drop_rate, bool is_training=false){
         x = conv1(x);
         x = bn1(x, is_training);
         x = op::relu(x);
-        x = op::dropout(x, drop_rate, is_training);
         x = conv2(x);
         x = bn2(x, is_training);
         x = op::relu(x);
-        x = op::dropout(x, drop_rate, is_training);
         x = op::maxpool2d(x, {2, 2}, {2, 2});
+        x = op::dropout(x, drop_rate, is_training);
         return x;
     }
 };
@@ -358,20 +361,20 @@ struct cifar10_convnet : nn::module{
         block1 = trainable(conv_block(3, 64));
         block2 = trainable(conv_block(64, 128));
         block3 = trainable(conv_block(128, 256));
-        fc1 = trainable(nn::linear(256, 1024, /*use_bias=*/false));
-        bn1 = trainable(nn::batch_norm1d(1024));
-        fc2 = trainable(nn::linear(1024, 10));
+        fc1 = trainable(nn::linear(4*4*256, 512, /*use_bias=*/false));
+        bn1 = trainable(nn::batch_norm1d(512));
+        fc2 = trainable(nn::linear(512, 10));
     }
 
-    Tensor forward(Tensor x, bool is_training=true){
-        x = block1(x, 0.1, is_training);
-        x = block2(x, 0.2, is_training);
-        x = block3(x, 0.3, is_training);
-        x = op::global_average_pool2d(x);
+    Tensor forward(Tensor x, bool is_training=false){
+        x = block1(x, 0.3, is_training);
+        x = block2(x, 0.4, is_training);
+        x = block3(x, 0.5, is_training);
+        x = x.view({x.shape()[0], 4*4*256});
         x = fc1(x);
         x = bn1(x, is_training);
         x = op::relu(x);
-        x = op::dropout(x, 0.3, is_training);
+        x = op::dropout(x, 0.5, is_training);
         x = fc2(x);
         return x;
     }
