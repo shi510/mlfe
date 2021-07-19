@@ -27,7 +27,11 @@ generate_proto_cpp(tensorboard_dep tensorboard_src tensorboard_hdr
     ${PROJECT_SOURCE_DIR}/mlfe/utils/tensorboard/proto)
 generate_proto_cpp(onnx_dep onnx_src onnx_hdr
     ${PROJECT_SOURCE_DIR}/mlfe/utils/onnx/proto)
-add_library(${the_library} ${LIB_TYPE} ${mlfe_source_files} ${mlfe_header_files})
+add_library(${the_library} ${LIB_TYPE} 
+    ${mlfe_source_files}
+    ${mlfe_header_files}
+    ${tensorboard_src}
+    ${tensorboard_hdr})
 target_link_libraries(${the_library} ${mlfe_library_dependencies})
 if(USE_CUDNN)
     target_compile_definitions(${the_library} PRIVATE OPTION_USE_CUDNN)
