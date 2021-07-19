@@ -1,8 +1,10 @@
-FROM ubuntu:18.04
+FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
 ENV HOME /root
 
 RUN apt-get update
-RUN apt-get install -y git curl gcc-8 g++-8 gcc-8-aarch64-linux-gnu g++-8-aarch64-linux-gnu ninja-build zip
+RUN apt-get install -y git curl gcc-8 g++-8 ninja-build zip
+RUN rm -f /usr/bin/gcc
+RUN rm -f /usr/bin/g++
 RUN ln -s /usr/bin/gcc-8 /usr/bin/gcc
 RUN ln -s /usr/bin/g++-8 /usr/bin/g++
 
@@ -27,17 +29,16 @@ WORKDIR ${HOME}/mlfe
 RUN git checkout developer_preview
 RUN git submodule update --init --recursive
 
-# build mlfe using cross compiler for aarch64 with XNNPACK.
+# build mlfe using cross compiler for cudnn.
 WORKDIR ${HOME}/mlfe
 RUN mkdir build
 WORKDIR ${HOME}/mlfe/build
 RUN cmake \
-    -D ENABLE_ARM=ON \
     -D BUILD_TEST=ON \
     -D BUILD_EXAMPLE=ON \
-    -D USE_XNNPACK=ON \
+    -D USE_CUDA=ON \
+    -D USE_CUDNN=ON \
     -D CMAKE_BUILD_TYPE=Release \
-    -D CMAKE_TOOLCHAIN_FILE=../cmake/tool_chain/armv8_cross.cmake \
     -D CMAKE_INSTALL_PREFIX=/root/mlfe_lib \
     -G Ninja ..
 RUN ninja
