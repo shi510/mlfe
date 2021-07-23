@@ -3,14 +3,8 @@
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/shi510/mlfe.svg?branch=master)](https://travis-ci.org/shi510/mlfe)  
 
-MLFE is a framework for machine learning written by modern C++.  
-Initially this project was for studying on backpropagation algorithm of deep learning, but we decided to develop deeper for mobile platform.  
-So, our goal is to optimize a neural network on mobile platform by quantizing or compressing a neural network.  
-It supports only C++ lang now, but we are working to support Rust lang and Go lang.  
-
-## API Proposals For New Architecture
-The API described below is candidates for new architecture.  
-It is almost finalized and the released version may have tiny changes.  
+## Why do I develop this repo?
+Just curious.  
 
 ## Index
 1. [Basic Example](#Basic-Example)
