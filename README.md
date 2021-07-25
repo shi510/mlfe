@@ -13,8 +13,8 @@ Just curious.
 4. [Convolutional neural network](#Convolutional-neural-network)
 5. [Deep CNN for CIFAR10](#Deep-CNN-for-CIFAR10)
 6. [The easiest way to build a model](#The-easiest-way-to-build-a-model)
-7. [Supported operators](#Supported-operators)
-8. [How to compile](#How-to-compile)
+7. [How to compile](#How-to-compile)
+8. [Supported operators](#Supported-operators)
 
 ## Basic Example
 You can create a variable using create_variable function.  
@@ -433,6 +433,29 @@ struct vgg16 : nn::module{
 };
 ```
 
+## How to compile
+
+```
+git clone https://github.com/shi510/mlfe
+mkdir build
+cd build
+```
+We recomannd to use CUDNN v7.  
+See [docker/cudnn_v7_ubuntu18/Dockerfile](docker/cudnn_v7_ubuntu18/Dockerfile).  
+```
+cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_CUDNN=ON -D CMAKE_BUILD_TYPE=Release ..
+make -j
+./unit_test/unit_test
+```
+Other possible options.  
+```python
+-D USE_CUDA=ON # only use cuda kernel, not cudnn
+-D USE_XNNPACK=ON
+-D USE_INTEL_MKLDNN=ON
+```
+It is compiled with host reference codes, if it has no option.  
+See [mlfe/operators_v2/impl/cpu](mlfe/operators_v2/impl/cpu).  
+
 ## Supported operators
 All operators that didn't marked with `'o'` (not implemented yet) will be supported as soon as possible.  
 
@@ -457,25 +480,3 @@ All operators that didn't marked with `'o'` (not implemented yet) will be suppor
 |             Transpose |       |             |        |
 |         SGD Optimizer |   o   |      o      |    o   |
 |       Adam Optimizaer |   o   |      o      |    o   |
-
-## How to compile
-
-```
-git clone https://github.com/shi510/mlfe
-mkdir build
-cd build
-```
-We recomannd to use CUDNN.  
-```
-cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_CUDNN=ON -D CMAKE_BUILD_TYPE=Release ..
-make -j
-./unit_test/unit_test
-```
-Other possible options.  
-It is compiled with host reference codes, if it has no option.  
-See [Reference Ops](mlfe/operators_v2/impl/cpu).  
-```python
--D USE_CUDA=ON # only use cuda kernel, not cudnn
--D USE_XNNPACK=ON
--D USE_INTEL_MKLDNN=ON
-```
