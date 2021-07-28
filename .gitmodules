@@ -16,18 +16,9 @@
 [submodule "third_party/protobuf"]
 	path = third_party/protobuf
 	url = https://github.com/protocolbuffers/protobuf
-[submodule "third_party/NNPACK"]
-	path = third_party/NNPACK
-	url = https://github.com/Maratyszcza/NNPACK
-[submodule "third_party/QNNPACK"]
-	path = third_party/QNNPACK
-	url = https://github.com/pytorch/QNNPACK
 [submodule "third_party/json"]
 	path = third_party/json
 	url = https://github.com/nlohmann/json
 [submodule "third_party/XNNPACK"]
 	path = third_party/XNNPACK
 	url = https://github.com/google/XNNPACK
-[submodule "third_party/hptt"]
-	path = third_party/hptt
-	url = https://github.com/shi510/hptt
