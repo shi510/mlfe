@@ -1,6 +1,5 @@
 #include "mlfe/optimizers_v2/adadelta.h"
 #include "mlfe/core/op_kernel.h"
-#include "mlfe/math/optimizers.h"
 #include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{

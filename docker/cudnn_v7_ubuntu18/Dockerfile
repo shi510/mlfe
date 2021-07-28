@@ -36,7 +36,6 @@ WORKDIR ${HOME}/mlfe/build
 RUN cmake \
     -D BUILD_TEST=ON \
     -D BUILD_EXAMPLE=ON \
-    -D USE_CUDA=ON \
     -D USE_CUDNN=ON \
     -D CMAKE_BUILD_TYPE=Release \
     -D CMAKE_INSTALL_PREFIX=/root/mlfe_lib \
