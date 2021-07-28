@@ -40,15 +40,6 @@ enabled_device::enabled_device(){
 #endif
 }
 
-data_order get_data_order_prefer()
-{
-#if defined(OPTION_USE_XNNPACK)
-    return data_order::nhwc;
-#else
-    return data_order::nchw;
-#endif
-}
-
 std::string enabled_device::get_device_name() const{
     return _dev_name;
 }

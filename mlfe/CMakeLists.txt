@@ -19,7 +19,7 @@ list(APPEND mlfe_header_files operators.h)
 list(APPEND mlfe_header_files optimizers.h)
 
 include_directories(${mlfe_include_dirs})
-if(USE_CUDA)
+if(USE_CUDA OR USE_CUDNN)
   cuda_add_library(cuda_objects STATIC ${mlfe_cuda_source_files})
   list(APPEND mlfe_library_dependencies cuda_objects)
 endif()
