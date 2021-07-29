@@ -8,7 +8,7 @@ using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
 // TODO : add more kernel, stride and padding size test.
-TEST(operator_v2, conv2d_k3_s1_p0){
+TEST(operator, conv2d_k3_s1_p0){
     using T = float;
     constexpr T eps = 1e-5;
     constexpr int b = 1;
@@ -106,7 +106,7 @@ TEST(operator_v2, conv2d_k3_s1_p0){
 }
 
 
-TEST(operator_v2, conv2d_k3_s2_p1){
+TEST(operator, conv2d_k3_s2_p1){
     using T = float;
     constexpr T eps = 1e-5;
     constexpr int b = 1;
@@ -198,7 +198,7 @@ TEST(operator_v2, conv2d_k3_s2_p1){
     EXPECT_NEAR(y.data<float>()[3], 114.6, eps);
 }
 
-TEST(operator_v2, conv2d_k3_s1_p0_grad){  
+TEST(operator, conv2d_k3_s1_p0_grad){  
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -243,7 +243,7 @@ TEST(operator_v2, conv2d_k3_s1_p0_grad){
     EXPECT_NEAR(w_grad_diff, T(0), pass_eps);
 }
 
-TEST(operator_v2, conv2d_k3_s1_p1_grad){  
+TEST(operator, conv2d_k3_s1_p1_grad){  
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -288,7 +288,7 @@ TEST(operator_v2, conv2d_k3_s1_p1_grad){
     EXPECT_NEAR(w_grad_diff, T(0), pass_eps);
 }
 
-TEST(operator_v2, conv2d_k3_s2_p1_grad){
+TEST(operator, conv2d_k3_s2_p1_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;

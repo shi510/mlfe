@@ -7,7 +7,7 @@ using namespace mlfe;
 using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
-TEST(operator_v2, maxpool2d_k2_s2){
+TEST(operator, maxpool2d_k2_s2){
     using T = float;
     constexpr int B = 1;
     constexpr int C = 2;
@@ -64,7 +64,7 @@ TEST(operator_v2, maxpool2d_k2_s2){
     EXPECT_EQ(y_ptr[7], 16);
 }
 
-TEST(operator_v2, maxpool2d_grad_manual_k2_s2){
+TEST(operator, maxpool2d_grad_manual_k2_s2){
     using T = float;
     constexpr int B = 1;
     constexpr int C = 2;

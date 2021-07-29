@@ -11,7 +11,7 @@ using namespace mlfe;
 namespace fn = functional;
 namespace op = operators;
 
-TEST(operator_v2, sigmoid){
+TEST(operator, sigmoid){
     using T = float;
     auto var = Tensor::from_vector<T>({0, -0.5, 0.5, 1}, {2, 2});
     auto result = op::sigmoid(var);
@@ -28,7 +28,7 @@ TEST(operator_v2, sigmoid){
     EXPECT_GE(result.data<T>()[3], 0.7311 - 1e-4);
 }
 
-TEST(operator_v2, sigmoid_grad){
+TEST(operator, sigmoid_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;

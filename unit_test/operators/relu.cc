@@ -7,7 +7,7 @@ using namespace mlfe;
 using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
-TEST(operator_v2, relu){
+TEST(operator, relu){
     using T = float;
     auto input = Tensor::from_vector<T>({-1.35f, 357.5f, -3.5f, 3.15f}, {2, 2});
     auto result = relu(input);
@@ -17,7 +17,7 @@ TEST(operator_v2, relu){
     EXPECT_EQ(result.data<T>()[3], input.data<T>()[3]);
 }
 
-TEST(operator_v2, relu_grad){
+TEST(operator, relu_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;

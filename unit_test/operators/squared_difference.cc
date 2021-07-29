@@ -7,7 +7,7 @@ using namespace mlfe;
 using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
-TEST(operator_v2, squared_difference_fwd){
+TEST(operator, squared_difference_fwd){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, -4}, {2, 2});
     auto b = Tensor::from_vector<T>({5, 4, 3, 2}, {2, 2});
@@ -18,7 +18,7 @@ TEST(operator_v2, squared_difference_fwd){
     EXPECT_EQ(y.data<T>()[3], 36);
 }
 
-TEST(operator_v2, squared_difference_bwd){
+TEST(operator, squared_difference_bwd){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;

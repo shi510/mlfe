@@ -8,7 +8,7 @@ using namespace mlfe;
 using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
-TEST(operator_v2, matmul){
+TEST(operator, matmul){
     using T = float;
     // [2, 2] = [2, 3] x [3, 2]
     {
@@ -82,7 +82,7 @@ TEST(operator_v2, matmul){
     }
 }
 
-TEST(operator_v2, matmul_grad){
+TEST(operator, matmul_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;

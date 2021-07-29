@@ -8,7 +8,7 @@ using namespace mlfe;
 using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
-TEST(operator_v2, reduce_mean){
+TEST(operator, reduce_mean){
     using T = float;
     constexpr T pass_eps = 1e-3;
     auto input = Tensor::from_vector<T>({-1.35f, 357.5f, -3.5f, 3.15f}, {2, 2});
@@ -17,7 +17,7 @@ TEST(operator_v2, reduce_mean){
     EXPECT_NEAR(result.data<T>()[0], 88.95f, pass_eps);
 }
 
-TEST(operator_v2, reduce_mean_grad){
+TEST(operator, reduce_mean_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;

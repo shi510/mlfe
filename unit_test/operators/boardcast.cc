@@ -7,7 +7,7 @@ using namespace mlfe;
 using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
-TEST(operator_v2, broadcast_one_by_n){
+TEST(operator, broadcast_one_by_n){
     using namespace mlfe;
     namespace fn = functional;
     std::mt19937 rng;
@@ -145,7 +145,7 @@ TEST(operator_v2, broadcast_one_by_n){
     test_1d_broadcasting({1}, {5});
 }
 
-TEST(operator_v2, broadcast_one_by_n_grad){
+TEST(operator, broadcast_one_by_n_grad){
     using namespace mlfe;
     using T = float;
     constexpr T grad_eps = 1e-3;
@@ -205,7 +205,7 @@ TEST(operator_v2, broadcast_one_by_n_grad){
     test_broadcasting_grad({1}, {5});
 }
 
-TEST(operator_v2, broadcast_shape_check){
+TEST(operator, broadcast_shape_check){
 
     // matrix vector
     {

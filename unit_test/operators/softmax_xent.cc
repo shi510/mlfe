@@ -9,7 +9,7 @@ using namespace mlfe;
 namespace fn = mlfe::functional;
 using namespace mlfe::operators;
 
-TEST(operator_v2, softmax_xent_logits){
+TEST(operator, softmax_xent_logits){
     using T = float;
     constexpr T pass_eps = 1e-3;
     auto logits = Tensor::from_vector<T>({ 4.f, 2.f, 1.f, 0.f, 5.f, 1.f }, {2, 3});
@@ -19,7 +19,7 @@ TEST(operator_v2, softmax_xent_logits){
     EXPECT_NEAR(result.data<T>()[1], 0.82474f, pass_eps);
 }
 
-TEST(operator_v2, softmax_xent_logits_grad_manual){
+TEST(operator, softmax_xent_logits_grad_manual){
     using T = float;
     constexpr T pass_eps = 1e-3;
     auto logits = Tensor::from_vector<T>({ 4.f, 2.f, 1.f, 0.f, 5.f, 1.f }, {2, 3});

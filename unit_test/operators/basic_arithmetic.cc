@@ -10,7 +10,7 @@ using namespace mlfe;
 using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
-TEST(operator_v2, elementwise_add){
+TEST(operator, elementwise_add){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, 4}, {2, 2});
     auto b = Tensor::from_vector<T>({5, 6, 7, 8}, {2, 2});
@@ -21,7 +21,7 @@ TEST(operator_v2, elementwise_add){
     EXPECT_EQ(result.data<T>()[3], 12);
 }
 
-TEST(operator_v2, elementwise_add_grad){
+TEST(operator, elementwise_add_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -58,7 +58,7 @@ TEST(operator_v2, elementwise_add_grad){
 }
 
 
-TEST(operator_v2, elementwise_sub){
+TEST(operator, elementwise_sub){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, 4}, {2, 2});
     auto b = Tensor::from_vector<T>({5, 6, 7, 8}, {2, 2});
@@ -69,7 +69,7 @@ TEST(operator_v2, elementwise_sub){
     EXPECT_EQ(result.data<T>()[3], -4);
 }
 
-TEST(operator_v2, elementwise_sub_grad){
+TEST(operator, elementwise_sub_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -105,7 +105,7 @@ TEST(operator_v2, elementwise_sub_grad){
     EXPECT_NEAR(diff_b, T(0), pass_eps);
 }
 
-TEST(operator_v2, elementwise_mul){
+TEST(operator, elementwise_mul){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, 4}, {2, 2});
     auto b = Tensor::from_vector<T>({5, 6, 7, 8}, {2, 2});
@@ -116,7 +116,7 @@ TEST(operator_v2, elementwise_mul){
     EXPECT_EQ(result.data<T>()[3], 32);
 }
 
-TEST(operator_v2, elementwise_mul_grad){
+TEST(operator, elementwise_mul_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -152,7 +152,7 @@ TEST(operator_v2, elementwise_mul_grad){
     EXPECT_NEAR(diff_b, T(0), pass_eps);
 }
 
-TEST(operator_v2, elementwise_div){
+TEST(operator, elementwise_div){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, 4}, {2, 2});
     auto b = Tensor::from_vector<T>({5, 6, 7, 8}, {2, 2});
@@ -163,7 +163,7 @@ TEST(operator_v2, elementwise_div){
     EXPECT_EQ(result.data<T>()[3], 4.f/8.f);
 }
 
-TEST(operator_v2, elementwise_div_grad){
+TEST(operator, elementwise_div_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -199,7 +199,7 @@ TEST(operator_v2, elementwise_div_grad){
     EXPECT_NEAR(diff_b, T(0), pass_eps);
 }
 
-TEST(operator_v2, scalar_vector_add){
+TEST(operator, scalar_vector_add){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, 4}, {2, 2});
     auto b = Tensor::from_scalar<T>(5);
@@ -210,7 +210,7 @@ TEST(operator_v2, scalar_vector_add){
     EXPECT_EQ(result.data<T>()[3], 9);
 }
 
-TEST(operator_v2, scalar_vector_add_grad){
+TEST(operator, scalar_vector_add_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -246,7 +246,7 @@ TEST(operator_v2, scalar_vector_add_grad){
     EXPECT_NEAR(diff_b, T(0), pass_eps);
 }
 
-TEST(operator_v2, scalar_vector_sub){
+TEST(operator, scalar_vector_sub){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, 4}, {2, 2});
     auto b = Tensor::from_scalar<T>(5);
@@ -257,7 +257,7 @@ TEST(operator_v2, scalar_vector_sub){
     EXPECT_EQ(result.data<T>()[3], -1);
 }
 
-TEST(operator_v2, scalar_vector_sub_grad){
+TEST(operator, scalar_vector_sub_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -293,7 +293,7 @@ TEST(operator_v2, scalar_vector_sub_grad){
     EXPECT_NEAR(diff_b, T(0), pass_eps);
 }
 
-TEST(operator_v2, scalar_vector_mul){
+TEST(operator, scalar_vector_mul){
     using T = float;
     auto a = Tensor::from_vector<T>({1, 2, 3, 4}, {2, 2});
     auto b = Tensor::from_scalar<T>(5);
@@ -304,7 +304,7 @@ TEST(operator_v2, scalar_vector_mul){
     EXPECT_EQ(result.data<T>()[3], 20);
 }
 
-TEST(operator_v2, scalar_vector_mul_grad){
+TEST(operator, scalar_vector_mul_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -340,7 +340,7 @@ TEST(operator_v2, scalar_vector_mul_grad){
     EXPECT_NEAR(diff_b, T(0), pass_eps);
 }
 
-TEST(operator_v2, scalar_vector_div){
+TEST(operator, scalar_vector_div){
     using T = float;
     auto a = Tensor::from_vector<T>({10, 15, 20, 25}, {2, 2});
     auto b = Tensor::from_scalar<T>(5);
@@ -351,7 +351,7 @@ TEST(operator_v2, scalar_vector_div){
     EXPECT_EQ(result.data<T>()[3], 5);
 }
 
-TEST(operator_v2, scalar_vector_div_grad){
+TEST(operator, scalar_vector_div_grad){
     using T = float;
     constexpr T grad_eps = 1e-4;
     constexpr T pass_eps = 1e-3;
@@ -384,7 +384,7 @@ TEST(operator_v2, scalar_vector_div_grad){
     EXPECT_NEAR(diff_b, T(0), pass_eps);
 }
 
-TEST(operator_v2, broadcast_add){
+TEST(operator, broadcast_add){
     using T = float;
     //
     // { {1, 2},                   { {6, 12},

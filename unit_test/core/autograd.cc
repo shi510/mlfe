@@ -40,7 +40,7 @@ struct case0{
 };
 
 
-TEST(autograd_v2, case0_eval_check){
+TEST(autograd, case0_eval_check){
     using T = float;
     case0<T> tcase;
 
@@ -65,7 +65,7 @@ TEST(autograd_v2, case0_eval_check){
                   [](const T &val){ EXPECT_EQ(val, 27.f); });
 }
 
-TEST(autograd_v2, case0_grad_check){
+TEST(autograd, case0_grad_check){
     using T = float;
     case0<T> tcase;
     T answer;
@@ -133,7 +133,7 @@ struct case1{
 };
 
 
-TEST(autograd_v2, case1_eval_check){
+TEST(autograd, case1_eval_check){
     using T = float;
     case1<T> tcase;
 
@@ -175,7 +175,7 @@ TEST(autograd_v2, case1_eval_check){
     EXPECT_EQ(tcase.mean.data<T>()[0], 21.5);
 }
 
-TEST(autograd_v2, case1_grad_check){
+TEST(autograd, case1_grad_check){
     using T = float;
     case1<T> tcase;
     tcase.backprop();
@@ -276,7 +276,7 @@ struct case2{
     Tensor mean;
 };
 
-TEST(autograd_v2, case2_eval_check){
+TEST(autograd, case2_eval_check){
     using T = float;
     case2<T> tcase;
 
@@ -318,7 +318,7 @@ TEST(autograd_v2, case2_eval_check){
     EXPECT_EQ(tcase.mean.data<T>()[0], -8);
 }
 
-TEST(autograd_v2, case2_grad_check){
+TEST(autograd, case2_grad_check){
     using T = float;
     case2<T> tcase;
     tcase.backprop();
@@ -396,7 +396,7 @@ struct case3{
     Tensor mean;
 };
 
-TEST(autograd_v2, case3_eval_check){
+TEST(autograd, case3_eval_check){
     using T = float;
     case3<T> tcase;
 
@@ -418,7 +418,7 @@ TEST(autograd_v2, case3_eval_check){
     EXPECT_EQ(tcase.mean.data<T>()[0], 664.75);
 }
 
-TEST(autograd_v2, case3_grad_check){
+TEST(autograd, case3_grad_check){
     using T = float;
     case3<T> tcase;
     tcase.backprop();
