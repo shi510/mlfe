@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include <mlfe/operators_v2/conv2d.h>
+#include <mlfe/operators/conv2d.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
 
 using namespace mlfe;
-using namespace mlfe::operators_v2;
+using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
 // TODO : add more kernel, stride and padding size test.

@@ -65,15 +65,15 @@ This code is in [example/mnist_v2](example/mnist_v2).
 First step is to including headers.  
 ```c++
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/reduce_mean.h>
-#include <mlfe/operators_v2/softmax_cross_entropy.h>
-#include <mlfe/operators_v2/matmul.h>
+#include <mlfe/operators/reduce_mean.h>
+#include <mlfe/operators/softmax_cross_entropy.h>
+#include <mlfe/operators/matmul.h>
 ```
 For convenience, we use namespace abbreviation.  
 ```c++
 using namespace mlfe;
 namespace fn = functional;
-namespace op = operators_v2;
+namespace op = operators;
 ```
 
 1. Define forward function.  
@@ -167,13 +167,13 @@ The following figure shows visualization of the w variable, the Red colour repre
 ## Auto Encoder
 ```c++
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/reduce_mean.h>
-#include <mlfe/operators_v2/squared_difference.h>
-#include <mlfe/operators_v2/sigmoid.h>
+#include <mlfe/operators/reduce_mean.h>
+#include <mlfe/operators/squared_difference.h>
+#include <mlfe/operators/sigmoid.h>
 #include <mlfe/nn/layers/linear.h>
 #include <mlfe/nn/module.h>
 using namespace mlfe;
-namespace op = mlfe::operators_v2;
+namespace op = mlfe::operators;
 
 struct encoder : nn::module{
     nn::linear fc1;
@@ -264,7 +264,7 @@ See [mnist example](example/mnist_v2).
 
 ```c++
 using namespace mlfe;
-namespace op = mlfe::operators_v2;
+namespace op = mlfe::operators;
 
 struct mnist_conv_net : nn::module{
     nn::conv2d conv1;
@@ -310,7 +310,7 @@ model.trainable_variables(); // returns std::vector<tensor>
 ## Deep CNN for CIFAR10
 
 We build a conv block module:  
-input -> conv_bn_relu -> dropout -> conv_bn_relu -> dropout -> maxpool.  
+input -> conv_bn_relu -> dropout -> conv_bn_relu -> maxpool -> dropout.  
 Then use it to build deep conv net.  
 input -> conv_block -> conv_block -> conv_block -> global avg pool -> fc1 -> fc2.  
 See [cifar10 example](example/cifar_v2).  
@@ -469,7 +469,7 @@ There are another possible options and it is not recommanded.
 -D USE_INTEL_MKLDNN=ON # currently for experiment
 ```
 It is compiled with host reference codes, if it has no option.  
-See [mlfe/operators_v2/impl/cpu](mlfe/operators_v2/impl/cpu).  
+See [mlfe/operators/impl/cpu](mlfe/operators/impl/cpu).  
 
 ## Supported operators
 All operators that didn't marked with `'o'` (not implemented yet) will be supported as soon as possible.  
