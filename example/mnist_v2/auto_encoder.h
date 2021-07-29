@@ -1,14 +1,14 @@
 #pragma once
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/reduce_mean.h>
-#include <mlfe/operators_v2/squared_difference.h>
-#include <mlfe/operators_v2/sigmoid.h>
+#include <mlfe/operators/reduce_mean.h>
+#include <mlfe/operators/squared_difference.h>
+#include <mlfe/operators/sigmoid.h>
 #include <mlfe/nn/layers/linear.h>
 #include <mlfe/nn/module.h>
 
 namespace models{
 using namespace mlfe;
-namespace op = mlfe::operators_v2;
+namespace op = mlfe::operators;
 
 struct encoder : nn::module{
     nn::linear fc1;

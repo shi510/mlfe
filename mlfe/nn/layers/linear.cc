@@ -1,6 +1,6 @@
 #include "mlfe/nn/layers/linear.h"
-#include "mlfe/operators_v2/basic_arithmetic.h"
-#include "mlfe/operators_v2/matmul.h"
+#include "mlfe/operators/basic_arithmetic.h"
+#include "mlfe/operators/matmul.h"
 #include <algorithm>
 #include <numeric>
 
@@ -30,7 +30,7 @@ linear::linear(int input_channels,
 
 Tensor linear::call(Tensor input)
 {
-    Tensor y = operators_v2::matmul(input, __w);
+    Tensor y = operators::matmul(input, __w);
     if(__use_bias) { y = y + __b; }
     return y;
 }

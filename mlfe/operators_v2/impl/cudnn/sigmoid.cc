@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cuda/sigmoid.cc"
+#include "mlfe/operators/impl/cuda/sigmoid.cc"

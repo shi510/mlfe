@@ -1,10 +1,10 @@
-#include "mlfe/operators_v2/relu.h"
+#include "mlfe/operators/relu.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/math/activations.h"
 #include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

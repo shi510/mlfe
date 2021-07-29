@@ -1,11 +1,11 @@
-#include "mlfe/operators_v2/reduce_mean.h"
+#include "mlfe/operators/reduce_mean.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
 #include "mlfe/math/activations.h"
 #include "mlfe/math/basic_functions.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

@@ -1,8 +1,8 @@
-#include "mlfe/operators_v2/global_avg_pool2d.h"
-#include "mlfe/operators_v2/utils.h"
+#include "mlfe/operators/global_avg_pool2d.h"
+#include "mlfe/operators/utils.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor global_average_pool2d(Tensor x)
 {
@@ -17,5 +17,5 @@ Tensor global_average_pool2d(Tensor x)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

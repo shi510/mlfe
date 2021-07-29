@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
-#include <mlfe/operators_v2/basic_arithmetic.h>
-#include <mlfe/operators_v2/broadcast.h>
+#include <mlfe/operators/basic_arithmetic.h>
+#include <mlfe/operators/broadcast.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
 #include <iostream>
 #include <sstream>
 
 using namespace mlfe;
-using namespace mlfe::operators_v2;
+using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
 TEST(operator_v2, elementwise_add){

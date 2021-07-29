@@ -1,10 +1,10 @@
-#include "mlfe/operators_v2/broadcast.h"
-#include "mlfe/operators_v2/impl/cuda/kernel/broadcast.h"
+#include "mlfe/operators/broadcast.h"
+#include "mlfe/operators/impl/cuda/kernel/broadcast.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

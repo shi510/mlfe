@@ -1,13 +1,13 @@
 #pragma once
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/reduce_mean.h>
-#include <mlfe/operators_v2/softmax_cross_entropy.h>
-#include <mlfe/operators_v2/matmul.h>
+#include <mlfe/operators/reduce_mean.h>
+#include <mlfe/operators/softmax_cross_entropy.h>
+#include <mlfe/operators/matmul.h>
 
 namespace models
 {
 using namespace mlfe;
-namespace op = mlfe::operators_v2;
+namespace op = mlfe::operators;
 namespace fn = mlfe::functional;
 
 struct mnist_simple_net

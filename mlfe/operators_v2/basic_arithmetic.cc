@@ -1,12 +1,12 @@
-#include "mlfe/operators_v2/basic_arithmetic.h"
-#include "mlfe/operators_v2/broadcast.h"
+#include "mlfe/operators/basic_arithmetic.h"
+#include "mlfe/operators/broadcast.h"
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/math/transform.h"
 #include <stdexcept>
 #include <sstream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor elementwise_add(Tensor a, Tensor b)
 {
@@ -169,5 +169,5 @@ DEFINE_ARITHMETIC_OP(div)
 void set_zeros(Tensor x){ call<set_zeros_fwd_kernel>(marker::I(x)); }
 void set_ones(Tensor x){ call<set_ones_fwd_kernel>(marker::I(x)); }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

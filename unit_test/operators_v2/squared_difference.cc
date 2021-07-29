@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include <mlfe/operators_v2/squared_difference.h>
+#include <mlfe/operators/squared_difference.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
 
 using namespace mlfe;
-using namespace mlfe::operators_v2;
+using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
 TEST(operator_v2, squared_difference_fwd){

@@ -1,11 +1,11 @@
-#include "mlfe/optimizers_v2/adam.h"
+#include "mlfe/optimizers/adam.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
-#include "mlfe/optimizers_v2/impl/cuda/kernel/adam.h"
+#include "mlfe/optimizers/impl/cuda/kernel/adam.h"
 
 namespace mlfe{
 namespace optimizers{
-using namespace operators_v2;
+using namespace operators;
 
 namespace {
 

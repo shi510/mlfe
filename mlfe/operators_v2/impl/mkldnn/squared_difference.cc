@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cpu/squared_difference.cc"
+#include "mlfe/operators/impl/cpu/squared_difference.cc"

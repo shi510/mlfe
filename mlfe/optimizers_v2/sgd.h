@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace mlfe{
-using namespace operators_v2;
+using namespace operators;
 using sgd_fn_t = std::function<void (Tensor x, Tensor dx, Tensor mm_hist, float lr, float mm, float decay)>;
 DECLARE_OP_KERNEL(sgd, sgd_fn_t);
 

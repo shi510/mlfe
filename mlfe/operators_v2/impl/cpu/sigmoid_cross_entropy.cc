@@ -1,8 +1,8 @@
-#include "mlfe/operators_v2/sigmoid_cross_entropy.h"
+#include "mlfe/operators/sigmoid_cross_entropy.h"
 #include "mlfe/core/op_kernel.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

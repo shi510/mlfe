@@ -1,11 +1,11 @@
-#include "mlfe/operators_v2/squared_difference.h"
+#include "mlfe/operators/squared_difference.h"
 #include "mlfe/math/transform.h"
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor squared_difference(Tensor a, Tensor b)
 {
@@ -22,5 +22,5 @@ Tensor squared_difference(Tensor a, Tensor b)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

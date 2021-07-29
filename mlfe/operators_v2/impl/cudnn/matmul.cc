@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cuda/matmul.cc"
+#include "mlfe/operators/impl/cuda/matmul.cc"

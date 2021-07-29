@@ -1,11 +1,11 @@
-#include "mlfe/optimizers_v2/adadelta.h"
+#include "mlfe/optimizers/adadelta.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
-#include "mlfe/optimizers_v2/impl/cuda/kernel/adadelta.h"
+#include "mlfe/optimizers/impl/cuda/kernel/adadelta.h"
 
 namespace mlfe{
 namespace optimizers{
-using namespace operators_v2;
+using namespace operators;
 
 namespace {
 

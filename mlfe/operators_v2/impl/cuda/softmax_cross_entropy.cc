@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/softmax_cross_entropy.h"
+#include "mlfe/operators/softmax_cross_entropy.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/math/activations.h"
 #include "mlfe/math/blas.h"
@@ -6,7 +6,7 @@
 #include "mlfe/device_context/cuda_context.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

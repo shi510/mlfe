@@ -1,10 +1,10 @@
-#include "mlfe/optimizers_v2/sgd.h"
+#include "mlfe/optimizers/sgd.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{
 namespace optimizers{
-using namespace operators_v2;
+using namespace operators;
 
 namespace {
 

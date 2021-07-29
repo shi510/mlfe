@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/matmul.h"
+#include "mlfe/operators/matmul.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
 #include <cuda.h>
@@ -7,7 +7,7 @@
 #include <iostream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace{
 
 template<typename T>

@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cuda/squared_difference.cc"
+#include "mlfe/operators/impl/cuda/squared_difference.cc"

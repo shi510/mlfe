@@ -1,9 +1,9 @@
-#include "mlfe/operators_v2/batch_norm1d.h"
+#include "mlfe/operators/batch_norm1d.h"
 #include "mlfe/core/op_kernel.h"
 #include <iostream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 

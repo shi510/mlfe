@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/reduce_mean.h>
+#include <mlfe/operators/reduce_mean.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
 
 using namespace mlfe;
-using namespace mlfe::operators_v2;
+using namespace mlfe::operators;
 namespace fn = mlfe::functional;
 
 TEST(operator_v2, reduce_mean){

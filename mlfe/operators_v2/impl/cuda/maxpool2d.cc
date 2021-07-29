@@ -1,5 +1,5 @@
-#include "mlfe/operators_v2/maxpool2d.h"
-#include "mlfe/operators_v2/impl/cuda/kernel/maxpool2d.h"
+#include "mlfe/operators/maxpool2d.h"
+#include "mlfe/operators/impl/cuda/kernel/maxpool2d.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/math/activations.h"
 #include "mlfe/math/basic_functions.h"
@@ -7,7 +7,7 @@
 #include <cfloat>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

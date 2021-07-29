@@ -1,4 +1,4 @@
 #pragma once
-#include "mlfe/optimizers_v2/sgd.h"
-#include "mlfe/optimizers_v2/adadelta.h"
-#include "mlfe/optimizers_v2/adam.h"
+#include "mlfe/optimizers/sgd.h"
+#include "mlfe/optimizers/adadelta.h"
+#include "mlfe/optimizers/adam.h"

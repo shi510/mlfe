@@ -1,7 +1,7 @@
-#include "mlfe/operators_v2/reduce_mean.h"
+#include "mlfe/operators/reduce_mean.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor reduce_mean(Tensor x)
 {
@@ -15,5 +15,5 @@ Tensor reduce_mean(Tensor x)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

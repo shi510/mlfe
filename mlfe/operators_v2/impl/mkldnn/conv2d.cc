@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cpu/conv2d.cc"
+#include "mlfe/operators/impl/cpu/conv2d.cc"

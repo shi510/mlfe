@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cuda/dropout.cc"
+#include "mlfe/operators/impl/cuda/dropout.cc"

@@ -1,8 +1,8 @@
-#include "mlfe/operators_v2/sigmoid_cross_entropy.h"
+#include "mlfe/operators/sigmoid_cross_entropy.h"
 #include <tuple>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor sigmoid_cross_entropy(Tensor labels, Tensor logits)
 {
@@ -17,5 +17,5 @@ Tensor sigmoid_cross_entropy(Tensor labels, Tensor logits)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

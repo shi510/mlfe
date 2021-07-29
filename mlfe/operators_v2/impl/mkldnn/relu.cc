@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cpu/relu.cc"
+#include "mlfe/operators/impl/cpu/relu.cc"

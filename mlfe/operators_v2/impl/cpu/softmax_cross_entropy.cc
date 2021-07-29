@@ -3,10 +3,10 @@
 #include "mlfe/math/blas.h"
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/device_context/cpu_context.h"
-#include "mlfe/operators_v2/softmax_cross_entropy.h"
+#include "mlfe/operators/softmax_cross_entropy.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

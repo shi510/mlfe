@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/batch_norm1d.h"
+#include "mlfe/operators/batch_norm1d.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
 #include <cfloat>
@@ -6,7 +6,7 @@
 #include <iostream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 void inline ASSERT_SUCCESS(cudnnStatus_t t){

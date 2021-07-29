@@ -1,5 +1,5 @@
 #include <iostream>
-#include "mlfe/optimizers_v2/sgd.h"
+#include "mlfe/optimizers/sgd.h"
 #include "dataset/mnist.h"
 #include "simple_net.h"
 #include "auto_encoder.h"

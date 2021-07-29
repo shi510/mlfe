@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cpu/reduce_mean.cc"
+#include "mlfe/operators/impl/cpu/reduce_mean.cc"

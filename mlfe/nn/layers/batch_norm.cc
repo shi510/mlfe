@@ -1,7 +1,7 @@
 #include "mlfe/nn/layers/batch_norm.h"
-#include "mlfe/operators_v2/basic_arithmetic.h"
-#include "mlfe/operators_v2/batch_norm2d.h"
-#include "mlfe/operators_v2/batch_norm1d.h"
+#include "mlfe/operators/basic_arithmetic.h"
+#include "mlfe/operators/batch_norm2d.h"
+#include "mlfe/operators/batch_norm1d.h"
 #include <algorithm>
 #include <numeric>
 
@@ -26,7 +26,7 @@ batch_norm2d::batch_norm2d(
 
 Tensor batch_norm2d::call(Tensor input, bool trace_running_status)
 {
-    Tensor y = operators_v2::batch_norm2d(
+    Tensor y = operators::batch_norm2d(
         input, __scales, __biases, __rmean, __rvar, trace_running_status);
     return y;
 }
@@ -49,7 +49,7 @@ batch_norm1d::batch_norm1d(
 
 Tensor batch_norm1d::call(Tensor input, bool trace_running_status)
 {
-    Tensor y = operators_v2::batch_norm1d(
+    Tensor y = operators::batch_norm1d(
         input, __scales, __biases, __rmean, __rvar, trace_running_status);
     return y;
 }

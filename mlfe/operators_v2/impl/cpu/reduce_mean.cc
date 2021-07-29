@@ -1,9 +1,9 @@
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cpu_context.h"
-#include "mlfe/operators_v2/reduce_mean.h"
+#include "mlfe/operators/reduce_mean.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

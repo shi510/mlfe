@@ -1,11 +1,11 @@
-#include "mlfe/operators_v2/batch_norm1d.h"
+#include "mlfe/operators/batch_norm1d.h"
 #include "mlfe/math/transform.h"
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor batch_norm1d(
     Tensor x,
@@ -30,5 +30,5 @@ Tensor batch_norm1d(
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

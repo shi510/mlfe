@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace mlfe{
-using namespace operators_v2;
+using namespace operators;
 using adam_fn_t = std::function<void (Tensor x, Tensor dx, Tensor m_hist, Tensor v_hist, float lr, float beta1, float beta2, float eps)>;
 DECLARE_OP_KERNEL(adam, adam_fn_t);
 

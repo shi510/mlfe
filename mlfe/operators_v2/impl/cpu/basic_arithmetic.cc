@@ -1,10 +1,10 @@
-#include "mlfe/operators_v2/basic_arithmetic.h"
+#include "mlfe/operators/basic_arithmetic.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/math/activations.h"
 #include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 #define DEFINE_ELEMENTWISE_OP(name, expr)                  \

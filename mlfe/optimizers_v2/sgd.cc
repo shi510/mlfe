@@ -1,9 +1,9 @@
-#include "mlfe/optimizers_v2/sgd.h"
+#include "mlfe/optimizers/sgd.h"
 #include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{
 namespace optimizers{
-using namespace operators_v2;
+using namespace operators;
 
 SGD::SGD(float lr, float momentum){
     __lr = lr;

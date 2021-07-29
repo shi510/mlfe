@@ -1,8 +1,8 @@
-#include "mlfe/operators_v2/maxpool2d.h"
-#include "mlfe/operators_v2/utils.h"
+#include "mlfe/operators/maxpool2d.h"
+#include "mlfe/operators/utils.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor maxpool2d(Tensor x, std::vector<int32_t> psize, std::vector<int32_t> strides)
 {
@@ -27,5 +27,5 @@ Tensor maxpool2d(Tensor x, std::vector<int32_t> psize, std::vector<int32_t> stri
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

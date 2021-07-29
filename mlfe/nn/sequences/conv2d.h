@@ -1,8 +1,8 @@
 
 #pragma once
 #include "mlfe/nn/sequences/sequence.h"
-#include "mlfe/operators_v2/conv2d.h"
-#include "mlfe/operators_v2/utils.h"
+#include "mlfe/operators/conv2d.h"
+#include "mlfe/operators/utils.h"
 #include <cassert>
 #include <random>
 
@@ -40,20 +40,20 @@ struct conv2d : sequence
         int padh = 0;
         int padw = 0;
         if(P){
-            padh = operators_v2::utils::calc_conv_same_output_padding_size(
+            padh = operators::utils::calc_conv_same_output_padding_size(
                 input_shape[0], kernel[0], __stride[0]);
-            padw = operators_v2::utils::calc_conv_same_output_padding_size(
+            padw = operators::utils::calc_conv_same_output_padding_size(
                 input_shape[1], kernel[1], __stride[1]);
         }
-        auto oh = operators_v2::utils::calc_conv_output(
+        auto oh = operators::utils::calc_conv_output(
             input_shape[0], kernel[0], __stride[0], padh);
-        auto ow = operators_v2::utils::calc_conv_output(
+        auto ow = operators::utils::calc_conv_output(
             input_shape[1], kernel[1], __stride[1], padw);
         return {oh, ow, out_channels};
     }
 
     Tensor forward(Tensor input, bool train_phase) override{
-        Tensor y = operators_v2::conv2d(input, __w, __stride, __same_out);
+        Tensor y = operators::conv2d(input, __w, __stride, __same_out);
         if(__use_bias) { y = y + __b; }
         return y;
     }

@@ -5,7 +5,7 @@
 #include <cctype>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 using squared_diff_fwd_fn_t = std::function<void (Tensor, Tensor, Tensor)>;
 DECLARE_OP_KERNEL(squared_diff_fwd, squared_diff_fwd_fn_t);
@@ -16,5 +16,5 @@ DECLARE_OP_KERNEL(squared_diff_right_bwd, squared_diff_bwd_fn_t);
 
 Tensor squared_difference(Tensor a, Tensor b);
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

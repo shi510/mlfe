@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cpu/maxpool2d.cc"
+#include "mlfe/operators/impl/cpu/maxpool2d.cc"

@@ -1,7 +1,7 @@
-#include "mlfe/operators_v2/dropout.h"
+#include "mlfe/operators/dropout.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor dropout(Tensor x, float drop_ratio, bool is_training)
 {
@@ -18,5 +18,5 @@ Tensor dropout(Tensor x, float drop_ratio, bool is_training)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

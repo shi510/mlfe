@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/conv2d.h"
+#include "mlfe/operators/conv2d.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cpu_context.h"
 #include "mlfe/core/device.h"
@@ -9,7 +9,7 @@
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

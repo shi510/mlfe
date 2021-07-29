@@ -1,10 +1,10 @@
-#include "mlfe/operators_v2/conv2d.h"
-#include "mlfe/operators_v2/utils.h"
+#include "mlfe/operators/conv2d.h"
+#include "mlfe/operators/utils.h"
 #include <stdexcept>
 #include <sstream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor conv2d(
     Tensor x,                     // N, H, W, C
@@ -64,5 +64,5 @@ Tensor conv2d(
     return conv2d(x, kernel, strides, {ph, pw});
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

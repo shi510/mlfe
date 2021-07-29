@@ -1,8 +1,8 @@
-#include "mlfe/operators_v2/squared_difference.h"
+#include "mlfe/operators/squared_difference.h"
 #include "mlfe/core/op_kernel.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

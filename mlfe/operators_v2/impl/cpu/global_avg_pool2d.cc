@@ -1,9 +1,9 @@
-#include "mlfe/operators_v2/global_avg_pool2d.h"
+#include "mlfe/operators/global_avg_pool2d.h"
 #include "mlfe/core/op_kernel.h"
 #include <iostream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

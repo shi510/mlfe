@@ -1,7 +1,7 @@
 #pragma once
 #include "mlfe/nn/sequences/sequence.h"
-#include "mlfe/operators_v2/batch_norm1d.h"
-#include "mlfe/operators_v2/batch_norm2d.h"
+#include "mlfe/operators/batch_norm1d.h"
+#include "mlfe/operators/batch_norm2d.h"
 #include <cassert>
 
 namespace mlfe{
@@ -28,7 +28,7 @@ struct batch_norm2d : sequence
     }
 
     Tensor forward(Tensor input, bool train_phase) override{
-       return operators_v2::batch_norm2d(
+       return operators::batch_norm2d(
         input, __scales, __biases, __rmean, __rvar, train_phase);
     }
 
@@ -58,7 +58,7 @@ struct batch_norm1d : sequence
     }
 
     Tensor forward(Tensor input, bool train_phase) override{
-       return operators_v2::batch_norm1d(
+       return operators::batch_norm1d(
         input, __scales, __biases, __rmean, __rvar, train_phase);
     }
 

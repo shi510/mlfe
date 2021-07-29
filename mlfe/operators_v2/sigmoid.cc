@@ -1,7 +1,7 @@
-#include "mlfe/operators_v2/sigmoid.h"
+#include "mlfe/operators/sigmoid.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor sigmoid(Tensor x)
 {
@@ -16,5 +16,5 @@ Tensor sigmoid(Tensor x)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

@@ -1,6 +1,6 @@
 #include "mlfe/nn/layers/conv2d.h"
-#include "mlfe/operators_v2/basic_arithmetic.h"
-#include "mlfe/operators_v2/conv2d.h"
+#include "mlfe/operators/basic_arithmetic.h"
+#include "mlfe/operators/conv2d.h"
 #include <algorithm>
 #include <numeric>
 
@@ -36,7 +36,7 @@ conv2d::conv2d(int input_channels,
 
 Tensor conv2d::call(Tensor input)
 {
-    Tensor y = operators_v2::conv2d(input, __w, __stride, __same_out);
+    Tensor y = operators::conv2d(input, __w, __stride, __same_out);
     if(__use_bias) { y = y + __b; }
     return y;
 }

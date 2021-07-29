@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 using conv2d_fwd_fn_t = std::function<void (Tensor, Tensor, Tensor, std::vector<int32_t>, std::vector<int32_t>)>;
 DECLARE_OP_KERNEL(conv2d_fwd, conv2d_fwd_fn_t);
@@ -27,5 +27,5 @@ Tensor conv2d(
     std::vector<int32_t> strides,
     bool same_out=false);
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

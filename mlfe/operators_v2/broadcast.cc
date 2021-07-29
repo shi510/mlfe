@@ -1,11 +1,11 @@
-#include "mlfe/operators_v2/broadcast.h"
+#include "mlfe/operators/broadcast.h"
 #include "mlfe/math/transform.h"
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor broadcast(Tensor x, std::vector<int32_t> shape)
 {
@@ -34,5 +34,5 @@ Tensor broadcast(Tensor x, std::vector<int32_t> shape)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

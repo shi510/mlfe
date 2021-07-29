@@ -1,11 +1,11 @@
-#include "mlfe/operators_v2/broadcast.h"
+#include "mlfe/operators/broadcast.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/math/transform.h"
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/device_context/cpu_context.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

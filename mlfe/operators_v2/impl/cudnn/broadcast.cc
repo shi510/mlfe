@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cuda/broadcast.cc"
+#include "mlfe/operators/impl/cuda/broadcast.cc"

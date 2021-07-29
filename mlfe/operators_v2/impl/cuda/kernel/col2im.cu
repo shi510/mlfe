@@ -1,5 +1,5 @@
-#include "mlfe/operators_v2/impl/cuda/kernel/col2im.h"
-#include "mlfe/operators_v2/utils.h"
+#include "mlfe/operators/impl/cuda/kernel/col2im.h"
+#include "mlfe/operators/utils.h"
 #include "mlfe/device_context/cuda_context.h"
 #include <third_party/cub/cub/block/block_reduce.cuh>
 

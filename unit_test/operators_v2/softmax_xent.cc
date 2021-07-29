@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/softmax_cross_entropy.h>
-#include <mlfe/operators_v2/reduce_mean.h>
+#include <mlfe/operators/softmax_cross_entropy.h>
+#include <mlfe/operators/reduce_mean.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
 
 using namespace mlfe;
 namespace fn = mlfe::functional;
-using namespace mlfe::operators_v2;
+using namespace mlfe::operators;
 
 TEST(operator_v2, softmax_xent_logits){
     using T = float;

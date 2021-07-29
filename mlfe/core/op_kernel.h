@@ -5,7 +5,7 @@
 #include <string>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 template <typename op_type, typename fn_type>
 struct op_kernel_impl
@@ -87,5 +87,5 @@ void call(marker::I<I...> inputs, T ...args)
         std::tuple_cat(inputs.list, std::tuple<T...>(args...)));
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

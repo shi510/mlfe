@@ -1,7 +1,7 @@
-#include "mlfe/operators_v2/matmul.h"
+#include "mlfe/operators/matmul.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor matmul(Tensor a, Tensor b, bool transpose_a, bool transpose_b)
 {
@@ -45,5 +45,5 @@ Tensor matmul(Tensor a, Tensor b, bool transpose_a, bool transpose_b)
     return output;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

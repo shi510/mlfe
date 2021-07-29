@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/dropout.h"
+#include "mlfe/operators/dropout.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/math/activations.h"
 #include "mlfe/math/basic_functions.h"
@@ -6,7 +6,7 @@
 #include <iostream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

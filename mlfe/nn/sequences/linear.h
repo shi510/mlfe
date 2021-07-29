@@ -1,6 +1,6 @@
 #pragma once
 #include "mlfe/nn/sequences/sequence.h"
-#include "mlfe/operators_v2/matmul.h"
+#include "mlfe/operators/matmul.h"
 #include <cassert>
 #include <random>
 
@@ -35,7 +35,7 @@ struct linear : sequence
 
     Tensor forward(Tensor input, bool train_phase) override
     {
-        Tensor y = operators_v2::matmul(input, __weights);
+        Tensor y = operators::matmul(input, __weights);
         if(use_bias) { y = y + __biases; }
         return y;
     }

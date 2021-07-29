@@ -1,12 +1,12 @@
-#include "mlfe/operators_v2/basic_arithmetic.h"
-#include "mlfe/operators_v2/impl/cuda/kernel/basic_arithmetic.h"
+#include "mlfe/operators/basic_arithmetic.h"
+#include "mlfe/operators/impl/cuda/kernel/basic_arithmetic.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/device_context/cuda_context.h"
 
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

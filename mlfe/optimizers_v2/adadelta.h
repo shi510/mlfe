@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace mlfe{
-using namespace operators_v2;
+using namespace operators;
 using adadelta_fn_t = std::function<void (Tensor, Tensor, Tensor, Tensor, float, float, float)>;
 DECLARE_OP_KERNEL(adadelta, adadelta_fn_t);
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "mlfe/nn/sequences/sequence.h"
-#include "mlfe/operators_v2/relu.h"
+#include "mlfe/operators/relu.h"
 
 namespace mlfe{
 namespace nn{
@@ -18,7 +18,7 @@ struct relu : sequence
 
     Tensor forward(Tensor input, bool train_phase) override
     {
-       return operators_v2::relu(input);
+       return operators::relu(input);
     }
 };
 

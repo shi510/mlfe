@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/conv2d.h"
+#include "mlfe/operators/conv2d.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
 #include <cudnn.h>
@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 void inline ASSERT_SUCCESS(cudnnStatus_t t){

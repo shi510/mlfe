@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <mlfe/core.h>
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/sigmoid.h>
+#include <mlfe/operators/sigmoid.h>
 #include <mlfe/utils/gradient_checker.h>
 #include <random>
 #include <numeric>
@@ -9,7 +9,7 @@
 
 using namespace mlfe;
 namespace fn = functional;
-namespace op = operators_v2;
+namespace op = operators;
 
 TEST(operator_v2, sigmoid){
     using T = float;

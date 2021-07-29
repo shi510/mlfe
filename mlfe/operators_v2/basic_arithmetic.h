@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 using arithmetic_fwd_fn_t = std::function<void (Tensor, Tensor, Tensor)>;
 
@@ -65,5 +65,5 @@ DECLARE_OP_KERNEL(set_ones_fwd, set_x_fwd_fn_t);
 void set_zeros(Tensor x);
 void set_ones(Tensor x);
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

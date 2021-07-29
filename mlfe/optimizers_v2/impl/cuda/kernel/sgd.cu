@@ -1,4 +1,4 @@
-#include "mlfe/optimizers_v2/impl/cuda/kernel/sgd.h"
+#include "mlfe/optimizers/impl/cuda/kernel/sgd.h"
 #include "mlfe/device_context/cuda_context.h"
 
 namespace mlfe{

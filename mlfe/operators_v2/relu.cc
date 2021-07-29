@@ -1,7 +1,7 @@
-#include "mlfe/operators_v2/relu.h"
+#include "mlfe/operators/relu.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 Tensor relu(Tensor x)
 {
@@ -15,5 +15,5 @@ Tensor relu(Tensor x)
     return y;
 }
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

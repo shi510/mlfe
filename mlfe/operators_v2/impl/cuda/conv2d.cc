@@ -1,13 +1,13 @@
-#include "mlfe/operators_v2/conv2d.h"
-#include "mlfe/operators_v2/impl/cuda/kernel/col2im.h"
-#include "mlfe/operators_v2/impl/cuda/kernel/im2col.h"
+#include "mlfe/operators/conv2d.h"
+#include "mlfe/operators/impl/cuda/kernel/col2im.h"
+#include "mlfe/operators/impl/cuda/kernel/im2col.h"
 #include "mlfe/core/op_kernel.h"
 #include "mlfe/device_context/cuda_context.h"
 #include "mlfe/math/blas.h"
 #include <iostream>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

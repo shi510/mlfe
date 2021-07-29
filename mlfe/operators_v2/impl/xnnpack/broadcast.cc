@@ -1,1 +1,1 @@
-#include "mlfe/operators_v2/impl/cpu/broadcast.cc"
+#include "mlfe/operators/impl/cpu/broadcast.cc"

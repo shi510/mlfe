@@ -5,7 +5,7 @@
 #include <cctype>
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 
 using batch_norm_fwd_fn_t = std::function<void (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, bool)>;
 DECLARE_OP_KERNEL(batch_norm2d_fwd, batch_norm_fwd_fn_t);
@@ -21,5 +21,5 @@ Tensor batch_norm2d(
     Tensor rvar,
     bool trace_running_status=true);
 
-} // namespace operators_v2
+} // namespace operators
 } // namespace mlfe

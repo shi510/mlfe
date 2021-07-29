@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/basic_arithmetic.h>
-#include <mlfe/operators_v2/reduce_mean.h>
-#include <mlfe/operators_v2/squared_difference.h>
+#include <mlfe/operators/basic_arithmetic.h>
+#include <mlfe/operators/reduce_mean.h>
+#include <mlfe/operators/squared_difference.h>
 #include <algorithm>
 
 using namespace mlfe;
 namespace fn = functional;
-namespace op = operators_v2;
+namespace op = operators;
 
 //           mean(y)
 //            |

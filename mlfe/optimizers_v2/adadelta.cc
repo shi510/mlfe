@@ -1,8 +1,8 @@
-#include "mlfe/optimizers_v2/adadelta.h"
+#include "mlfe/optimizers/adadelta.h"
 
 namespace mlfe{
 namespace optimizers{
-using namespace operators_v2;
+using namespace operators;
 
 adadelta::adadelta(float lr, float momentum, float eps){
     __lr = lr;

@@ -1,4 +1,4 @@
-#include "mlfe/operators_v2/impl/cuda/kernel/broadcast.h"
+#include "mlfe/operators/impl/cuda/kernel/broadcast.h"
 
 namespace mlfe{
 namespace cuda_kernel{

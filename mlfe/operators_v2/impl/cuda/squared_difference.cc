@@ -1,9 +1,9 @@
-#include "mlfe/operators_v2/squared_difference.h"
-#include "mlfe/operators_v2/impl/cuda/kernel/squared_difference.h"
+#include "mlfe/operators/squared_difference.h"
+#include "mlfe/operators/impl/cuda/kernel/squared_difference.h"
 #include "mlfe/core/op_kernel.h"
 
 namespace mlfe{
-namespace operators_v2{
+namespace operators{
 namespace {
 
 template <typename T>

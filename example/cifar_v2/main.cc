@@ -1,6 +1,6 @@
 #include <iostream>
-#include "mlfe/optimizers_v2/sgd.h"
-#include "mlfe/optimizers_v2/adam.h"
+#include "mlfe/optimizers/sgd.h"
+#include "mlfe/optimizers/adam.h"
 #include "dataset/cifar.h"
 #include "net_models.h"
 

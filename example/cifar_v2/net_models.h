@@ -1,21 +1,21 @@
 #pragma once
 #include <mlfe/core/tensor.h>
-#include <mlfe/operators_v2/basic_arithmetic.h>
-#include <mlfe/operators_v2/reduce_mean.h>
-#include <mlfe/operators_v2/softmax_cross_entropy.h>
-#include <mlfe/operators_v2/maxpool2d.h>
-#include <mlfe/operators_v2/relu.h>
-#include <mlfe/operators_v2/global_avg_pool2d.h>
+#include <mlfe/operators/basic_arithmetic.h>
+#include <mlfe/operators/reduce_mean.h>
+#include <mlfe/operators/softmax_cross_entropy.h>
+#include <mlfe/operators/maxpool2d.h>
+#include <mlfe/operators/relu.h>
+#include <mlfe/operators/global_avg_pool2d.h>
 #include <mlfe/nn/layers/linear.h>
 #include <mlfe/nn/layers/conv2d.h>
 #include <mlfe/nn/layers/batch_norm.h>
-#include <mlfe/operators_v2/dropout.h>
+#include <mlfe/operators/dropout.h>
 #include <mlfe/nn/module.h>
 #include <iostream>
 
 namespace models{
 using namespace mlfe;
-namespace op = mlfe::operators_v2;
+namespace op = mlfe::operators;
 
 struct conv_block : nn::module{
     nn::conv2d conv1;
