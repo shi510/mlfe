@@ -25,9 +25,6 @@ struct vgg16 : nn::module{
 
     vgg16(){
         net_block
-            << conv_block<32>() << conv_block<32>()
-            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
-
             << conv_block<64>() << conv_block<64>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
@@ -35,6 +32,9 @@ struct vgg16 : nn::module{
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
             << conv_block<256>() << conv_block<256>()
+            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
+
+            << conv_block<512>() << conv_block<512>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
             << conv_block<512>() << conv_block<512>()

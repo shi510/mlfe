@@ -390,6 +390,7 @@ struct cifar10_convnet : nn::module{
 You don't have to specify the input size of each layer.  
 Just stack layers using only output specification using `operator<<()`.  
 After stacking sequence layers, call the member function `build` with preferred input shape.  
+See [example/imagenet/vgg16.h](example/imagenet/vgg16.h).  
 
 ```c++
 #include <mlfe/nn/module.h>
@@ -428,7 +429,7 @@ struct vgg16 : nn::module{
             << conv_block<512>() << conv_block<512>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
-            << conv_block<1024>() << conv_block<1024>()
+            << conv_block<512>() << conv_block<512>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
             << seq::flatten<>()
