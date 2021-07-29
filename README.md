@@ -1,10 +1,14 @@
 
 # mlfe : Modeling Learnable Feature Extractor  
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.org/shi510/mlfe.svg?branch=master)](https://travis-ci.org/shi510/mlfe)  
+[![Build Status](https://travis-ci.com/shi510/mlfe.svg?branch=master)](https://travis-ci.com/shi510/mlfe)  
 
 ## Why do I develop this repo?
 Just curious.  
+
+## Roadmap for the future.
+(1) Neural Architecture Search  
+ - New search space including low-bit quantization and sparsity.  
 
 ## Index
 1. [Basic Example](#Basic-Example)
@@ -383,25 +387,35 @@ struct cifar10_convnet : nn::module{
 ```
 
 ## The easiest way to build a model
-**`In Progress Now.`**  
-Just push layers using `operator<<()` to a nn::module, then call it.  
-You don't have to specify the input size of a layer, such as nn::linear(`784`, 300).  
+You don't have to specify the input size of each layer.  
+Just stack layers using only output specification using `operator<<()`.  
+After stacking sequence layers, call the member function `build` with preferred input shape.  
 
 ```c++
+#include <mlfe/nn/module.h>
+#include <mlfe/nn/sequences/batch_norm.h>
+#include <mlfe/nn/sequences/conv2d.h>
+#include <mlfe/nn/sequences/flatten.h>
+#include <mlfe/nn/sequences/maxpool2d.h>
+#include <mlfe/nn/sequences/linear.h>
+#include <mlfe/nn/sequences/relu.h>
+
+using namespace mlfe;
+namespace seq = mlfe::nn::seq;
+
 struct vgg16 : nn::module{
+    nn::module net_block;
 
     template <int C>
-    auto conv_block(){
-        return nn::module()
+    nn::module conv_block(){
+        nn::module m;
+        return m
             << seq::conv2d<C, size<3, 3>, size<1, 1>, true>()
-            << seq::batch_norm<>() << seq::relu<>();
+            << seq::batch_norm2d<>() << seq::relu<>();
     }
 
     vgg16(){
         net_block
-            << conv_block<32>() << conv_block<32>()
-            << seq::maxpool2d<size<2, 2>, size<2, 2>>()
-
             << conv_block<64>() << conv_block<64>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
@@ -411,25 +425,25 @@ struct vgg16 : nn::module{
             << conv_block<256>() << conv_block<256>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
-            << conv_block<512>() << conv_block<512>() << conv_block<512>()
+            << conv_block<512>() << conv_block<512>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
-            << conv_block<512>() << conv_block<512>() << conv_block<512>()
+            << conv_block<1024>() << conv_block<1024>()
             << seq::maxpool2d<size<2, 2>, size<2, 2>>()
 
-            << seq::linear<4096>() << seq::relu<>()
-            << seq::linear<4096>() << seq::relu<>()
+            << seq::flatten<>()
+
+            << seq::linear<4096>() << seq::batch_norm1d<>() << seq::relu<>()
+            << seq::linear<4096>() << seq::batch_norm1d<>() << seq::relu<>()
             << seq::linear<1000>();
         net_block.build({224, 224, 3});
-        trainable(net_block);
+        net_block = trainable(net_block);
     }
 
-    tensor forward(tensor x){
-        x = net_block(x)
+    Tensor forward(Tensor x, bool is_train){
+        x = net_block(x, is_train);
         return x;
     }
-
-    nn::module net_block;
 };
 ```
 
@@ -447,11 +461,11 @@ cmake -D BUILD_TEST=ON -D BUILD_EXAMPLE=ON -D USE_CUDNN=ON -D CMAKE_BUILD_TYPE=R
 make -j
 ./unit_test/unit_test
 ```
-Other possible options.  
+There are another possible options and it is not recommanded.  
 ```python
--D USE_CUDA=ON # only use cuda kernel, not cudnn
--D USE_XNNPACK=ON
--D USE_INTEL_MKLDNN=ON
+-D USE_CUDA=ON # only use cuda kernel not cudnn
+-D USE_XNNPACK=ON # currently for experiment
+-D USE_INTEL_MKLDNN=ON # currently for experiment
 ```
 It is compiled with host reference codes, if it has no option.  
 See [mlfe/operators_v2/impl/cpu](mlfe/operators_v2/impl/cpu).  
@@ -459,24 +473,24 @@ See [mlfe/operators_v2/impl/cpu](mlfe/operators_v2/impl/cpu).
 ## Supported operators
 All operators that didn't marked with `'o'` (not implemented yet) will be supported as soon as possible.  
 
-|                       | ARMv8 | CUDA(CUDNN) | x86_64 |
-|:---------------------:|:-----:|:-----------:|:------:|
-|  Add (with broadcast) |   o   |      o      |    o   |
-|  Sub (with broadcast) |   o   |      o      |    o   |
-|  Mul (with broadcast) |   o   |      o      |    o   |
-|  Div (with broadcast) |   o   |      o      |    o   |
-|   GlobalAveragePool2D |       |      o      |        |
-|           BatchNorm2D |       |      o      |        |
-|                Conv2D |   o   |      o      |    o   |
-|                 Dense |   o   |      o      |    o   |
-|               Dropout |   o   |      o      |    o   |
-|             MaxPool2D |   o   |      o      |    o   |
-|                Resize |       |             |        |
-|                  ReLU |   o   |      o      |    o   |
-|               Sigmoid |   o   |      o      |    o   |
-| Softmax Cross Entropy |   o   |      o      |    o   |
-| Sigmoid Cross Entropy |   o   |      o      |    o   |
-|    Squared Difference |   o   |      o      |    o   |
-|             Transpose |       |             |        |
-|         SGD Optimizer |   o   |      o      |    o   |
-|       Adam Optimizaer |   o   |      o      |    o   |
+|                       | CUDA(CUDNN) |
+|:---------------------:|:-----------:|
+|  Add (with broadcast) |      o      |
+|  Sub (with broadcast) |      o      |
+|  Mul (with broadcast) |      o      |
+|  Div (with broadcast) |      o      |
+|   GlobalAveragePool2D |      o      |
+|           BatchNorm2D |      o      |
+|                Conv2D |      o      |
+|                 Dense |      o      |
+|               Dropout |      o      |
+|             MaxPool2D |      o      |
+|                Resize |             |
+|                  ReLU |      o      |
+|               Sigmoid |      o      |
+| Softmax Cross Entropy |      o      |
+| Sigmoid Cross Entropy |      o      |
+|    Squared Difference |      o      |
+|             Transpose |             |
+|         SGD Optimizer |      o      |
+|       Adam Optimizaer |      o      |
