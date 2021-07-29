@@ -1,7 +1,7 @@
 #include "tensor.h"
 #include "device.h"
 #include "attribute.h"
-#include "mlfe/operators_v2/basic_arithmetic.h"
+#include "mlfe/operators/basic_arithmetic.h"
 #include "mlfe/math/basic_functions.h"
 #include "mlfe/utils/assert.h"
 #include <algorithm>
@@ -178,9 +178,9 @@ void Tensor::copy_from(std::vector<float> vec){
     std::copy(vec.begin(), vec.end(), begin<float>());
 }
 
-void Tensor::zero(){ operators_v2::set_zeros(*this); }
+void Tensor::zero(){ operators::set_zeros(*this); }
 
-void Tensor::one(){ operators_v2::set_ones(*this); }
+void Tensor::one(){ operators::set_ones(*this); }
 
 void Tensor::add_grad_marker(std::function<void (Tensor &)> marker)
 {
@@ -248,19 +248,19 @@ void *Tensor::_mutable_device_data(){
 }
 
 Tensor Tensor::operator+(const Tensor & other) const{
-    return operators_v2::add(*this, other);
+    return operators::add(*this, other);
 }
 
 Tensor Tensor::operator-(const Tensor & other) const{
-    return operators_v2::sub(*this, other);
+    return operators::sub(*this, other);
 }
 
 Tensor Tensor::operator*(const Tensor & other) const{
-    return operators_v2::mul(*this, other);
+    return operators::mul(*this, other);
 }
 
 Tensor Tensor::operator/(const Tensor & other) const{
-    return operators_v2::div(*this, other);
+    return operators::div(*this, other);
 }
 
 /*
@@ -269,25 +269,25 @@ Tensor Tensor::operator/(const Tensor & other) const{
  *
  */
 Tensor & operator+=(Tensor & a, const Tensor & b){
-    auto c = operators_v2::add(a, b);
+    auto c = operators::add(a, b);
     copy(c.get_memory(), a.get_memory());
     return a;
 }
 
 Tensor & operator-=(Tensor & a, const Tensor & b){
-    auto c = operators_v2::sub(a, b);
+    auto c = operators::sub(a, b);
     copy(c.get_memory(), a.get_memory());
     return a;
 }
 
 Tensor & operator*=(Tensor & a, const Tensor & b){
-    auto c = operators_v2::mul(a, b);
+    auto c = operators::mul(a, b);
     copy(c.get_memory(), a.get_memory());
     return a;
 }
 
 Tensor & operator/=(Tensor & a, const Tensor & b){
-    auto c = operators_v2::div(a, b);
+    auto c = operators::div(a, b);
     copy(c.get_memory(), a.get_memory());
     return a;
 }
