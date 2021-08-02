@@ -32,7 +32,6 @@ RUN mkdir ${HOME}/mlfe/build
 WORKDIR ${HOME}/mlfe/build
 RUN cmake \
     -D MLFE_LITE=ON \
-    -D ENABLE_ARM=ON \
     -D BUILD_TEST=ON \
     -D USE_XNNPACK=ON \
     -D ANDROID_ABI=arm64-v8a \

@@ -32,7 +32,6 @@ WORKDIR ${HOME}/mlfe
 RUN mkdir build
 WORKDIR ${HOME}/mlfe/build
 RUN cmake \
-    -D ENABLE_ARM=ON \
     -D BUILD_TEST=ON \
     -D BUILD_EXAMPLE=ON \
     -D USE_XNNPACK=ON \
