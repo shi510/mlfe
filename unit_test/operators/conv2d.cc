@@ -223,10 +223,10 @@ TEST(operator, conv2d_k3_s1_p0_grad){
         return dist(rng);
     });
     auto y = conv2d(x, w, {1, 1}, {0, 0});
-    y.backprop_v2();
-    std::copy(x.grad_v2().cbegin<T>(), x.grad_v2().cend<T>(),
+    y.backprop();
+    std::copy(x.grad().cbegin<T>(), x.grad().cend<T>(),
         analytical_x.begin<T>());
-    std::copy(w.grad_v2().cbegin<T>(), w.grad_v2().cend<T>(),
+    std::copy(w.grad().cbegin<T>(), w.grad().cend<T>(),
         analytical_w.begin<T>());
     auto func1 = [w](mlfe::Tensor& x){
         return conv2d(x, w, {1, 1}, {0, 0});
@@ -268,10 +268,10 @@ TEST(operator, conv2d_k3_s1_p1_grad){
         return dist(rng);
     });
     auto y = conv2d(x, w, {1, 1}, {1, 1});
-    y.backprop_v2();
-    std::copy(x.grad_v2().cbegin<T>(), x.grad_v2().cend<T>(),
+    y.backprop();
+    std::copy(x.grad().cbegin<T>(), x.grad().cend<T>(),
         analytical_x.begin<T>());
-    std::copy(w.grad_v2().cbegin<T>(), w.grad_v2().cend<T>(),
+    std::copy(w.grad().cbegin<T>(), w.grad().cend<T>(),
         analytical_w.begin<T>());
     auto func1 = [w](mlfe::Tensor& x){
         return conv2d(x, w, {1, 1}, {1, 1});
@@ -313,10 +313,10 @@ TEST(operator, conv2d_k3_s2_p1_grad){
         return dist(rng);
     });
     auto y = conv2d(x, w, {1, 1}, {1, 1});
-    y.backprop_v2();
-    std::copy(x.grad_v2().cbegin<T>(), x.grad_v2().cend<T>(),
+    y.backprop();
+    std::copy(x.grad().cbegin<T>(), x.grad().cend<T>(),
         analytical_x.begin<T>());
-    std::copy(w.grad_v2().cbegin<T>(), w.grad_v2().cend<T>(),
+    std::copy(w.grad().cbegin<T>(), w.grad().cend<T>(),
         analytical_w.begin<T>());
     auto func1 = [w](mlfe::Tensor& x){
         return conv2d(x, w, {1, 1}, {1, 1});

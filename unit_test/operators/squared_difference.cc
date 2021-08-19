@@ -36,9 +36,9 @@ TEST(operator, squared_difference_bwd){
         return dist(rng);
     });
     auto y = squared_difference(a, b);
-    y.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    y.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](Tensor& a){
         return squared_difference(a, b);
     };

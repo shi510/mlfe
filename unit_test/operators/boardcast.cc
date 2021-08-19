@@ -162,7 +162,7 @@ TEST(operator, broadcast_one_by_n_grad){
         Tensor x = fn::create_variable(x_shape);
         std::generate(x.begin<T>(), x.end<T>(), random);
         Tensor y = broadcast(x, target_shape);
-        y.backprop_v2();
+        y.backprop();
 
         EXPECT_EQ(y.dims(), target_shape.size());
         for(int n = 0; n < y.dims(); ++n){
@@ -172,7 +172,7 @@ TEST(operator, broadcast_one_by_n_grad){
             return broadcast(x, target_shape);
         };
         auto numerical = numerical_gradient_v2(func, x, grad_eps);
-        auto grad_diff = calculate_gradient_diff<T>(numerical, x.grad_v2());
+        auto grad_diff = calculate_gradient_diff<T>(numerical, x.grad());
         EXPECT_NEAR(grad_diff, T(0), pass_eps);
     };
 

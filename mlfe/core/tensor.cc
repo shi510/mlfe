@@ -151,7 +151,7 @@ std::shared_ptr<graph> Tensor::get_graph() const
     return _pimpl->__g;
 }
 
-void Tensor::set_gradient_v2()
+void Tensor::set_gradient()
 {
     get_node().add_attr("grad_marker", std::vector<std::function<void (Tensor&)>>());
     get_node().add_attr("grad", std::make_shared<Tensor>());
@@ -194,11 +194,11 @@ void Tensor::add_grad_marker(std::function<void (Tensor &)> marker)
     TODO: this function should only be enabled on root node.
         1. Check if this node is root.
 */
-void Tensor::backprop_v2()
+void Tensor::backprop()
 {
     using gm_func_t = std::vector<std::function<void (Tensor &)>>;
-    auto topo_list = topological_sort_v2(get_node(), true);
-    auto dy = grad_v2();
+    auto topo_list = topological_sort(get_node(), true);
+    auto dy = grad();
     //
     // self gradient is 1.
     //
@@ -216,9 +216,9 @@ void Tensor::backprop_v2()
 
 /*
     Return its gradients.
-    backprop_v2 should be called before calling this function.
+    backprop should be called before calling this function.
 */
-Tensor Tensor::grad_v2() const
+Tensor Tensor::grad() const
 {
     return **_pimpl->n.get_attr("grad").data<std::shared_ptr<Tensor>>();
 }
@@ -297,10 +297,10 @@ namespace functional{
 Tensor create_variable(std::vector<int> shape, const bool trainable){
     Tensor var;
     var.set_trainable(trainable);
-    var.set_gradient_v2();
+    var.set_gradient();
     var.resize(shape);
-    var.grad_v2().resize(shape);
-    var.grad_v2().zero();
+    var.grad().resize(shape);
+    var.grad().zero();
     var.get_node().add_attr("tensor", var.weak_copy());
     var.get_node().add_attr("op_name", "variable");
     return var;
@@ -309,9 +309,9 @@ Tensor create_variable(std::vector<int> shape, const bool trainable){
 Tensor create_variable(std::vector<int> shape, type::TypeInfo ti, const bool trainable){
     Tensor var;
     var.set_trainable(trainable);
-    var.set_gradient_v2();
+    var.set_gradient();
     var.resize(shape, ti);
-    var.grad_v2().resize(shape);
+    var.grad().resize(shape);
     return var;
 }
 

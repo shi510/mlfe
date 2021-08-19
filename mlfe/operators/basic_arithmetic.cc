@@ -12,10 +12,10 @@ Tensor elementwise_add(Tensor a, Tensor b)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_left = [=](Tensor &dy){
-        eltwise_add_left_bwd_kernel::fn(dy, a.grad_v2());
+        eltwise_add_left_bwd_kernel::fn(dy, a.grad());
     };
     auto gm_right = [=](Tensor &dy){
-        eltwise_add_right_bwd_kernel::fn(dy, b.grad_v2());
+        eltwise_add_right_bwd_kernel::fn(dy, b.grad());
     };
     call<eltwise_add_fwd_kernel>(
         marker::I(a, b),
@@ -27,10 +27,10 @@ Tensor elementwise_sub(Tensor a, Tensor b)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_left = [=](Tensor &dy){
-        eltwise_sub_left_bwd_kernel::fn(dy, a.grad_v2());
+        eltwise_sub_left_bwd_kernel::fn(dy, a.grad());
     };
     auto gm_right = [=](Tensor &dy){
-        eltwise_sub_right_bwd_kernel::fn(dy, b.grad_v2());
+        eltwise_sub_right_bwd_kernel::fn(dy, b.grad());
     };
     call<eltwise_sub_fwd_kernel>(
         marker::I(a, b),
@@ -42,10 +42,10 @@ Tensor elementwise_mul(Tensor a, Tensor b)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_left = [=](Tensor &dy){
-        eltwise_mul_left_bwd_kernel::fn(b, dy, a.grad_v2());
+        eltwise_mul_left_bwd_kernel::fn(b, dy, a.grad());
     };
     auto gm_right = [=](Tensor &dy){
-        eltwise_mul_right_bwd_kernel::fn(a, dy, b.grad_v2());
+        eltwise_mul_right_bwd_kernel::fn(a, dy, b.grad());
     };
     call<eltwise_mul_fwd_kernel>(
         marker::I(a, b),
@@ -57,10 +57,10 @@ Tensor elementwise_div(Tensor a, Tensor b)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_left = [=](Tensor &dy){
-        eltwise_div_left_bwd_kernel::fn(b, dy, a.grad_v2());
+        eltwise_div_left_bwd_kernel::fn(b, dy, a.grad());
     };
     auto gm_right = [=](Tensor &dy){
-        eltwise_div_right_bwd_kernel::fn(b, y, dy, b.grad_v2());
+        eltwise_div_right_bwd_kernel::fn(b, y, dy, b.grad());
     };
     call<eltwise_div_fwd_kernel>(
         marker::I(a, b),
@@ -72,10 +72,10 @@ Tensor scalar_add(Tensor a, Tensor scalar)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_a = [=](Tensor &dy){
-        scalar_add_left_bwd_kernel::fn(dy, a.grad_v2());
+        scalar_add_left_bwd_kernel::fn(dy, a.grad());
     };
     auto gm_scalar = [=](Tensor &dy){
-        scalar_add_right_bwd_kernel::fn(dy, scalar.grad_v2());
+        scalar_add_right_bwd_kernel::fn(dy, scalar.grad());
     };
     call<scalar_add_fwd_kernel>(
         marker::I(a, scalar),
@@ -87,10 +87,10 @@ Tensor scalar_sub(Tensor a, Tensor scalar)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_a = [=](Tensor &dy){
-        scalar_sub_left_bwd_kernel::fn(dy, a.grad_v2());
+        scalar_sub_left_bwd_kernel::fn(dy, a.grad());
     };
     auto gm_scalar = [=](Tensor &dy){
-        scalar_sub_right_bwd_kernel::fn(dy, scalar.grad_v2());
+        scalar_sub_right_bwd_kernel::fn(dy, scalar.grad());
     };
     call<scalar_sub_fwd_kernel>(
         marker::I(a, scalar),
@@ -102,10 +102,10 @@ Tensor scalar_mul(Tensor a, Tensor scalar)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_a = [=](Tensor &dy){
-        scalar_mul_left_bwd_kernel::fn(scalar, dy, a.grad_v2());
+        scalar_mul_left_bwd_kernel::fn(scalar, dy, a.grad());
     };
     auto gm_scalar = [=](Tensor &dy){
-        scalar_mul_right_bwd_kernel::fn(a, dy, scalar.grad_v2());
+        scalar_mul_right_bwd_kernel::fn(a, dy, scalar.grad());
     };
     call<scalar_mul_fwd_kernel>(
         marker::I(a, scalar),
@@ -117,10 +117,10 @@ Tensor scalar_div(Tensor a, Tensor scalar)
 {
     auto y = functional::create_variable(a.shape());
     auto gm_a = [=](Tensor &dy){
-        scalar_div_left_bwd_kernel::fn(scalar, dy, a.grad_v2());
+        scalar_div_left_bwd_kernel::fn(scalar, dy, a.grad());
     };
     auto gm_scalar = [=](Tensor &dy){
-        scalar_div_right_bwd_kernel::fn(scalar, y, dy, scalar.grad_v2());
+        scalar_div_right_bwd_kernel::fn(scalar, y, dy, scalar.grad());
     };
     call<scalar_div_fwd_kernel>(
         marker::I(a, scalar),

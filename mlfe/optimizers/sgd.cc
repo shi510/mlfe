@@ -22,7 +22,7 @@ void SGD::set_variables(std::vector<Tensor> vars){
 void SGD::update(){
     for(int n = 0; n < __vars.size(); ++n){
         call<sgd_kernel>(
-            marker::I(__vars[n], __vars[n].grad_v2(), __var_moments[n]),
+            marker::I(__vars[n], __vars[n].grad(), __var_moments[n]),
             __lr, __mm, 0.f);
     }
 }

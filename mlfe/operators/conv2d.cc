@@ -34,10 +34,10 @@ Tensor conv2d(
     auto y =
         functional::create_variable({x.shape()[0], out_h, out_w, kernel.shape()[3]});
     auto gm_x = [=](Tensor &dy){
-        conv2d_input_bwd_kernel::fn(kernel, dy, x.grad_v2(), strides, paddings);
+        conv2d_input_bwd_kernel::fn(kernel, dy, x.grad(), strides, paddings);
     };
     auto gm_k = [=](Tensor &dy){
-        conv2d_kernel_bwd_kernel::fn(x, dy, kernel.grad_v2(), strides, paddings);
+        conv2d_kernel_bwd_kernel::fn(x, dy, kernel.grad(), strides, paddings);
     };
     call<conv2d_fwd_kernel>(
         marker::I(x, kernel),

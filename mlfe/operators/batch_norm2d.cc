@@ -21,7 +21,7 @@ Tensor batch_norm2d(
     auto y = functional::create_variable(x.shape());
     auto gm_x = [=](Tensor &dy){
         batch_norm2d_bwd_kernel::fn(
-            x, scales, dy, x.grad_v2(), scales.grad_v2(), biases.grad_v2());
+            x, scales, dy, x.grad(), scales.grad(), biases.grad());
     };
     call<batch_norm2d_fwd_kernel>(
         marker::I(x, scales, biases, rmean, rvar),

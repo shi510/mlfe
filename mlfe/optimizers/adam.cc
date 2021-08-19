@@ -27,7 +27,7 @@ void adam::set_variables(std::vector<Tensor> vars){
 void adam::update(){
     for(int n = 0; n < __vars.size(); ++n){
         call<adam_kernel>(
-            marker::I(__vars[n], __vars[n].grad_v2(), __m_hist[n], __v_hist[n]),
+            marker::I(__vars[n], __vars[n].grad(), __m_hist[n], __v_hist[n]),
             __lr, __beta1, __beta2, __eps);
     }
 }

@@ -9,7 +9,7 @@ Tensor sigmoid_cross_entropy(Tensor labels, Tensor logits)
     auto y = functional::create_variable({logits.shape()[0]});
     auto gm_labels = [](Tensor &dy){};
     auto gm_logits = [=](Tensor &dy){
-        sigmoid_xent_bwd_kernel::fn(labels, logits, dy, logits.grad_v2());
+        sigmoid_xent_bwd_kernel::fn(labels, logits, dy, logits.grad());
     };
     call<sigmoid_xent_fwd_kernel>(
         marker::I(labels, logits),

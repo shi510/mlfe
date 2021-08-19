@@ -80,9 +80,7 @@ private:
 // end of declaration of node class
 //
 
-std::vector<node> topological_sort(const node& r);
-
-std::vector<node> topological_sort_v2(const node& r, bool reverse=false);
+std::vector<node> topological_sort(const node& r, bool reverse=false);
 
 class graph
 {

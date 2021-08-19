@@ -95,7 +95,7 @@ void train_convnet(
             auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
             auto y_pred = model.forward(x, true);
             auto loss = model.criterion(y_true, y_pred);
-            loss.backprop_v2();
+            loss.backprop();
             opt.update();
             train_loss += loss.data<float>()[0];
             if((i+1) % 10 == 0){

@@ -58,7 +58,7 @@ x.grad(); // its gradients are {{4.5, 4.5}, {4.5, 4.5}}
 ## Simple neural network for MNIST dataset
 
 To train mnist data, we build a simple neural network.  
-This code is in [example/mnist_v2](example/mnist_v2).  
+This code is in [example/mnist](example/mnist).  
 
 *mnist data -> fully connected NN -> softmax.*  
 
@@ -109,14 +109,14 @@ struct mnist_simple_net
 
     void update_weights(float lr)
     {
-        weights -= lr * weights.grad_v2();
-        biases -= 2.f * lr * biases.grad_v2();
+        weights -= lr * weights.grad();
+        biases -= 2.f * lr * biases.grad();
     }
 
     void zero_grad()
     {
-        weights.grad_v2().zero();
-        biases.grad_v2().zero();
+        weights.grad().zero();
+        biases.grad().zero();
     }
 };
 ```
@@ -150,7 +150,7 @@ void train_simplenet(
             auto y_true = Tensor::from_vector(labels, {BATCH, OUTPUT_SIZE});
             auto y_pred = model.forward(x);
             auto loss = model.criterion(y_true, y_pred);
-            loss.backprop_v2();
+            loss.backprop();
             model.update_weights(1e-1);
             mean += loss.data<float>()[0];
         }
@@ -259,7 +259,7 @@ struct autoencoder : nn::module{
 3. Notify trainable variables to nn::module by enclosing a layer with `trainable` function.  
 
 The `trainable` function finds trainables in a layer and collects it.  
-See [mnist example](example/mnist_v2).  
+See [mnist example](example/mnist).  
 **The accuracy of this model on mnist dataset is about 98% at 2 epoch.**  
 
 ```c++
@@ -313,7 +313,7 @@ We build a conv block module:
 input -> conv_bn_relu -> dropout -> conv_bn_relu -> maxpool -> dropout.  
 Then use it to build deep conv net.  
 input -> conv_block -> conv_block -> conv_block -> global avg pool -> fc1 -> fc2.  
-See [cifar10 example](example/cifar_v2).  
+See [cifar10 example](example/cifar).  
 **The accuracy of this model on cifar10 dataset is about 86% at 30 epoch.**  
 
 ```c++
@@ -452,6 +452,7 @@ struct vgg16 : nn::module{
 
 ```
 git clone https://github.com/shi510/mlfe
+git submodule update --init --recursive
 mkdir build
 cd build
 ```

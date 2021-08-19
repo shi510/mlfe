@@ -25,7 +25,7 @@ void adadelta::set_variables(std::vector<Tensor> vars){
 void adadelta::update(){
     for(int n = 0; n < __vars.size(); ++n){
         call<adadelta_kernel>(
-            marker::I(__vars[n], __vars[n].grad_v2(), __grad_hist[n], __acc_hist[n]),
+            marker::I(__vars[n], __vars[n].grad(), __grad_hist[n], __acc_hist[n]),
             __lr, __momentum, __eps);
     }
 }

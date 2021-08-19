@@ -9,7 +9,7 @@ Tensor softmax_cross_entropy(Tensor labels, Tensor logits)
     auto y = functional::create_variable({logits.shape()[0]});
     auto gm_labels = [](Tensor &dy){};
     auto gm_logits = [=](Tensor &dy){
-        softmax_xent_bwd_kernel::fn(labels, logits, dy, logits.grad_v2());
+        softmax_xent_bwd_kernel::fn(labels, logits, dy, logits.grad());
     };
     call<softmax_xent_fwd_kernel>(
         marker::I(labels, logits),

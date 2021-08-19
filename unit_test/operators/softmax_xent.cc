@@ -26,12 +26,12 @@ TEST(operator, softmax_xent_logits_grad_manual){
     auto labels = Tensor::from_vector<T>({ 1.f, 0.f, 0.f, 0.f, 0.8f, 0.2f }, {2, 3});
     auto result = softmax_cross_entropy(labels, logits);
     result = reduce_mean(result);
-    result.backprop_v2();
+    result.backprop();
     auto target = (0.16984f + 0.82474f) / 2.f;
     EXPECT_NEAR(result.data<T>()[0], target, pass_eps);
     std::vector<T> target_grad =
         {-0.0781f, 0.0570f, 0.0210f, 0.0032f, 0.0878f, -0.0911f};
-    auto grad = logits.grad_v2();
+    auto grad = logits.grad();
     for(int n = 0; n < grad.size(); ++n)
     {
         EXPECT_NEAR(grad.data<T>()[n], target_grad[n], pass_eps);

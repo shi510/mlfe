@@ -103,10 +103,10 @@ TEST(operator, matmul_grad){
             return dist(rng);
         });
         auto c = matmul(a, b);
-        c.backprop_v2();
-        std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(),
+        c.backprop();
+        std::copy(a.grad().begin<T>(), a.grad().end<T>(),
             analytical_a.begin<T>());
-        std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(),
+        std::copy(b.grad().begin<T>(), b.grad().end<T>(),
             analytical_b.begin<T>());
         auto func1 = [b](mlfe::Tensor & x){
             return matmul(x, b);
@@ -140,10 +140,10 @@ TEST(operator, matmul_grad){
             return dist(rng);
         });
         auto c = matmul(a, b, false, true);
-        c.backprop_v2();
-        std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(),
+        c.backprop();
+        std::copy(a.grad().begin<T>(), a.grad().end<T>(),
             analytical_a.begin<T>());
-        std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(),
+        std::copy(b.grad().begin<T>(), b.grad().end<T>(),
             analytical_b.begin<T>());
         auto func1 = [b](mlfe::Tensor & x){
             return matmul(x, b, false, true);
@@ -177,10 +177,10 @@ TEST(operator, matmul_grad){
             return dist(rng);
         });
         auto c = matmul(a, b, true);
-        c.backprop_v2();
-        std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(),
+        c.backprop();
+        std::copy(a.grad().begin<T>(), a.grad().end<T>(),
             analytical_a.begin<T>());
-        std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(),
+        std::copy(b.grad().begin<T>(), b.grad().end<T>(),
             analytical_b.begin<T>());
         auto func1 = [b](mlfe::Tensor & x){
             return matmul(x, b, true);
@@ -214,10 +214,10 @@ TEST(operator, matmul_grad){
             return dist(rng);
         });
         auto c = matmul(a, b, true, true);
-        c.backprop_v2();
-        std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(),
+        c.backprop();
+        std::copy(a.grad().begin<T>(), a.grad().end<T>(),
             analytical_a.begin<T>());
-        std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(),
+        std::copy(b.grad().begin<T>(), b.grad().end<T>(),
             analytical_b.begin<T>());
         auto func1 = [b](mlfe::Tensor & x){
             return matmul(x, b, true, true);

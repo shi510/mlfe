@@ -7,7 +7,7 @@ Tensor dropout(Tensor x, float drop_ratio, bool is_training)
 {
     auto y = functional::create_variable(x.shape());
     auto gm_x = [=](Tensor &dy){
-        dropout_bwd_kernel::fn(x, dy, x.grad_v2(), drop_ratio);
+        dropout_bwd_kernel::fn(x, dy, x.grad(), drop_ratio);
     };
     call<dropout_fwd_kernel>(
         marker::I(x),

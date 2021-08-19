@@ -26,7 +26,7 @@ Tensor broadcast(Tensor x, std::vector<int32_t> shape)
     }
     auto y = functional::create_variable(bc_shape);
     auto gm_x = [=](Tensor &dy){
-        broadcast_bwd_kernel::fn(dy, x.grad_v2());
+        broadcast_bwd_kernel::fn(dy, x.grad());
     };
     call<broadcast_fwd_kernel>(
         marker::I(x),

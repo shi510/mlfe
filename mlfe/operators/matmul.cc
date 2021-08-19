@@ -11,30 +11,30 @@ Tensor matmul(Tensor a, Tensor b, bool transpose_a, bool transpose_b)
     auto output = functional::create_variable({m, n});
     auto gm_a = [=](Tensor &dy){
         if (!transpose_a && !transpose_b) {
-            matmul_fwd_kernel::fn(dy, b, a.grad_v2(), false, true);
+            matmul_fwd_kernel::fn(dy, b, a.grad(), false, true);
         }
         else if (!transpose_a && transpose_b) {
-            matmul_fwd_kernel::fn(dy, b, a.grad_v2(), false, false);
+            matmul_fwd_kernel::fn(dy, b, a.grad(), false, false);
         }
         else if (transpose_a && !transpose_b) {
-            matmul_fwd_kernel::fn(b, dy, a.grad_v2(), false, true);
+            matmul_fwd_kernel::fn(b, dy, a.grad(), false, true);
         }
         else if (transpose_a && transpose_b) {
-            matmul_fwd_kernel::fn(b, dy, a.grad_v2(), true, true);
+            matmul_fwd_kernel::fn(b, dy, a.grad(), true, true);
         }
     };
     auto gm_b = [=](Tensor &dy){
         if (!transpose_a && !transpose_b) {
-            matmul_fwd_kernel::fn(a, dy, b.grad_v2(), true, false);
+            matmul_fwd_kernel::fn(a, dy, b.grad(), true, false);
         }
         else if (!transpose_a && transpose_b) {
-            matmul_fwd_kernel::fn(dy, a, b.grad_v2(), true, false);
+            matmul_fwd_kernel::fn(dy, a, b.grad(), true, false);
         }
         else if (transpose_a && !transpose_b) {
-            matmul_fwd_kernel::fn(a, dy, b.grad_v2(), false, false);
+            matmul_fwd_kernel::fn(a, dy, b.grad(), false, false);
         }
         else if (transpose_a && transpose_b) {
-            matmul_fwd_kernel::fn(dy, a, b.grad_v2(), true, true);
+            matmul_fwd_kernel::fn(dy, a, b.grad(), true, true);
         }
     };
     call<matmul_fwd_kernel>(

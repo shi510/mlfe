@@ -41,8 +41,8 @@ TEST(operator, sigmoid_grad){
         return dist(rng);
     });
     auto result = op::sigmoid(x);
-    result.backprop_v2();
-    std::copy(x.grad_v2().begin<T>(), x.grad_v2().end<T>(), analytical.begin<T>());
+    result.backprop();
+    std::copy(x.grad().begin<T>(), x.grad().end<T>(), analytical.begin<T>());
     auto func = [](mlfe::Tensor& x){
         return op::sigmoid(x);
     };

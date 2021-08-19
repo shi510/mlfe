@@ -214,7 +214,7 @@ std::string node::dump() const
 std::string node::dump_v2() const
 {
     std::stringstream ss;
-    for(auto& pp : topological_sort_v2(*this))
+    for(auto& pp : topological_sort(*this))
     {
         ss << "Node: " << pp.get_name() << " [ ";
         auto shape = pp.get_attr("tensor").data<Tensor>()->shape();
@@ -278,25 +278,7 @@ std::shared_ptr<graph> get_default_graph()
     return g0;
 }
 
-std::vector<node> topological_sort(const node& r)
-{
-    std::queue<node> will_visit;
-    std::vector<node> visit_list;
-
-    will_visit.push(r);
-    while(!will_visit.empty()){
-        auto v = will_visit.front();
-        for(auto &c : v.get_inputs()){
-            will_visit.push(c);
-        }
-        visit_list.push_back(v);
-        will_visit.pop();
-    }
-    std::reverse(visit_list.begin(), visit_list.end());
-    return visit_list;
-}
-
-std::vector<node> topological_sort_v2(const node& r, bool reverse)
+std::vector<node> topological_sort(const node& r, bool reverse)
 {
     std::queue<node> will_visit;
     std::vector<node> visit_list;

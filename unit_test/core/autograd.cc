@@ -29,7 +29,7 @@ struct case0{
     }
 
     void backprop(){
-        y.backprop_v2();
+        y.backprop();
     }
 
     Tensor x1;
@@ -73,31 +73,31 @@ TEST(autograd, case0_grad_check){
     
     // the gradient of root of computation graph is one.
     answer = 1.f;
-    std::for_each(tcase.y.grad_v2().cbegin<T>(),
-        tcase.y.grad_v2().cend<T>(),
+    std::for_each(tcase.y.grad().cbegin<T>(),
+        tcase.y.grad().cend<T>(),
         [&](const T &val){ EXPECT_EQ(val, answer); });
 
     // gradient of x4 = 1 / len(x4)
     answer = 1.f / tcase.x4.size();
-    std::for_each(tcase.x4.grad_v2().cbegin<T>(),
-        tcase.x4.grad_v2().cend<T>(),
+    std::for_each(tcase.x4.grad().cbegin<T>(),
+        tcase.x4.grad().cend<T>(),
         [&](const T &val){ EXPECT_EQ(val, answer); });
 
     // gradient of x2 = x3 * x3 * dy
     answer = 3.f * 3.f * answer;
-    std::for_each(tcase.x2.grad_v2().cbegin<T>(),
-        tcase.x2.grad_v2().cend<T>(),
+    std::for_each(tcase.x2.grad().cbegin<T>(),
+        tcase.x2.grad().cend<T>(),
         [&](const T &val){ EXPECT_EQ(val, answer); });
 
     // gradient of x3 = 2 * x3 * x2 * dy
     answer = 2.f * 3.f * 3.f * 1.f / tcase.x4.size();
-    std::for_each(tcase.x3.grad_v2().cbegin<T>(),
-        tcase.x3.grad_v2().cend<T>(),
+    std::for_each(tcase.x3.grad().cbegin<T>(),
+        tcase.x3.grad().cend<T>(),
         [&](const T &val){ EXPECT_EQ(val, answer); });
 
     // gradient of x1 = dy
-    std::for_each(tcase.x1.grad_v2().cbegin<T>(),
-        tcase.x1.grad_v2().cend<T>(),
+    std::for_each(tcase.x1.grad().cbegin<T>(),
+        tcase.x1.grad().cend<T>(),
         [&](const T &val){ EXPECT_EQ(val, answer); });
 }
 
@@ -122,7 +122,7 @@ struct case1{
     }
 
     void backprop(){
-        mean.backprop_v2();
+        mean.backprop();
     }
 
     Tensor x1, x2, x3;
@@ -180,57 +180,57 @@ TEST(autograd, case1_grad_check){
     case1<T> tcase;
     tcase.backprop();
     
-    EXPECT_EQ(tcase.mean.grad_v2().data<T>()[0], 1);
+    EXPECT_EQ(tcase.mean.grad().data<T>()[0], 1);
 
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[0], 0.125);
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[1], 0.125);
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[2], 0.125);
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[3], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[0], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[1], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[2], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[3], 0.125);
 
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[0], -0.25);
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[1], -0.25);
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[2], -0.25);
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[3], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[0], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[1], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[2], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[3], -0.25);
 
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[0], -0.375);
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[1], -0.375);
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[2], -0.375);
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[3], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[0], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[1], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[2], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[3], -0.375);
 
-    EXPECT_EQ(tcase.x3.grad_v2().data<T>()[0], -1);
-    EXPECT_EQ(tcase.x3.grad_v2().data<T>()[1], -1.75);
-    EXPECT_EQ(tcase.x3.grad_v2().data<T>()[2], -2.5);
-    EXPECT_EQ(tcase.x3.grad_v2().data<T>()[3], -3.25);
+    EXPECT_EQ(tcase.x3.grad().data<T>()[0], -1);
+    EXPECT_EQ(tcase.x3.grad().data<T>()[1], -1.75);
+    EXPECT_EQ(tcase.x3.grad().data<T>()[2], -2.5);
+    EXPECT_EQ(tcase.x3.grad().data<T>()[3], -3.25);
 
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[0], 0.5);
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[1], -0.5);
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[2], -1.5);
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[3], -2.5);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[0], 0.5);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[1], -0.5);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[2], -1.5);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[3], -2.5);
 
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[0], 3);
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[1], 2.25);
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[2], 1.5);
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[3], 0.75);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[0], 3);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[1], 2.25);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[2], 1.5);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[3], 0.75);
 }
 
 
@@ -266,7 +266,7 @@ struct case2{
     }
 
     void backprop(){
-        mean.backprop_v2();
+        mean.backprop();
     }
 
     Tensor x;
@@ -322,47 +322,47 @@ TEST(autograd, case2_grad_check){
     using T = float;
     case2<T> tcase;
     tcase.backprop();
-    EXPECT_EQ(tcase.mean.grad_v2().data<T>()[0], 1);
+    EXPECT_EQ(tcase.mean.grad().data<T>()[0], 1);
 
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.add_n.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.add_n.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.mul3.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.mul3.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.mul2.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.mul2.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.mul1.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.mul1.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[0], 0.125);
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[1], 0.125);
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[2], 0.125);
-    EXPECT_EQ(tcase.sq3.grad_v2().data<T>()[3], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[0], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[1], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[2], 0.125);
+    EXPECT_EQ(tcase.sq3.grad().data<T>()[3], 0.125);
 
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[0], -0.25);
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[1], -0.25);
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[2], -0.25);
-    EXPECT_EQ(tcase.sq2.grad_v2().data<T>()[3], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[0], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[1], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[2], -0.25);
+    EXPECT_EQ(tcase.sq2.grad().data<T>()[3], -0.25);
 
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[0], -0.375);
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[1], -0.375);
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[2], -0.375);
-    EXPECT_EQ(tcase.sq1.grad_v2().data<T>()[3], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[0], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[1], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[2], -0.375);
+    EXPECT_EQ(tcase.sq1.grad().data<T>()[3], -0.375);
 
-    EXPECT_EQ(tcase.x.grad_v2().data<T>()[0], 4);
-    EXPECT_EQ(tcase.x.grad_v2().data<T>()[1], 2);
-    EXPECT_EQ(tcase.x.grad_v2().data<T>()[2], 0);
-    EXPECT_EQ(tcase.x.grad_v2().data<T>()[3], -2);
+    EXPECT_EQ(tcase.x.grad().data<T>()[0], 4);
+    EXPECT_EQ(tcase.x.grad().data<T>()[1], 2);
+    EXPECT_EQ(tcase.x.grad().data<T>()[2], 0);
+    EXPECT_EQ(tcase.x.grad().data<T>()[3], -2);
 }
 
 //              mean
@@ -386,7 +386,7 @@ struct case3{
     }
 
     void backprop(){
-        mean.backprop_v2();
+        mean.backprop();
     }
 
     Tensor x1, x2;
@@ -423,33 +423,33 @@ TEST(autograd, case3_grad_check){
     case3<T> tcase;
     tcase.backprop();
 
-    EXPECT_EQ(tcase.mean.grad_v2().data<T>()[0], 1);
+    EXPECT_EQ(tcase.mean.grad().data<T>()[0], 1);
 
-    EXPECT_EQ(tcase.add.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.add.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.add.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.add.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.add.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.add.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.add.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.add.grad().data<T>()[3], 0.25);
 
-    EXPECT_EQ(tcase.mul.grad_v2().data<T>()[0], 0.25);
-    EXPECT_EQ(tcase.mul.grad_v2().data<T>()[1], 0.25);
-    EXPECT_EQ(tcase.mul.grad_v2().data<T>()[2], 0.25);
-    EXPECT_EQ(tcase.mul.grad_v2().data<T>()[3], 0.25);
+    EXPECT_EQ(tcase.mul.grad().data<T>()[0], 0.25);
+    EXPECT_EQ(tcase.mul.grad().data<T>()[1], 0.25);
+    EXPECT_EQ(tcase.mul.grad().data<T>()[2], 0.25);
+    EXPECT_EQ(tcase.mul.grad().data<T>()[3], 0.25);
 
     // d_add/d_sq + (d_add/d_mul)*(d_mul/d_sq) = 0.25 + 0.25 * x1
-    EXPECT_EQ(tcase.sq.grad_v2().data<T>()[0], 0.75);
-    EXPECT_EQ(tcase.sq.grad_v2().data<T>()[1], 1);
-    EXPECT_EQ(tcase.sq.grad_v2().data<T>()[2], 1.5);
-    EXPECT_EQ(tcase.sq.grad_v2().data<T>()[3], 2);
+    EXPECT_EQ(tcase.sq.grad().data<T>()[0], 0.75);
+    EXPECT_EQ(tcase.sq.grad().data<T>()[1], 1);
+    EXPECT_EQ(tcase.sq.grad().data<T>()[2], 1.5);
+    EXPECT_EQ(tcase.sq.grad().data<T>()[3], 2);
 
     // sq.grad() * d_sq/d_x2
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[0], 13.5);
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[1], 20);
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[2], 36);
-    EXPECT_EQ(tcase.x2.grad_v2().data<T>()[3], 48);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[0], 13.5);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[1], 20);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[2], 36);
+    EXPECT_EQ(tcase.x2.grad().data<T>()[3], 48);
 
     // sq.grad() * d_sq/d_x1 + mul.grad() * sq
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[0], 6.75);
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[1], 5);
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[2], 0);
-    EXPECT_EQ(tcase.x1.grad_v2().data<T>()[3], -12);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[0], 6.75);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[1], 5);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[2], 0);
+    EXPECT_EQ(tcase.x1.grad().data<T>()[3], -12);
 }

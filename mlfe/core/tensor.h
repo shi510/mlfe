@@ -133,7 +133,7 @@ public:
 
     std::shared_ptr<graph> get_graph() const;
 
-    void set_gradient_v2();
+    void set_gradient();
 
     void set_node(node n);
 
@@ -163,8 +163,6 @@ public:
     template <typename T>
     inline T *mutable_device_data();
 
-    Tensor grad();
-
     void zero();
 
     void one();
@@ -176,9 +174,9 @@ public:
 
     void add_grad_marker(std::function<void (Tensor &)> marker);
 
-    void backprop_v2();
+    void backprop();
 
-    Tensor grad_v2() const;
+    Tensor grad() const;
 
     Tensor operator+(const Tensor & other) const;
     Tensor operator-(const Tensor & other) const;

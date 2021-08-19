@@ -18,7 +18,7 @@ Tensor maxpool2d(Tensor x, std::vector<int32_t> psize, std::vector<int32_t> stri
     // Use its weak copy to prevent circular dependency.
     auto y_weak = y.weak_copy();
     auto gm_x = [x, psize, strides, y_weak](Tensor &dy){
-        maxpool2d_bwd_kernel::fn(x, y_weak, dy, x.grad_v2(), psize, strides);
+        maxpool2d_bwd_kernel::fn(x, y_weak, dy, x.grad(), psize, strides);
     };
     call<maxpool2d_fwd_kernel>(
         marker::I(x),

@@ -40,9 +40,9 @@ TEST(operator, elementwise_add_grad){
         return dist(rng);
     });
     auto result = add(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return add(a, b);
     };
@@ -88,9 +88,9 @@ TEST(operator, elementwise_sub_grad){
         return dist(rng);
     });
     auto result = sub(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return sub(a, b);
     };
@@ -135,9 +135,9 @@ TEST(operator, elementwise_mul_grad){
         return dist(rng);
     });
     auto result = mul(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return mul(a, b);
     };
@@ -182,9 +182,9 @@ TEST(operator, elementwise_div_grad){
         return dist(rng);
     });
     auto result = div(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return div(a, b);
     };
@@ -229,9 +229,9 @@ TEST(operator, scalar_vector_add_grad){
         return dist(rng);
     });
     auto result = add(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return add(a, b);
     };
@@ -276,9 +276,9 @@ TEST(operator, scalar_vector_sub_grad){
         return dist(rng);
     });
     auto result = sub(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return sub(a, b);
     };
@@ -323,9 +323,9 @@ TEST(operator, scalar_vector_mul_grad){
         return dist(rng);
     });
     auto result = mul(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return mul(a, b);
     };
@@ -367,9 +367,9 @@ TEST(operator, scalar_vector_div_grad){
         return dist(rng);
     });
     auto result = div(a, b);
-    result.backprop_v2();
-    std::copy(a.grad_v2().begin<T>(), a.grad_v2().end<T>(), analytical_a.begin<T>());
-    std::copy(b.grad_v2().begin<T>(), b.grad_v2().end<T>(), analytical_b.begin<T>());
+    result.backprop();
+    std::copy(a.grad().begin<T>(), a.grad().end<T>(), analytical_a.begin<T>());
+    std::copy(b.grad().begin<T>(), b.grad().end<T>(), analytical_b.begin<T>());
     auto func_a = [b](mlfe::Tensor& a){
         return div(a, b);
     };

@@ -36,7 +36,7 @@ struct module
         std::for_each(
             __trainable_vars.begin(),
             __trainable_vars.end(),
-            [](Tensor & v){ v.grad_v2().zero(); });
+            [](Tensor & v){ v.grad().zero(); });
     }
 
     virtual Tensor operator()(Tensor x, bool train_phase=false){

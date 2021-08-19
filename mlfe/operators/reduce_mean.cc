@@ -7,7 +7,7 @@ Tensor reduce_mean(Tensor x)
 {
     auto y = functional::create_variable({1});
     auto gm_x = [=](Tensor &dy){
-        reduce_mean_bwd_kernel::fn(dy, x.grad_v2());
+        reduce_mean_bwd_kernel::fn(dy, x.grad());
     };
     call<reduce_mean_fwd_kernel>(
         marker::I(x),

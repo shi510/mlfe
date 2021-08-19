@@ -38,14 +38,14 @@ struct mnist_simple_net
 
     void update_weights(float lr)
     {
-        weights -= lr * weights.grad_v2();
-        biases -= 2.f * lr * biases.grad_v2();
+        weights -= lr * weights.grad();
+        biases -= 2.f * lr * biases.grad();
     }
 
     void zero_grad()
     {
-        weights.grad_v2().zero();
-        biases.grad_v2().zero();
+        weights.grad().zero();
+        biases.grad().zero();
     }
 };
 

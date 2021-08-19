@@ -7,7 +7,7 @@ Tensor relu(Tensor x)
 {
     auto y = functional::create_variable(x.shape());
     auto gm_x = [=](Tensor &dy){
-        relu_bwd_kernel::fn(x, dy, x.grad_v2());
+        relu_bwd_kernel::fn(x, dy, x.grad());
     };
     call<relu_fwd_kernel>(
         marker::I(x),

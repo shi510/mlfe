@@ -92,9 +92,9 @@ TEST(operator, maxpool2d_grad_manual_k2_s2){
     }
 
     auto y = maxpool2d(x, {2, 2}, {2, 2});
-    y.backprop_v2();
+    y.backprop();
 
-    auto dx_ptr = x.grad_v2().data<T>();
+    auto dx_ptr = x.grad().data<T>();
     EXPECT_EQ(dx_ptr[0], 0);
     EXPECT_EQ(dx_ptr[1], 0);
     EXPECT_EQ(dx_ptr[2], 0);
